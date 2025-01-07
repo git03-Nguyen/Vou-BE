@@ -8,7 +8,7 @@ namespace AuthServer.Controllers.v1;
 
 [ApiController]
 [ApiVersion("1.0")]
-[Route("[controller]")]
+[Route("api/{apiVersion:apiVersion}/[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly IMediator _mediator;

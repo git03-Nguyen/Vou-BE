@@ -9,9 +9,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AuthServer.Controllers.v1;
 
+[Authorize]
 [ApiController]
 [ApiVersion("1.0")]
-[Route("[controller]")]
+[Route("api/{apiVersion:apiVersion}/[controller]")]
 public class UserController : ControllerBase
 {
     private readonly IMediator _mediator;
