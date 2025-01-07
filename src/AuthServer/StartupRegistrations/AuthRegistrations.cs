@@ -27,21 +27,11 @@ public static class AuthRegistrations
         services.Configure<DataProtectionTokenProviderOptions>(options => options.TokenLifespan = TimeSpan.FromHours(1));
         services.Configure<EmailConfirmationTokenProviderOptions>(options => options.TokenLifespan = TimeSpan.FromDays(365));
        
-        var identityBuilder = services
-            .AddIdentityServer(options =>
-            {
-                options.Events.RaiseErrorEvents = true;
-                options.Events.RaiseInformationEvents = true;
-                options.Events.RaiseFailureEvents = true;
-                options.Events.RaiseSuccessEvents = true;
-                options.EmitStaticAudienceClaim = true;
-                options.Caching.ClientStoreExpiration = TimeSpan.FromDays(10);
-                options.Caching.ResourceStoreExpiration = TimeSpan.FromDays(10);
-            })
-            .AddInMemoryClients(Config.Clients)
-            .AddInMemoryIdentityResources(Config.IdentityResources)
-            .AddInMemoryApiResources(Config.ApiResources)
-            .AddInMemoryApiScopes(Config.ApiScopes)
+        services.AddIdentityServer()
+            .AddInMemoryClients(AuthConfig.Clients)
+            .AddInMemoryIdentityResources(AuthConfig.IdentityResources)
+            .AddInMemoryApiScopes(AuthConfig.ApiScopes)
+            .AddInMemoryApiResources(AuthConfig.ApiResources)
             .AddDeveloperSigningCredential()
             .AddAspNetIdentity<User>()
             .AddProfileService<CustomProfileService>();
@@ -69,7 +59,7 @@ public static class AuthRegistrations
                 {
                     ValidateAudience = false,
                     ValidateIssuer = false,
-                    ValidateIssuerSigningKey = true,
+                    ValidateIssuerSigningKey = false,
                     RequireExpirationTime = true,
                     ValidateLifetime = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key)

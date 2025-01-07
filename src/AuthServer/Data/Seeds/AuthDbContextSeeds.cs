@@ -36,6 +36,7 @@ public static class AuthDbContextSeeds
                 SecurityStamp = "TQXRJCFWDCRPAM7NWGC6DL2G3W5MMXKT",
                 ConcurrencyStamp = "b5c97c3c-4201-452b-a3c8-e3a74cc1e1f9",
                 CreatedBy = Common.Constants.SYSTEM,
+                Role = Common.Constants.PLAYER
             }
         );
 

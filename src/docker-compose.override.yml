@@ -30,17 +30,17 @@ services:
   #############################
   ######### DATABASE ##########
   #############################
-  authdb:
-    container_name: authdb
+  voudb:
+    container_name: voudb
     environment:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=admin1234
-      - POSTGRES_DB=authdb
+      - POSTGRES_DB=voudb
     restart: always
     ports:
       - "5001:5432"
     volumes:
-      - postgres_auth_data:/var/lib/postgresql/data1/
+      - db-data:/var/lib/postgresql/data1/
     
   #############################
   ######### SERVICES ##########
@@ -52,7 +52,7 @@ services:
       - ASPNETCORE_URLS=http://+:5000
       - "DatabaseSettings:ConnectionString=Server=localhost;Port=5432;Database=authdb;User Id=admin;Password=admin1234;"
     depends_on:
-      - authdb
+      - voudb
     ports:
       - "5000"
     volumes:

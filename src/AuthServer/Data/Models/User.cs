@@ -10,9 +10,9 @@ public class User : IdentityUser, IBaseEntity
     public override string Id { get; set; } = Guid.NewGuid().ToString();
     public string FullName { get; set; }
     public string? AvatarUrl { get; set; }
-    public string Role { get; set; } = Constants.PLAYER;
+    public string Role { get; set; }
     [Column(TypeName = "jsonb")]
-    public ProfileLinked ProfileLinked { get; set; }
+    public ProfileLinked? ProfileLinked { get; set; }
     
     public bool IsBlocked { get; set; }
     public DateTime? BlockedDate { get; set; }

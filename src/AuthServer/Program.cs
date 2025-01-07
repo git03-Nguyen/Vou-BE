@@ -21,6 +21,7 @@ public class Program
 
         // Add services to the container.
         builder.Services
+            .ConfigureCustomOptions(builder.Configuration)
             .ConfigureDbContext(builder.Configuration)
             .ConfigureIdentityServer(builder.Configuration)
             .ConfigureAuthentication(builder.Configuration)

@@ -4,11 +4,11 @@ using AuthServer.Common;
 using AuthServer.Data.Models;
 using AuthServer.DTOs;
 using IdentityModel;
-using IdentityServer4.Models;
-using IdentityServer4.Services;
-using IdentityServer4.Validation;
+using IdentityServer4;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
+using Shared.Options;
 using Shared.Response;
 
 namespace AuthServer.Features.Commands.LoginForUser;
@@ -17,14 +17,14 @@ public class LoginForUserHandler : IRequestHandler<LoginForUserCommand, BaseResp
 {
     private readonly ILogger<LoginForUserHandler> _logger;
     private readonly UserManager<User> _userManager;
-    private readonly ITokenService _tokenService;
-    private readonly IUserClaimsPrincipalFactory<User> _claimsFactory;
-    public LoginForUserHandler(ILogger<LoginForUserHandler> logger, UserManager<User> userManager, ITokenService tokenService, IUserClaimsPrincipalFactory<User> claimsFactory)
+    private readonly IdentityServerTools _identityServerTools;
+    private readonly AuthenticationOptions _authenticationOptions;
+    public LoginForUserHandler(ILogger<LoginForUserHandler> logger, UserManager<User> userManager, IdentityServerTools identityServerTools, IOptions<AuthenticationOptions> authenticationOptions)
     {
         _logger = logger;
         _userManager = userManager;
-        _tokenService = tokenService;
-        _claimsFactory = claimsFactory;
+        _identityServerTools = identityServerTools;
+        _authenticationOptions = authenticationOptions.Value;
     }
 
     public async Task<BaseResponse<LoginSuccessDto>> Handle(LoginForUserCommand request, CancellationToken cancellationToken)
@@ -83,29 +83,21 @@ public class LoginForUserHandler : IRequestHandler<LoginForUserCommand, BaseResp
             }
             
             // 6. Generate token
-            var principal = await _claimsFactory.CreateAsync(user);
-            var tokenDescriptor = new TokenCreationRequest
+            var claims = new List<Claim>
             {
-                Subject = principal,
-                ValidatedRequest = new ValidatedRequest
-                {
-                    ClientClaims =
-                    {
-                        new Claim(JwtClaimTypes.Id, user.Id),
-                        new Claim(JwtClaimTypes.Name, user.UserName ?? string.Empty),
-                        new Claim(JwtClaimTypes.Email, user.Email ?? string.Empty),
-                        new Claim(JwtClaimTypes.PhoneNumber, user.PhoneNumber ?? string.Empty),
-                        new Claim(JwtClaimTypes.Role, role),
-                    }
-                }
+                new(JwtClaimTypes.Id, user.Id),
+                new(JwtClaimTypes.Name, user.UserName ?? string.Empty),
+                new(JwtClaimTypes.Email, user.Email ?? string.Empty),
+                new(JwtClaimTypes.Role, user.Role)
             };
-            var accessToken = await _tokenService.CreateAccessTokenAsync(tokenDescriptor);
-            var tokenResult = await _tokenService.CreateSecurityTokenAsync(accessToken);
-            
+
+            var issuer = _authenticationOptions.Authority;
+            var tokenLifeTime = _authenticationOptions.TokenLifeTime;
+            var token = await _identityServerTools.IssueJwtAsync(tokenLifeTime, issuer, claims);
             var responseData = new LoginSuccessDto
             {
-                AccessToken = tokenResult,
-                LifeTime = accessToken.Lifetime
+                AccessToken = token,
+                LifeTime = tokenLifeTime
             };
             response.ToSuccessResponse(responseData);
         }

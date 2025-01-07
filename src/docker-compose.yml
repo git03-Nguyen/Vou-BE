@@ -1,3 +1,4 @@
+name: "vou-be"
 services:
   
   #############################
@@ -22,7 +23,7 @@ services:
   #############################
   ######### DATABASE ##########
   #############################
-  authdb:
+  voudb:
     image: postgres
     
     
@@ -43,7 +44,7 @@ services:
   
   
 volumes:
-  postgres_auth_data:
+  db-data:
   elasticsearch-data:
     driver: local
   kibana-data:
