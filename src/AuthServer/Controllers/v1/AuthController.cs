@@ -1,9 +1,7 @@
 using Asp.Versioning;
-using AuthServer.Features.Commands.ChangePassword;
 using AuthServer.Features.Commands.LoginForUser;
 using AuthServer.Features.Commands.RegisterForUser;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthServer.Controllers.v1;
@@ -28,14 +26,6 @@ public class AuthController : ControllerBase
     
     [HttpPost("Login")]
     public async Task<IActionResult> Login([FromBody] LoginForUserCommand command, CancellationToken cancellationToken)
-    {
-        var response = await _mediator.Send(command, cancellationToken);
-        return response.ToObjectResult();
-    }
-    
-    [Authorize]
-    [HttpPost("ChangePassword")]
-    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand command, CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(command, cancellationToken);
         return response.ToObjectResult();
