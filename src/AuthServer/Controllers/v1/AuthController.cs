@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using AuthServer.Features.Commands.LoginForUser;
+using AuthServer.Features.Commands.RegisterForPlayer;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,23 +17,17 @@ public class AuthController : ControllerBase
         _mediator = mediator;
     }
 
-    #region Authentication
-
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterCommand command)
+    public async Task<IActionResult> Register([FromBody] RegisterForPlayerCommand command, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(command);
-        return Ok(result);
+        var response = await _mediator.Send(command, cancellationToken);
+        return response.ToObjectResult();
     }
     
     [HttpPost("Login")]
     public async Task<IActionResult> Login([FromBody] LoginForUserCommand command, CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(command, cancellationToken);
-        return Ok(result);
+        var response = await _mediator.Send(command, cancellationToken);
+        return response.ToObjectResult();
     }
-
-    #endregion
-    
-    
 }

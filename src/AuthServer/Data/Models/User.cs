@@ -10,11 +10,12 @@ public class User : IdentityUser, IBaseEntity
     public override string Id { get; set; } = Guid.NewGuid().ToString();
     public string FullName { get; set; }
     public string? AvatarUrl { get; set; }
-    
     public string Role { get; set; } = Constants.PLAYER;
-    
     [Column(TypeName = "jsonb")]
     public ProfileLinked ProfileLinked { get; set; }
+    
+    public bool IsBlocked { get; set; }
+    public DateTime? BlockedDate { get; set; }
     
     public bool IsDeleted { get; set; }
     public DateTime? CreatedDate { get; set; } = DateTime.Now;

@@ -45,6 +45,12 @@ public class LoginForUserHandler : IRequestHandler<LoginForUserCommand, BaseResp
                 response.ToUnauthorizedResponse();
                 return response;
             }
+
+            if (user.IsBlocked)
+            {
+                response.ToForbiddenResponse("User is blocked");
+                return response;
+            }
                 
             // 2. Check password is valid
             var isPasswordValid = await _userManager.CheckPasswordAsync(user, request.Password);

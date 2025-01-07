@@ -11,15 +11,15 @@ public static class AuthDbContextSeeds
         builder.Entity<IdentityRole>().HasData(
             new IdentityRole
             {
-                Id = "c32ba259-6094-474b-a730-60b8aae724e2", Name = "Admin", NormalizedName = Common.Constants.ADMIN
+                Id = "c32ba259-6094-474b-a730-60b8aae724e2", Name = Common.Constants.ADMIN, NormalizedName = Common.Constants.ADMIN
             },
             new IdentityRole
             {
-                Id = "d999706f-5829-4be8-bc51-05383533dfb3", Name = "CounterPart", NormalizedName = Common.Constants.COUNTERPART
+                Id = "d999706f-5829-4be8-bc51-05383533dfb3", Name = Common.Constants.COUNTERPART, NormalizedName = Common.Constants.COUNTERPART
             },
             new IdentityRole
             {
-                Id = "eb161112-0780-4099-94cc-c89a78257aff", Name = "Player", NormalizedName = Common.Constants.PLAYER
+                Id = "eb161112-0780-4099-94cc-c89a78257aff", Name = Common.Constants.PLAYER, NormalizedName = Common.Constants.PLAYER
             }
         );
 

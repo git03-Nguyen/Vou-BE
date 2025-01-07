@@ -16,4 +16,6 @@ public static class Constants
     public const string ADMIN = "ADMIN";
     public const string COUNTERPART = "COUNTERPART";
     public const string PLAYER = "PLAYER";
+    
+    public const string DefaultAvatarUrl = "https://placehold.co/600x400?text=Hello+World";
 }

@@ -26,6 +26,7 @@ public class Program
             .ConfigureAuthentication(builder.Configuration)
             .ConfigureApiVersioning()
             .ConfigureControllers()
+            .ConfigureCustomHttpContext()
             .ConfigureDIServices(builder.Configuration)
             .ConfigureMediatRService(typeof(Program).Assembly)
             .ConfigureFluentValidation(Assembly.GetExecutingAssembly())

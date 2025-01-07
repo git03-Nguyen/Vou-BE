@@ -4,7 +4,7 @@ using Shared.Response;
 
 namespace AuthServer.Features.Commands.RegisterForPlayer;
 
-public class RegisterForPlayerCommand : IRequest<BaseResponse<UserProfileDto>>
+public class RegisterForPlayerCommand : IRequest<BaseResponse<UserShortDto>>
 {
     public string UserName { get; set; }
     public string Email { get; set; }
