@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using AuthServer.Common;
+using AuthServer.Features.Commands.ChangePassword;
 using AuthServer.Features.Queries.GetAllUsers;
 using AuthServer.Features.Queries.GetOwnProfile;
 using MediatR;
@@ -44,6 +45,14 @@ public class UserController : ControllerBase
     {
         var query = new GetOwnProfileQuery();
         var response = await _mediator.Send(query, cancellationToken);
+        return response.ToObjectResult();
+    }
+    
+    [Authorize]
+    [HttpPost("ChangePassword")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand command, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(command, cancellationToken);
         return response.ToObjectResult();
     }
     
