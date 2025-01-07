@@ -1,0 +1,107 @@
+{
+  "Routes": [
+    // HealthCheck - public
+    {
+      "SwaggerKey": "authserver",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5100
+        }
+      ],
+      "DownstreamPathTemplate": "/",
+      "UpstreamPathTemplate": "/AuthServer",
+      "UpstreamHttpMethod": [ "GET" ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "15s",
+        "PeriodTimespan": 1,
+        "Limit": 100
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": null,
+        "AllowedScopes": []
+      }
+    },
+    //  Role - protected with AuthN and AuthZ[Admin]
+    {
+      "SwaggerKey": "authserver",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authserver",
+          "Port": 5100
+        }
+      ],
+      "DownstreamPathTemplate": "/api/v1/Role/{everything}",
+      "UpstreamPathTemplate": "/AuthServer/Role/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "15s",
+        "PeriodTimespan": 1,
+        "Limit": 100
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "IdentityApiKey",
+        "AllowedScopes": [
+          "service_scope"
+        ]
+      },
+      "RouteClaimsRequirement": {
+        "role": "Admin"
+      }
+    },
+    // User - protected with AuthN
+    {
+      "SwaggerKey": "authserver",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5100
+        }
+      ],
+      "DownstreamPathTemplate": "/api/v1/User/{everything}",
+      "UpstreamPathTemplate": "/AuthServer/User/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "15s",
+        "PeriodTimespan": 1,
+        "Limit": 100
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "IdentityApiKey",
+        "AllowedScopes": [
+          "service_scope"
+        ]
+      }
+    },
+    // Auth - for Login and SignUp, public
+    {
+      "SwaggerKey": "authserver",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 5100
+        }
+      ],
+      "DownstreamPathTemplate": "/api/v1/Auth/{everything}",
+      "UpstreamPathTemplate": "/AuthService/Auth/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "15s",
+        "PeriodTimespan": 1,
+        "Limit": 50
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": null,
+        "AllowedScopes": []
+      }
+    }
+  ]
+}

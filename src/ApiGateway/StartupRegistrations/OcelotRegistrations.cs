@@ -27,19 +27,7 @@ public static class OcelotRegistrations
         return services;
     }
 
-    public static IServiceCollection AddSwaggerService(this IServiceCollection services,
-        IWebHostEnvironment environment)
-    {
-        if (!environment.IsProduction())
-        {
-            services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen();
-        }
-
-        return services;
-    }
-
-    public static IApplicationBuilder UseOcelotService(this IApplicationBuilder app, IWebHostEnvironment environment)
+    public static IApplicationBuilder UseOcelot(this IApplicationBuilder app, IWebHostEnvironment environment)
     {
         if (!environment.IsProduction())
         {
@@ -48,7 +36,6 @@ public static class OcelotRegistrations
         }
 
         app.UseOcelot();
-
         return app;
     }
 }

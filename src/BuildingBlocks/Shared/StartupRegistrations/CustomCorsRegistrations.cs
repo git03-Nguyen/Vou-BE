@@ -6,14 +6,12 @@ namespace Shared.StartupRegistrations;
 
 public static class CustomCorsRegistrations
 {
-    private const string CorsPolicyName = "CorsPolicy";
-    
     public static IServiceCollection ConfigureCors(this IServiceCollection services, IConfiguration configuration)
     {
-        var allowedOrigin = configuration["AllowedOrigin"] ?? "*";
+        var allowedOrigin = configuration["AllowedOrigin"] ?? "http://localhost:3000";
         services.AddCors(options =>
         {
-            options.AddPolicy(CorsPolicyName, builder =>
+            options.AddPolicy(Constants.CommonConstants.CorsPolicyName, builder =>
             {
                 builder
                     .WithOrigins(allowedOrigin)
@@ -23,11 +21,5 @@ public static class CustomCorsRegistrations
             });
         });
         return services;
-    }
-
-    public static IApplicationBuilder UseCors(this IApplicationBuilder app)
-    {
-        app.UseCors(CorsPolicyName);
-        return app;
     }
 }

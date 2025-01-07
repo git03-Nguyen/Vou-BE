@@ -13,4 +13,6 @@ public static class CommonConstants
     
     public const string GOOGLE_AUTH = "https://accounts.google.com";
     public static readonly string DefaultAvatar = "https://storageaccwct.blob.core.windows.net/wct-blobstorage/UserDefaultAvatar.png";
+    
+    public const string CorsPolicyName = "CorsPolicy"; 
 }
