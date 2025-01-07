@@ -1,4 +1,3 @@
-using System.Reflection;
 using AuthServer.StartupRegistrations;
 using Shared.StartupRegistrations;
 
@@ -30,7 +29,7 @@ public class Program
             .ConfigureCustomHttpContext()
             .ConfigureDIServices(builder.Configuration)
             .ConfigureMediatRService(typeof(Program).Assembly)
-            .ConfigureFluentValidation(Assembly.GetExecutingAssembly())
+            .ConfigureFluentValidation(typeof(Program).Assembly)
             .ConfigureSwagger(builder.Environment)
             .ConfigureExceptionHandler();
 

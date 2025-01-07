@@ -1,7 +1,9 @@
 using Asp.Versioning;
+using AuthServer.Features.Commands.ChangePassword;
 using AuthServer.Features.Commands.LoginForUser;
-using AuthServer.Features.Commands.RegisterForPlayer;
+using AuthServer.Features.Commands.RegisterForUser;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthServer.Controllers.v1;
@@ -18,7 +20,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("Register")]
-    public async Task<IActionResult> Register([FromBody] RegisterForPlayerCommand command, CancellationToken cancellationToken)
+    public async Task<IActionResult> Register([FromBody] RegisterForUserCommand command, CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(command, cancellationToken);
         return response.ToObjectResult();
@@ -30,4 +32,14 @@ public class AuthController : ControllerBase
         var response = await _mediator.Send(command, cancellationToken);
         return response.ToObjectResult();
     }
+    
+    [Authorize]
+    [HttpPost("ChangePassword")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand command, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(command, cancellationToken);
+        return response.ToObjectResult();
+    }
+    
+    // ForgotPassword, ResetPassword, ConfirmEmail, etc.
 }

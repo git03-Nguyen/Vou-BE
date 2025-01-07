@@ -7,33 +7,36 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Shared.Response;
 
-namespace AuthServer.Features.Commands.RegisterForPlayer;
+namespace AuthServer.Features.Commands.RegisterForUser;
 
-public class RegisterForPlayerHandler : IRequestHandler<RegisterForPlayerCommand, BaseResponse<UserShortDto>>
+public class RegisterForUserHandler : IRequestHandler<RegisterForUserCommand, BaseResponse<UserShortDto>>
 {
-    private readonly ILogger<RegisterForPlayerHandler> _logger;
+    private readonly ILogger<RegisterForUserHandler> _logger;
     private readonly UserManager<User> _userManager;
-    public RegisterForPlayerHandler(ILogger<RegisterForPlayerHandler> logger, UserManager<User> userManager)
+    public RegisterForUserHandler(ILogger<RegisterForUserHandler> logger, UserManager<User> userManager)
     {
         _logger = logger;
         _userManager = userManager;
     }
 
-    public async Task<BaseResponse<UserShortDto>> Handle(RegisterForPlayerCommand request, CancellationToken cancellationToken)
+    public async Task<BaseResponse<UserShortDto>> Handle(RegisterForUserCommand request, CancellationToken cancellationToken)
     {
         var response = new BaseResponse<UserShortDto>();
-        var methodName = $"{nameof(RegisterForPlayerHandler)}.{nameof(Handle)} Request = {JsonSerializer.Serialize(request)} =>";
+        var methodName = $"{nameof(RegisterForUserHandler)}.{nameof(Handle)} Request = {JsonSerializer.Serialize(request)} =>";
         _logger.LogInformation(methodName);
 
         try
         {
             // 1. Check if exists
+            var email = request.Email.Trim();
+            var userName = request.UserName.Trim();
+            var phoneNumber = request.PhoneNumber.Trim();
             var existedUser = await _userManager.Users
                 .Where(u => 
                     !u.IsDeleted 
-                    && (string.Equals(u.NormalizedEmail, request.Email.ToUpper(), StringComparison.Ordinal) 
-                        || string.Equals(u.NormalizedUserName, request.UserName.ToUpper(), StringComparison.Ordinal) 
-                        || string.Equals(u.PhoneNumber, request.PhoneNumber, StringComparison.Ordinal)))
+                    && (u.NormalizedEmail == email.ToUpper()
+                        || u.NormalizedUserName == userName.ToUpper() 
+                        || u.PhoneNumber == phoneNumber))
                 .AsNoTracking()
                 .FirstOrDefaultAsync(cancellationToken); 
             if (existedUser is not null)
@@ -50,7 +53,7 @@ public class RegisterForPlayerHandler : IRequestHandler<RegisterForPlayerCommand
                 UserName = request.UserName,
                 FullName = request.FullName,
                 PhoneNumber = request.PhoneNumber,
-                Role = Constants.PLAYER
+                Role = request.Role,
             };
             
             // 3. Add user
@@ -61,7 +64,7 @@ public class RegisterForPlayerHandler : IRequestHandler<RegisterForPlayerCommand
                 response.ToBadRequestResponse("Failed to create user");
                 return response;
             }
-            var resultRole = await _userManager.AddToRoleAsync(user, Constants.PLAYER);
+            var resultRole = await _userManager.AddToRoleAsync(user, request.Role);
             if (!resultRole.Succeeded)
             {
                 _logger.LogError($"{methodName} Failed to add role to user: {JsonSerializer.Serialize(resultRole.Errors)}");

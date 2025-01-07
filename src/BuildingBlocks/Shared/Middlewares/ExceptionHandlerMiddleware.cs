@@ -37,7 +37,9 @@ public class ExceptionHandlerMiddleware : IExceptionHandler
         {
             case ValidationException:
                 httpContext.Response.StatusCode = HttpStatusCode.BadRequest.ToInt();
-                response.Message = exception.Message;
+                response.Status = httpContext.Response.StatusCode;
+                response.Message = "Validation failed";
+                response.Data = (exception as ValidationException)?.ValidationErrors;
                 break;
             case NotSupportedException:
                 httpContext.Response.StatusCode = HttpStatusCode.NotImplemented.ToInt();

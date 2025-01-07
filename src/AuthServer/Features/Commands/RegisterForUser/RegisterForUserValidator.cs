@@ -1,11 +1,11 @@
 using AuthServer.Common;
 using FluentValidation;
 
-namespace AuthServer.Features.Commands.RegisterForPlayer;
+namespace AuthServer.Features.Commands.RegisterForUser;
 
-public class RegisterForPlayerValidator : AbstractValidator<RegisterForPlayerCommand>
+public class RegisterForUserValidator : AbstractValidator<RegisterForUserCommand>
 {
-    public RegisterForPlayerValidator()
+    public RegisterForUserValidator()
     {
         RuleFor(x => x.UserName)
             .Cascade(CascadeMode.Stop)
@@ -46,13 +46,18 @@ public class RegisterForPlayerValidator : AbstractValidator<RegisterForPlayerCom
             .WithMessage("FullName is required")
             .Matches(Regexes.VALID_FULLNAME)
             .WithMessage("FullName is invalid");
+        
+        RuleFor(x => x.Role)
+            .NotEmpty()
+            .Must(x => string.Equals(x, Constants.PLAYER) || string.Equals(x, Constants.COUNTERPART))
+            .WithMessage("Role is invalid");
 
-        When(x => x.AvatarImage is not null, () =>
-        {
-            RuleFor(x => x.AvatarImage!.Length)
-                .Cascade(CascadeMode.Stop)
-                .LessThanOrEqualTo(1024 * 1024)
-                .WithMessage("AvatarImage is too large");
-        });
+        // When(x => x.AvatarImage is not null, () =>
+        // {
+        //     RuleFor(x => x.AvatarImage!.Length)
+        //         .Cascade(CascadeMode.Stop)
+        //         .LessThanOrEqualTo(1024 * 1024)
+        //         .WithMessage("AvatarImage is too large");
+        // });
     }
 }

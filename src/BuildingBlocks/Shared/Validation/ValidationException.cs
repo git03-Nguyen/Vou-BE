@@ -2,11 +2,10 @@ namespace Shared.Validation;
 
 public class ValidationException : Exception
 {
-    public ValidationBaseResponse ValidationBaseResponse { get; }
-    
-    public ValidationException(ValidationBaseResponse validationBaseResponse) : base(validationBaseResponse.ToString())
+    public List<ValidationError> ValidationErrors { get; }
+    public ValidationException(List<ValidationError> validationErrors) : base(validationErrors.ToString())
     {
-        ValidationBaseResponse = validationBaseResponse;
+        ValidationErrors = validationErrors;
     }
     
 }

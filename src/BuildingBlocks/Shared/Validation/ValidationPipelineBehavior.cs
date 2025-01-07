@@ -28,11 +28,7 @@ namespace Shared.Validation
             }
 
             if (validationErrors.Count == 0) return await next();
-            var validationResultModel = new ValidationBaseResponse
-            {
-                Data = validationErrors
-            };
-            throw new ValidationException(validationResultModel);
+            throw new ValidationException(validationErrors);
         }
     }
 }

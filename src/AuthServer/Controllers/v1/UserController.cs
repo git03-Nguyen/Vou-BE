@@ -30,6 +30,9 @@ public class UserController : ControllerBase
         return response.ToObjectResult();
     }
     
+    // CreateUser - role
+    
+    // BlockUser
 
     #endregion
 
@@ -43,6 +46,10 @@ public class UserController : ControllerBase
         var response = await _mediator.Send(query, cancellationToken);
         return response.ToObjectResult();
     }
+    
+    // Update own profile
+    
+    // Delete own account
 
     #endregion
     
