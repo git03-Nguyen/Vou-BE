@@ -6,4 +6,5 @@ public class AuthenticationOptions
     public string Authority { get; init; } = "http://localhost:5001";
     public int TokenLifeTime { get; init; } = 30000;
     public string Secret { get; init; } = "my_auth_server_secret";
+    public string ProviderKey { get; init; } = "provider_key";
 }
