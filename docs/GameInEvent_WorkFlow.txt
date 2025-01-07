@@ -1,0 +1,31 @@
+I. Tóm tắt thông tin:
+1. Với Mỗi sự kiện (Event):
+* Liên quan đến Game có:
+ - Một/một số puzzle (là image hoàn chỉnh của 9 mảnh ghép).
+ - Một/một số Game diễn ra trong sự kiện.
+* Liên quan đến Voucher có:
+- Thông tin các voucher (mô tả, hình ảnh, loại voucher, số lượng, ngày hết hạn) được tung ra trong sự kiện.
+
+2. Với mỗi game trong một sự kiện, người chơi có thể:
+- Thu thập các mảnh ghép (piece) để hoàn thiện puzzle và đổi được voucher.
+- Chia sẻ piece cho người khác thông qua url.
+- Người chơi cũng có thể nhận thêm lượt từ người chơi khác hoặc chia sẻ bài viết lên facebook.
+
+3. Với mỗi người chơi có:
+- Thông tin các piece người chơi đã thu thập được khi chơi game.
+- Thông tin các voucher mà người chơi đổi được sau khi thu thập đủ các piece của puzzle.
+
+II. Workflow:
+1. Thu thập  mảnh ghép (piece):
+- Người chơi tham gia trò chơi để thu thập các mảnh ghép.
+- Sưu tập đủ các peice phù hợp trong một puzzle sẽ đổi được voucher
+2. Chia sẻ mảnh ghép:
+- Người chơi có thể chia sẻ mảnh ghép với người khác thông qua URL
+3. Nhận thêm lượt chơi:
+- Thông qua URL
+- Chia sẻ bài viết thông tin sự kiện lên facebook cá nhân
+
+III. Tổng quan:
+1. Chọn sự kiện để tham gia -> Chọn trò chơi -> Chơi -> Thu thập mảnh ghép -> hoàn thiện puzzle
+-> Đổi voucher -> Sử dụng voucher online hoặc offline (qua QR Code)
+2. Chia sẻ bài viết để tăng lượt chơi hoặc nhận thêm lượt từ người khác

@@ -1,0 +1,224 @@
+============================================
+AUDIT FIELDS (all table has these colums)
+============================================
+Audit fields:
++ CreatedDate: DateTime
++ ModifiedDate: DateTime
++ DeletedDate: DateTime
++ CreatedBy: string
+-----------------
+Soft-delete:
++ IsDeleted: boolean
+-----------------
+-----------------
+
+
+
+============================================
+AUTHENTICATION => ApiGateway
+============================================
+- Client
++ Id: Guid
++ Name: string
+
+
+
+
+============================================
+AUTHENTICATION | AUTHORIZATION | USER PROFILE => AuthServer
+============================================
+- Role
++ Id: Guid
++ Name: string
+-----------------------------
+- User (including identity + profile)
++ Id: Guid
++ FullName: string
++ AvatarUrl: string
++ Username: string
++ Email: string?
++ Phone: string?
++ RoleId: Guid
++ PasswordHash: string
++ IsActive: boolean
+-----------------------------
+- CounterPart
++ Id: Guid
++ Name: string
++ UserId: Guid
++ Field: string
+---
+- Location
++ Id: Guid
++ CounterPartyId: Guid
++ Address: string
++ Longitude: double
++ Latitude: double
+-----------------------------
+- Player
++ Id: Guid
++ UserId: Guid
++ Birthday: DateTime
++ Gender: GenderEnum // ( 0, 1, 2)
++ FacebookUrl: string
++ DeviceToken: string // For push notification to Android?
+-----------------------------
+- FavoriteEvent ** Cần tìm hiểu thêm (keyword: OneSignal, CorePush with Amazon SNS/FireBase/Azure Notification Hub)
++ Id: Guid
++ EventId: Guid
++ UserId: Guid
++ IsAlert: boolean
+=> Implement background job to trigger at 0h00 every day
+
+
+
+============================================
+GAME SERVICE
+============================================
+- Game:
++ Id: Guid
++ Name: string
++ Author: string
++ ImageUrl: string
++ Type: string
++ Description: string
++ Instruction: string
+-----------------------------
+- GameSetupInEvent:
++ Id: Guid
++ GameInEventId: Guid
++ SetupData: Bson
+-----------------------------
+- PlayerPlayGame
++ Id: Guid
++ GameInEventId: Guid
++ PlayerId: Guid
++ PlayProgress: Bson
+============================================
+EVENT SERVICE
+============================================
+- Event
++ Id: Guid
++ CounterPartId: Guid
++ Name: string
++ Description: string
++ ImageUrl: string
++ StartDate: DateTime
++ EndDate: DateTime
++ Status: EventStatusEnum // PENDING | APPROVED | IN PROGRESS | FINISHED | CANCELED
++ PuzzleRates: int[9]
++ PuzzleImageUrls: string[9]
++ GoodLuckRate: int
++ IsTradePuzzleAllowed: boolean
+---------------------------
+- PuzzleBelongsToPlayer:
++ Id: Guid
++ EventId: Guid
++ GameId: Guid
++ PlayerId: Guid
++ PuzzlePosition: int
+---------------------------
+- VoucherTypeInEvent:
++ Id: Guid
++ EventId: Guid
++ ImageUrl: string
++ Value: long
++ Description: string
++ ExpirationDate: DateTime
++ --RemainingQuantity--: int *** => Nên dùng Redis Lock? Hay EventSourcing? Hay chỉ DB?
+---------------------------
+- VoucherBelongsToPlayer:
++ Id: Guid
++ VoucherTypeId: Guid
++ PlayerId: Guid
++ IsUsed: boolean
+---------------------------
+- GameInEvent
++ Id: Guid
++ EventId: Guid
++ GameId: Guid
+---------------------------
+- PlayerTurnInGameInEvent
++ Id: Guid
++ GameInEventId: Guid
++ PlayerId: Guid
++ TurnLeft: int = 10
+---------------------------
+- PuzzleTransferAudit:
++ Id: Guid
++ FromPlayerId: Guid
++ PuzzleId: Guid
+---------------------------
+- TurnIncreaseAudit:
++ Id: Guid
++ PlayerTurnInGameInEventId: Guid
++ Type: TurnIncreaseEnum // FRIENDLY_REQUEST | FACEBOOK_SHARE
++ PostUrl: string?
++ FromPlayer: Guid?
+
+
+============================================
+PAYMENT SERVICE
+============================================
+- PaymentTransaction **Có thể làm hoặc không
++ Id: Guid
++ TransactionId: string
++ CounterPartId: Guid
++ Description: string
++ Amount: double
++ Fee: double
+
+============================================
+NOTIFICATION SERVICE
+============================================
+- Consume OTP Verification From AuthServer
+- Consume Push-notification for Favorite Events from BackgrounJobs
+
+============================================
+BACKGROUND SERVICE JOB
+============================================
+- Trigger 0h00 everyday to send push-notif for Favorite Events
+
+============================================
+OTHERS
+============================================
+Maybe there are some tables about SystemSetting (Fee to create event, max playing turn to request/share FB per day,
+  default playing turn, Paypal account to receive money
+
+=============================================================================
+=============================================================================
+Expected response structure from server (via REST API)
+=============================================================================
+=============================================================================
+- If error:
+Status: not 200.
+Content body:
+{
+  "statusCode": not 200, // the same as status of HTTP
+  "errorMessage": "Some error message", // error message in the specified locale (default is en-US) (locale can be set in request header "Accept-Language")
+  "errorMessageCode": "ABC-001" // error code for the message above - for easy locating the issue
+  "data": null
+}
+
+- If successful:
+Status: 200.
+Content body:
+{
+  "statusCode": 200,
+  "errorMessage": null,
+  "errorMessageCode": null,
+  "data": not null // will be the object data should be response
+}
+
+- Moreover, for some APIs requiring pagination, 
+the "data" will be an array of objects, and the response will have extra fields:
+  + If limit/offset-based: extra fields are "totalPage"
+  + If cursor-based: extra fields are "nextCursor"
+
+
+
+
+
+
+
+

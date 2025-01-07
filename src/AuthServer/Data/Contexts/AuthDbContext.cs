@@ -1,29 +1,32 @@
-using AuthServer.Data.Configurations;
-using AuthServer.Data.Entities;
+using AuthServer.Data.Models;
+using AuthServer.Data.Seeds;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Shared.Options;
 
 namespace AuthServer.Data.Contexts;
 
 public class AuthDbContext : IdentityDbContext<User>
 {
-    private const string DefaultSchema = "auth";
-    public AuthDbContext() { }
-    public AuthDbContext(DbContextOptions<AuthDbContext> options) : base(options) { }
-
-    public DbSet<Client> Client { get; set; }
-    public DbSet<ClientGrantType> ClientGrantTypes { get; set; }
-    public DbSet<ClientSecret> ClientSecrets { get; set; }
-    public DbSet<ClientScope> ClientScopes { get; set; }
-    public DbSet<ApiResource> ApiResources { get; set; }
-    public DbSet<ApiResourceScope> ApiResourceScopes { get; set; }
-    public DbSet<User> User { get; set; }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    private readonly DatabaseOptions _databaseOptions;
+    public AuthDbContext(DbContextOptions<AuthDbContext> options, IOptions<DatabaseOptions> databaseOptions) : base(options)
     {
-        modelBuilder.HasDefaultSchema(DefaultSchema);
-        base.OnModelCreating(modelBuilder);
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AuthDbContext).Assembly);
-        modelBuilder.ApplyConfiguration(new UserConfiguration());
+        _databaseOptions = databaseOptions.Value;
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+        AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
+    }
+    
+    protected override void OnConfiguring(DbContextOptionsBuilder builder)
+    {
+        base.OnConfiguring(builder);
+        builder.UseNpgsql(_databaseOptions.ConnectionString);
+    }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+        builder.HasDefaultSchema(_databaseOptions.DefaultSchema);
+        AuthDbContextSeeds.Seed(builder);
     }
 }
