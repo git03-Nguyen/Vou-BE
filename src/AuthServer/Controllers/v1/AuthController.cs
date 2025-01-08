@@ -1,5 +1,5 @@
 using Asp.Versioning;
-using AuthServer.Features.Commands.LoginForUser;
+using AuthServer.Features.Commands.BlockUser;
 using AuthServer.Features.Commands.RegisterForUser;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

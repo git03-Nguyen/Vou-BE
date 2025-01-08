@@ -4,8 +4,7 @@ using Shared.Response;
 
 namespace AuthServer.Features.Commands.BlockUser;
 
-public class LoginForUserCommand : IRequest<BaseResponse<LoginSuccessDto>>
+public class BlockUserCommand : IRequest<BaseResponse<UserShortDto>>
 {
     public string EmailOrUserName { get; set; }
-    public string Password { get; set; }
 }
