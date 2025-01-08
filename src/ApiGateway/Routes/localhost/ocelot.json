@@ -94,92 +94,6 @@
       "DownstreamHeaderTransform": {},
       "DownstreamHostAndPorts": [
         {
-          "Host": "authserver",
-          "Port": 5100
-        }
-      ],
-      "DownstreamHttpMethod": null,
-      "DownstreamHttpVersion": null,
-      "DownstreamHttpVersionPolicy": null,
-      "DownstreamPathTemplate": "/api/v1/Role/{everything}",
-      "DownstreamScheme": null,
-      "FileCacheOptions": {
-        "TtlSeconds": null,
-        "Region": null,
-        "Header": null,
-        "EnableContentHashing": null
-      },
-      "HttpHandlerOptions": {
-        "AllowAutoRedirect": false,
-        "MaxConnectionsPerServer": 2147483647,
-        "UseCookieContainer": false,
-        "UseProxy": true,
-        "UseTracing": false,
-        "PooledConnectionLifetimeSeconds": null
-      },
-      "Key": null,
-      "LoadBalancerOptions": {
-        "Expiry": 2147483647,
-        "Key": "",
-        "Type": ""
-      },
-      "Metadata": {},
-      "Priority": 1,
-      "QoSOptions": {
-        "DurationOfBreak": 1,
-        "ExceptionsAllowedBeforeBreaking": 0,
-        "TimeoutValue": 0
-      },
-      "RateLimitOptions": {
-        "ClientWhitelist": [],
-        "EnableRateLimiting": true,
-        "Period": "15s",
-        "PeriodTimespan": 1.0,
-        "Limit": 100
-      },
-      "RequestIdKey": null,
-      "RouteClaimsRequirement": {
-        "role": "Admin"
-      },
-      "RouteIsCaseSensitive": false,
-      "SecurityOptions": {
-        "IPAllowedList": [],
-        "IPBlockedList": [],
-        "ExcludeAllowedFromBlocked": false
-      },
-      "ServiceName": null,
-      "ServiceNamespace": null,
-      "Timeout": 0,
-      "UpstreamHeaderTransform": {},
-      "UpstreamHost": null,
-      "UpstreamHttpMethod": [
-        "GET",
-        "POST",
-        "PUT",
-        "DELETE",
-        "PATCH",
-        "OPTIONS"
-      ],
-      "UpstreamPathTemplate": "/AuthServer/Role/{everything}",
-      "UpstreamHeaderTemplates": {}
-    },
-    {
-      "AddClaimsToRequest": {},
-      "AddHeadersToRequest": {},
-      "AddQueriesToRequest": {},
-      "AuthenticationOptions": {
-        "AllowedScopes": [
-          "service_scope"
-        ],
-        "AuthenticationProviderKey": "IdentityApiKey",
-        "AuthenticationProviderKeys": []
-      },
-      "ChangeDownstreamPathTemplate": {},
-      "DangerousAcceptAnyServerCertificateValidator": false,
-      "DelegatingHandlers": [],
-      "DownstreamHeaderTransform": {},
-      "DownstreamHostAndPorts": [
-        {
           "Host": "localhost",
           "Port": 5100
         }
@@ -187,7 +101,7 @@
       "DownstreamHttpMethod": null,
       "DownstreamHttpVersion": null,
       "DownstreamHttpVersionPolicy": null,
-      "DownstreamPathTemplate": "/api/v1/User/{everything}",
+      "DownstreamPathTemplate": "/api/1/User/{everything}",
       "DownstreamScheme": null,
       "FileCacheOptions": {
         "TtlSeconds": null,
@@ -244,7 +158,7 @@
         "PATCH",
         "OPTIONS"
       ],
-      "UpstreamPathTemplate": "/AuthServer/User/{everything}",
+      "UpstreamPathTemplate": "/AuthServer/api/1/User/{everything}",
       "UpstreamHeaderTemplates": {}
     },
     {
@@ -269,7 +183,7 @@
       "DownstreamHttpMethod": null,
       "DownstreamHttpVersion": null,
       "DownstreamHttpVersionPolicy": null,
-      "DownstreamPathTemplate": "/api/v1/Auth/{everything}",
+      "DownstreamPathTemplate": "/api/1/Auth/{everything}",
       "DownstreamScheme": null,
       "FileCacheOptions": {
         "TtlSeconds": null,
@@ -326,7 +240,7 @@
         "PATCH",
         "OPTIONS"
       ],
-      "UpstreamPathTemplate": "/AuthService/Auth/{everything}",
+      "UpstreamPathTemplate": "/AuthService/api/1/Auth/{everything}",
       "UpstreamHeaderTemplates": {}
     }
   ],

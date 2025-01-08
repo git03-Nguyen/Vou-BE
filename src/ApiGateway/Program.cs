@@ -10,6 +10,11 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Host.UseLogging();
+        builder.Configuration
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddEnvironmentVariables();
+        
         // Add services to the container.
         builder.Services
             .ConfigureAuthentication(builder.Configuration)

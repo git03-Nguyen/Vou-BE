@@ -24,35 +24,6 @@
         "AllowedScopes": []
       }
     },
-    //  Role - protected with AuthN and AuthZ[Admin]
-    {
-      "SwaggerKey": "authserver",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "authserver",
-          "Port": 5100
-        }
-      ],
-      "DownstreamPathTemplate": "/api/v1/Role/{everything}",
-      "UpstreamPathTemplate": "/AuthServer/Role/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
-      "RateLimitOptions": {
-        "ClientWhitelist": [],
-        "EnableRateLimiting": true,
-        "Period": "15s",
-        "PeriodTimespan": 1,
-        "Limit": 100
-      },
-      "AuthenticationOptions": {
-        "AuthenticationProviderKey": "IdentityApiKey",
-        "AllowedScopes": [
-          "service_scope"
-        ]
-      },
-      "RouteClaimsRequirement": {
-        "role": "Admin"
-      }
-    },
     // User - protected with AuthN
     {
       "SwaggerKey": "authserver",
@@ -62,8 +33,8 @@
           "Port": 5100
         }
       ],
-      "DownstreamPathTemplate": "/api/v1/User/{everything}",
-      "UpstreamPathTemplate": "/AuthServer/User/{everything}",
+      "DownstreamPathTemplate": "/api/1/User/{everything}",
+      "UpstreamPathTemplate": "/AuthServer/api/1/User/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
       "RateLimitOptions": {
         "ClientWhitelist": [],
@@ -88,8 +59,8 @@
           "Port": 5100
         }
       ],
-      "DownstreamPathTemplate": "/api/v1/Auth/{everything}",
-      "UpstreamPathTemplate": "/AuthService/Auth/{everything}",
+      "DownstreamPathTemplate": "/api/1/Auth/{everything}",
+      "UpstreamPathTemplate": "/AuthService/api/1/Auth/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
       "RateLimitOptions": {
         "ClientWhitelist": [],
