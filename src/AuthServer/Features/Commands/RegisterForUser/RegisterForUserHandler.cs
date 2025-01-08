@@ -8,8 +8,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Shared.Response;
 
-namespace AuthServer.Features.Commands.CreateUser;
-
 public class RegisterForUserHandler : IRequestHandler<RegisterForUserCommand, BaseResponse<UserShortDto>>
 {
     private readonly ILogger<RegisterForUserHandler> _logger;

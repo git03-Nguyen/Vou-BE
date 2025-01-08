@@ -3,7 +3,6 @@ using System.Text.Json;
 using AuthServer.Common;
 using AuthServer.Data.Models;
 using AuthServer.DTOs;
-using AuthServer.Features.Commands.BlockUser;
 using IdentityModel;
 using IdentityServer4;
 using MediatR;
