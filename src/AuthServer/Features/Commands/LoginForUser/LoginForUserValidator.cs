@@ -1,7 +1,7 @@
 using AuthServer.Common;
 using FluentValidation;
 
-namespace AuthServer.Features.Commands.BlockUser;
+namespace AuthServer.Features.Commands.LoginForUser;
 
 public class LoginForUserValidator : AbstractValidator<LoginForUserCommand>
 {

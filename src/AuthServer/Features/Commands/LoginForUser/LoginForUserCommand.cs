@@ -2,7 +2,7 @@ using AuthServer.DTOs;
 using MediatR;
 using Shared.Response;
 
-namespace AuthServer.Features.Commands.BlockUser;
+namespace AuthServer.Features.Commands.LoginForUser;
 
 public class LoginForUserCommand : IRequest<BaseResponse<LoginSuccessDto>>
 {
