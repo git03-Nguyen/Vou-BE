@@ -1,6 +1,8 @@
 using Asp.Versioning;
 using AuthServer.Common;
+using AuthServer.Features.Commands.BlockUser;
 using AuthServer.Features.Commands.ChangePassword;
+using AuthServer.Features.Commands.CreateUser;
 using AuthServer.Features.Queries.GetAllUsers;
 using AuthServer.Features.Queries.GetOwnProfile;
 using MediatR;
@@ -33,9 +35,21 @@ public class AdminController : ControllerBase
     }
     
     // CreateUser - role
-    
+    [Authorize(Roles = Constants.ADMIN)]
+    [HttpPost("CreateUser")]
+    public async Task<IActionResult> CreateUser([FromBody] CreateUserCommand command, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(command, cancellationToken);
+        return response.ToObjectResult();
+    }
     // BlockUser
-
+    [Authorize(Roles = Constants.ADMIN)]
+    [HttpPost("BlockUser")]
+    public async Task<IActionResult> BlockUser([FromBody] BlockUserCommand command, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(command, cancellationToken);
+        return response.ToObjectResult();
+    }
     #endregion
 
     #region Account owner section
