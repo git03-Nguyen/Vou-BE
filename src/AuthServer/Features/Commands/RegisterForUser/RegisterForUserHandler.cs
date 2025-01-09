@@ -2,11 +2,12 @@ using System.Text.Json;
 using AuthServer.Common;
 using AuthServer.Data.Models;
 using AuthServer.DTOs;
-using AuthServer.Features.Commands.RegisterForUser;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Shared.Response;
+
+namespace AuthServer.Features.Commands.RegisterForUser;
 
 public class RegisterForUserHandler : IRequestHandler<RegisterForUserCommand, BaseResponse<UserShortDto>>
 {
