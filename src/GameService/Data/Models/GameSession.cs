@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
-using Shared.Data;
+using Shared.Contracts;
 using Shared.Domain;
 
 namespace GameService.Data.Models;

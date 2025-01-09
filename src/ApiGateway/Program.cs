@@ -1,5 +1,4 @@
 using ApiGateway.StartupRegistrations;
-using Shared.Constants;
 using Shared.StartupRegistrations;
 
 namespace ApiGateway;
@@ -25,7 +24,7 @@ public class Program
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
-        app.UseCors(CommonConstants.CorsPolicyName);
+        app.UseCustomCors();
         app.UseAuthentication();
         app.UseWebSockets();
         app.UseOcelot(app.Environment);

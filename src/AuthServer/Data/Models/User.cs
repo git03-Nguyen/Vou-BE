@@ -20,4 +20,6 @@ public class User : IdentityUser, IBaseEntity
     public DateTime? ModifiedDate { get; set; } = DateTime.Now;
     public DateTime? DeletedDate { get; set; }
     public string? CreatedBy { get; set; }
+
+    public bool IsActive() => !IsDeleted && !IsBlocked;
 }

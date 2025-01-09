@@ -1,17 +1,18 @@
-using Asp.Versioning;
-using AuthServer.Common;
-using AuthServer.Features.Commands.BlockUser;
-using AuthServer.Features.Commands.ChangePassword;
-using AuthServer.Features.Commands.CreateUser;
-using AuthServer.Features.Queries.GetAllUsers;
-using AuthServer.Features.Queries.GetOwnProfile;
 using MediatR;
+using Asp.Versioning;
+using AuthServer.Features.Commands.AdminCommands.BlockUser;
+using AuthServer.Features.Commands.AdminCommands.CreateUser;
+using AuthServer.Features.Commands.AdminCommands.UnblockUser;
+using AuthServer.Features.Commands.UserCommands.UserLogin;
+using AuthServer.Features.Queries.AdminQueries.GetAllUsers;
+using AuthServer.Features.Queries.UserQueries.GetOwnProfile;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Shared.Common;
 
 namespace AuthServer.Controllers.v1;
 
-[Authorize]
+[Authorize(Roles = Constants.ADMIN)]
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/{apiVersion:apiVersion}/[controller]")]
@@ -22,60 +23,55 @@ public class AdminController : ControllerBase
     {
         _mediator = mediator;
     }
-
-    #region Admin section
-
-    [Authorize(Roles = Constants.ADMIN)]
-    [HttpGet("GetAll")]
-    public async Task<IActionResult> GetAllUsers(CancellationToken cancellationToken)
+    
+    [AllowAnonymous]
+    [HttpPost("Login")]
+    public async Task<IActionResult> Login([FromBody] UserLoginCommand request, CancellationToken cancellationToken)
     {
-        var query = new GetAllUsersQuery();
-        var response = await _mediator.Send(query, cancellationToken);
+        request.Role = Constants.ADMIN;
+        var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
     }
     
-    // CreateUser - role
-    [Authorize(Roles = Constants.ADMIN)]
+    [HttpGet("GetUsers")]
+    public async Task<IActionResult> GetAllUsers(CancellationToken cancellationToken)
+    {
+        var request = new GetAllUsersQuery();
+        var response = await _mediator.Send(request, cancellationToken);
+        return response.ToObjectResult();
+    }
+    
     [HttpPost("CreateUser")]
-    public async Task<IActionResult> CreateUser([FromBody] CreateUserCommand command, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateUser([FromBody] CreateUserCommand request, CancellationToken cancellationToken)
     {
-        var response = await _mediator.Send(command, cancellationToken);
+        var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
     }
-    // BlockUser
-    [Authorize(Roles = Constants.ADMIN)]
+    
     [HttpPost("BlockUser")]
-    public async Task<IActionResult> BlockUser([FromBody] BlockUserCommand command, CancellationToken cancellationToken)
+    public async Task<IActionResult> BlockUser([FromBody] BlockUserCommand request, CancellationToken cancellationToken)
     {
-        var response = await _mediator.Send(command, cancellationToken);
+        var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
     }
-    #endregion
-
-    #region Account owner section
-
-    [Authorize]
+    
+    [HttpPost("UnblockUser")]
+    public async Task<IActionResult> UnblockUser([FromBody] UnblockUserCommand request, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(request, cancellationToken);
+        return response.ToObjectResult();
+    }
+    
+    // [HttpPost("ResetUserPassword")]
+    // public async Task<IActionResult> ResetUserPassword([FromBody] ResetUserPasswordCommand request, CancellationToken cancellationToken)
+    // {
+    // }
+    
     [HttpGet("Profile")]
     public async Task<IActionResult> GetOwnProfile(CancellationToken cancellationToken)
     {
-        var query = new GetOwnProfileQuery();
-        var response = await _mediator.Send(query, cancellationToken);
+        var request = new GetOwnProfileQuery();
+        var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
     }
-    
-    [Authorize]
-    [HttpPost("ChangePassword")]
-    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand command, CancellationToken cancellationToken)
-    {
-        var response = await _mediator.Send(command, cancellationToken);
-        return response.ToObjectResult();
-    }
-    
-    // Update own profile
-    
-    // Delete own account
-
-    #endregion
-    
-    
 }

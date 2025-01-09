@@ -1,5 +1,4 @@
 using GameService.Enums;
-using Shared.Data;
 using Shared.Domain;
 
 namespace GameService.Data.Models;

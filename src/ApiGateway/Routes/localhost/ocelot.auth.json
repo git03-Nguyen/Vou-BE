@@ -19,12 +19,15 @@
         "PeriodTimespan": 1,
         "Limit": 100
       },
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "AuthenticationOptions": {
         "AuthenticationProviderKey": null,
         "AllowedScopes": []
       }
     },
-    // User - protected with AuthN
+    // AdminController
     {
       "SwaggerKey": "authserver",
       "DownstreamHostAndPorts": [
@@ -33,8 +36,8 @@
           "Port": 5100
         }
       ],
-      "DownstreamPathTemplate": "/api/1/User/{everything}",
-      "UpstreamPathTemplate": "/AuthServer/api/1/User/{everything}",
+      "DownstreamPathTemplate": "/api/1/Admin/{everything}",
+      "UpstreamPathTemplate": "/AuthServer/api/1/Admin/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
       "RateLimitOptions": {
         "ClientWhitelist": [],
@@ -42,6 +45,9 @@
         "Period": "15s",
         "PeriodTimespan": 1,
         "Limit": 100
+      },
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
       },
       "AuthenticationOptions": {
         "AuthenticationProviderKey": "IdentityApiKey",

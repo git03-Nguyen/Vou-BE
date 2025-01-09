@@ -1,4 +1,4 @@
-using Shared.Contract;
+using Shared.Contracts;
 using Shared.Domain;
 
 namespace AuthServer.Data.Models;

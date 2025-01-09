@@ -60,9 +60,10 @@ public class BaseResponse<T>: BaseResponse where T : class
 {
     public T? Data { get; set; }
     
-    public BaseResponse<T> ToSuccessResponse(T? data)
+    public BaseResponse<T> ToSuccessResponse(T? data, string? message = null)
     {
         Status = HttpStatusCode.OK.ToInt();
+        Message = message;
         Data = data;
         return this;
     }

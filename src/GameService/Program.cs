@@ -1,3 +1,4 @@
+using GameService.StartupRegistrations;
 using Shared.StartupRegistrations;
 
 namespace GameService;

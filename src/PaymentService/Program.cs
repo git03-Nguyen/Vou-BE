@@ -1,3 +1,5 @@
+using Shared.StartupRegistrations;
+
 namespace PaymentService;
 
 public class Program

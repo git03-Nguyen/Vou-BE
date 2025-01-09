@@ -39,7 +39,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Data\Seeds\" />
+      <Folder Include="Features\Commands\GameCommands\" />
+      <Folder Include="Features\Commands\GameSessionCommands\" />
+      <Folder Include="Features\Queries\GameSessionQueries\" />
+      <Folder Include="Options\" />
+      <Folder Include="Services\" />
     </ItemGroup>
 
 </Project>

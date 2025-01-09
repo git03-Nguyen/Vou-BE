@@ -7,4 +7,6 @@ public interface ICustomHttpContextAccessor
     string GetCurrentRole();
     string GetCurrentEmail();
     string GetCurrentUserName();
+    string GetCurrentIpAddress();
+    string GetCurrentJwtToken();
 }

@@ -1,4 +1,3 @@
-using Shared.Data;
 using Shared.Domain;
 
 namespace GameService.Data.Models;
