@@ -2,23 +2,24 @@ using System.Text.Json;
 using AuthServer.Common;
 using AuthServer.Data.Models;
 using AuthServer.DTOs;
-using AuthServer.Features.Commands.RegisterForUser;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Shared.Response;
 
-public class RegisterForUserHandler : IRequestHandler<RegisterForUserCommand, BaseResponse<UserShortDto>>
+namespace AuthServer.Features.Commands.CreateUser;
+
+public class CreateUserHandler : IRequestHandler<CreateUserCommand, BaseResponse<UserShortDto>>
 {
-    private readonly ILogger<RegisterForUserHandler> _logger;
+    private readonly ILogger<CreateUserValidator> _logger;
     private readonly UserManager<User> _userManager;
-    public RegisterForUserHandler(ILogger<RegisterForUserHandler> logger, UserManager<User> userManager)
+    public CreateUserHandler(ILogger<CreateUserValidator> logger, UserManager<User> userManager)
     {
         _logger = logger;
         _userManager = userManager;
     }
 
-    public async Task<BaseResponse<UserShortDto>> Handle(RegisterForUserCommand request, CancellationToken cancellationToken)
+    public async Task<BaseResponse<UserShortDto>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
         var response = new BaseResponse<UserShortDto>();
         var methodName = $"{nameof(RegisterForUserHandler)}.{nameof(Handle)} Request = {JsonSerializer.Serialize(request)} =>";
@@ -92,4 +93,6 @@ public class RegisterForUserHandler : IRequestHandler<RegisterForUserCommand, Ba
 
         return response;
     }
+
+   
 }
