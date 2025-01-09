@@ -1,7 +1,8 @@
-namespace Shared.Data;
+namespace Shared.Domain;
 
 public interface IBaseEntity
 {
+    public string Id { get; set; }
     public bool IsDeleted { get; set; }
     public DateTime? CreatedDate { get; set; }
     public DateTime? ModifiedDate { get; set; }

@@ -17,6 +17,9 @@ public class AuthDbContext : IdentityDbContext<User>
         AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
     }
     
+    public DbSet<Player> Players { get; set; }
+    public DbSet<CounterPart> CounterParts { get; set; }
+    
     protected override void OnConfiguring(DbContextOptionsBuilder builder)
     {
         base.OnConfiguring(builder);
@@ -28,5 +31,21 @@ public class AuthDbContext : IdentityDbContext<User>
         base.OnModelCreating(builder);
         builder.HasDefaultSchema(_databaseOptions.DefaultSchema);
         AuthDbContextSeeds.Seed(builder);
+
+        builder.Entity<Player>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+            entity.HasOne<User>()
+                .WithOne()
+                .HasForeignKey<Player>(p => p.Id);
+        });
+
+        builder.Entity<CounterPart>(entity =>
+        {
+            entity.HasKey(c => c.Id);
+            entity.HasOne<User>()
+                .WithOne()
+                .HasForeignKey<CounterPart>(c => c.Id);
+        });
     }
 }

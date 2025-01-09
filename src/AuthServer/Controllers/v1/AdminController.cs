@@ -13,10 +13,10 @@ namespace AuthServer.Controllers.v1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/{apiVersion:apiVersion}/[controller]")]
-public class UserController : ControllerBase
+public class AdminController : ControllerBase
 {
     private readonly IMediator _mediator;
-    public UserController(IMediator mediator)
+    public AdminController(IMediator mediator)
     {
         _mediator = mediator;
     }
