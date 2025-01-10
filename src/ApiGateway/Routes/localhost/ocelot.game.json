@@ -2,7 +2,7 @@
   "Routes": [
     // HealthCheck - public
     {
-      "SwaggerKey": "eventservice",
+      "SwaggerKey": "gameservice",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
@@ -10,7 +10,7 @@
         }
       ],
       "DownstreamPathTemplate": "/",
-      "UpstreamPathTemplate": "/EventService",
+      "UpstreamPathTemplate": "/GameService",
       "UpstreamHttpMethod": [ "GET" ],
       "RateLimitOptions": {
         "ClientWhitelist": [],
@@ -27,17 +27,17 @@
         "AllowedScopes": []
       }
     },
-    // EventController
+    // GameController
     {
-      "SwaggerKey": "eventservice",
+      "SwaggerKey": "gameservice",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
           "Port": 5100
         }
       ],
-      "DownstreamPathTemplate": "/api/1/Event/{everything}",
-      "UpstreamPathTemplate": "/EventService/api/1/Event/{everything}",
+      "DownstreamPathTemplate": "/api/1/Game/{everything}",
+      "UpstreamPathTemplate": "/GameService/api/1/Game/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
       "RateLimitOptions": {
         "ClientWhitelist": [],

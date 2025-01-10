@@ -1,3 +1,4 @@
+using PaymentService.StartupRegistrations;
 using Shared.StartupRegistrations;
 
 namespace PaymentService;
@@ -28,7 +29,7 @@ public class Program
             .ConfigureDIServices(builder.Configuration)
             .ConfigureMediatRService(typeof(Program).Assembly)
             .ConfigureFluentValidation(typeof(Program).Assembly)
-            .ConfigureSwagger(builder.Environment)
+            .ConfigureSwagger(builder.Configuration)
             .ConfigureExceptionHandler();
 
         // Configure the HTTP request pipeline.

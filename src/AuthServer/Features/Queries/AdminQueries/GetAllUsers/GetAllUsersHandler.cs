@@ -1,10 +1,10 @@
-using AuthServer.Common;
 using AuthServer.Data.Models;
 using AuthServer.DTOs;
 using AuthServer.Repositories;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Shared.Common;
 using Shared.Response;
 
 namespace AuthServer.Features.Queries.AdminQueries.GetAllUsers;
@@ -39,6 +39,8 @@ public class GetAllUsersHandler : IRequestHandler<GetAllUsersQuery, BaseResponse
                     join player in _unitOfWork.Players.GetAll()
                         on user.Id equals player.Id into playerJoin
                     from player in playerJoin.DefaultIfEmpty()
+                    let isCounterPart = user.Role == Constants.COUNTERPART
+                    let isPlayer = user.Role == Constants.PLAYER
                     select new UserFullProfileDto
                     {
                         Id = user.Id,
@@ -46,7 +48,7 @@ public class GetAllUsersHandler : IRequestHandler<GetAllUsersQuery, BaseResponse
                         UserName = user.UserName ?? string.Empty,
                         FullName = user.FullName,
                         PhoneNumber = user.PhoneNumber ?? string.Empty,
-                        AvatarUrl = user.AvatarUrl ?? Constants.DefaultAvatarUrl,
+                        AvatarUrl = user.AvatarUrl ?? Common.Constants.DefaultAvatarUrl,
                         Role = user.Role,
                         CreatedDate = user.CreatedDate,
                         ModifiedDate = user.ModifiedDate,
@@ -54,13 +56,13 @@ public class GetAllUsersHandler : IRequestHandler<GetAllUsersQuery, BaseResponse
                         IsBlocked = user.IsBlocked,
                         BlockedDate = user.BlockedDate,
                         // For counterpart
-                        Name = counterPart?.Name,
-                        Field = counterPart?.Field,
-                        Addresses = counterPart?.Addresses,
+                        Name = isCounterPart ? counterPart.Name : null,
+                        Field = isCounterPart ? counterPart.Field : null,
+                        Addresses = isCounterPart ? counterPart.Addresses : null,
                         // For player
-                        BirthDate = player?.BirthDate,
-                        Gender = player?.Gender,
-                        FacebookUrl = player?.FacebookUrl
+                        BirthDate = isPlayer ? player.BirthDate : null,
+                        Gender = isPlayer ? player.Gender : null,
+                        FacebookUrl = isPlayer ? player.FacebookUrl : null
                     }
                 ).AsNoTracking()
                 .ToListAsync(cancellationToken);
