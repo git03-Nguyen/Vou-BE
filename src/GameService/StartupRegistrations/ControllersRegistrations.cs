@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.Json.Serialization;
 using Asp.Versioning;
 using Shared.Extensions;
 using Shared.Validation;
@@ -11,6 +12,10 @@ public static class ControllersRegistrations
     {
         services
             .AddControllers()
+            .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            })
             .ConfigureApiBehaviorOptions(options =>
             {
                 options.InvalidModelStateResponseFactory = context =>

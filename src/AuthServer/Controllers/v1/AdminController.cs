@@ -76,7 +76,6 @@ public class AdminController : ControllerBase
         return response.ToObjectResult();
     }
     
-    [Authorize]
     [HttpPost("ChangePassword")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand request, CancellationToken cancellationToken)
     {
