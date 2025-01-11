@@ -19,11 +19,9 @@ public class UserFullProfileDto : BaseUserProfileDto
     
     // For CounterPart
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Name { get; set; }
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Field { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public Address[]? Addresses { get; set; }
+    public string Addresses { get; set; }
     
     // For Player
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

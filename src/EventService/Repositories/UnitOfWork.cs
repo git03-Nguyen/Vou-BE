@@ -13,5 +13,6 @@ public class UnitOfWork : GenericUnitOfWork<EventDbContext>, IUnitOfWork
     public IVoucherRepository Vouchers { get; set; }
     public IVoucherInEventRepository VoucherInEvents { get; set; }
     public IVoucherToPlayerRepository VoucherToPlayers { get; set; }
+    public ICounterPartRepository CounterParts { get; set; }
     public IEventRepository Events { get; set; }
 }

@@ -9,4 +9,5 @@ public interface IUnitOfWork : IGenericUnitOfWork
     IVoucherRepository Vouchers { get; set; }
     IVoucherInEventRepository VoucherInEvents { get; set; }
     IVoucherToPlayerRepository VoucherToPlayers { get; set; }
+    ICounterPartRepository CounterParts { get; set; }
 }

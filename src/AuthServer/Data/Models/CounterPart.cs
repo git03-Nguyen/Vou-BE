@@ -1,13 +1,9 @@
-using System.ComponentModel.DataAnnotations.Schema;
-using Shared.Contracts;
 using Shared.Domain;
 
 namespace AuthServer.Data.Models;
 
 public class CounterPart : BaseEntity
 {
-    public string Name { get; set; }
     public string Field { get; set; }
-    [Column(TypeName = "jsonb")]
-    public Address[]? Addresses { get; set; }
+    public string Addresses { get; set; }
 }

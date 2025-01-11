@@ -123,7 +123,6 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, BaseResponse
                 IsBlocked = user.IsBlocked,
                 BlockedDate = user.BlockedDate,
                 // For counterpart
-                Name = counterPart?.Name,
                 Field = counterPart?.Field,
                 Addresses = counterPart?.Addresses,
                 // For player
@@ -156,7 +155,6 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, BaseResponse
         var counterPart = new CounterPart
         {
             Id = user.Id,
-            Name = request.Name ?? string.Empty,
             Field = request.Field ?? string.Empty,
             Addresses = request.Addresses,
             CreatedBy = adminId

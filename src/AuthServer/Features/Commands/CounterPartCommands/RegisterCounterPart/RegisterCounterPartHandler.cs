@@ -90,7 +90,6 @@ public class RegisterCounterPartHandler : IRequestHandler<RegisterCounterPartCom
                 PhoneNumber = user.PhoneNumber,
                 AvatarUrl = user.AvatarUrl ?? Common.Constants.DefaultAvatarUrl,
                 Role = user.Role,
-                Name = counterPart.Name,
                 Field = counterPart.Field,
                 Addresses = counterPart.Addresses
             };
@@ -120,7 +119,6 @@ public class RegisterCounterPartHandler : IRequestHandler<RegisterCounterPartCom
         var counterPart = new CounterPart
         {
             Id = user.Id,
-            Name = request.Name,
             Field = request.Field,
             Addresses = request.Addresses,
         };
