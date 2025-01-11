@@ -50,13 +50,13 @@ public class EventDbContext : DbContext
             // Event - VoucherInEvent: one - many
             entity.HasOne<Event>()
                 .WithMany()
-                .HasForeignKey(ve => ve.Id)
+                .HasForeignKey(ve => ve.EventId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Voucher - VoucherInEvent: one - many
             entity.HasOne<Voucher>()
                 .WithMany()
-                .HasForeignKey(ve => ve.Id)
+                .HasForeignKey(ve => ve.VoucherId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -66,10 +66,8 @@ public class EventDbContext : DbContext
             entity.HasKey(vp => vp.Id);
             entity.HasOne<Voucher>()
                 .WithMany()
-                .HasForeignKey(vp => vp.Id)
+                .HasForeignKey(vp => vp.VoucherId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            // Player - VoucherToPlayer: one - many
         });
     }
 }
