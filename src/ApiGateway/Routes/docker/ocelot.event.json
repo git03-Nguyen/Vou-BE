@@ -27,7 +27,7 @@
         "AllowedScopes": []
       }
     },
-    // EventController
+    // AdminController
     {
       "SwaggerKey": "eventservice",
       "DownstreamHostAndPorts": [
@@ -36,8 +36,8 @@
           "Port": 5100
         }
       ],
-      "DownstreamPathTemplate": "/api/1/Event/{everything}",
-      "UpstreamPathTemplate": "/EventService/api/1/Event/{everything}",
+      "DownstreamPathTemplate": "/api/1/Admin/{everything}",
+      "UpstreamPathTemplate": "/EventService/api/1/Admin/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
       "RateLimitOptions": {
         "ClientWhitelist": [],

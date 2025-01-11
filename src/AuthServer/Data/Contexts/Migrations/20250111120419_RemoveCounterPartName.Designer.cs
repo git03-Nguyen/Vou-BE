@@ -4,17 +4,21 @@ using AuthServer.Data.Contexts;
 using AuthServer.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using Shared.Contracts;
 
 #nullable disable
 
 namespace AuthServer.Data.Contexts.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    partial class AuthDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250111120419_RemoveCounterPartName")]
+    partial class RemoveCounterPartName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,9 +33,8 @@ namespace AuthServer.Data.Contexts.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
-                    b.Property<string>("Addresses")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Address[]>("Addresses")
+                        .HasColumnType("jsonb");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
@@ -199,14 +202,14 @@ namespace AuthServer.Data.Contexts.Migrations
                             AccessFailedCount = 0,
                             ConcurrencyStamp = "b5c97c3c-4201-452b-a3c8-e3a74cc1e1f9",
                             CreatedBy = "SYSTEM",
-                            CreatedDate = new DateTime(2025, 1, 11, 19, 24, 39, 401, DateTimeKind.Local).AddTicks(8203),
+                            CreatedDate = new DateTime(2025, 1, 11, 19, 4, 18, 680, DateTimeKind.Local).AddTicks(4579),
                             Email = "admin@admin.com",
                             EmailConfirmed = false,
                             FullName = "Quản trị viên",
                             IsBlocked = false,
                             IsDeleted = false,
                             LockoutEnabled = false,
-                            ModifiedDate = new DateTime(2025, 1, 11, 19, 24, 39, 401, DateTimeKind.Local).AddTicks(8217),
+                            ModifiedDate = new DateTime(2025, 1, 11, 19, 4, 18, 680, DateTimeKind.Local).AddTicks(4594),
                             NormalizedEmail = "ADMIN@ADMIN.COM",
                             NormalizedUserName = "ADMIN",
                             PasswordHash = "AQAAAAIAAYagAAAAEEd4UUcawoYEHG5S0lAixhtqKTYxLeQp5Brn2W/IZ32jQe+fUODN7aSGIWnr4plnfw==",

@@ -40,8 +40,6 @@
 
     <ItemGroup>
       <Folder Include="Data\Contexts\Migrations\" />
-      <Folder Include="Features\Commands\" />
-      <Folder Include="Features\Queries\" />
       <Folder Include="Options\" />
       <Folder Include="Services\" />
     </ItemGroup>

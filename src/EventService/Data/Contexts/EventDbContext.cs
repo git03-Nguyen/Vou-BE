@@ -20,6 +20,9 @@ public class EventDbContext : DbContext
     public DbSet<VoucherInEvent> VoucherInEvents { get; set; }
     public DbSet<VoucherToPlayer> VoucherToPlayers { get; set; }
     
+    // Sync tables
+    public DbSet<Event> CounterParts { get; set; }
+    
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);

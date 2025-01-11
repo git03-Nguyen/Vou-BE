@@ -13,7 +13,6 @@ public class RegisterCounterPartCommand : IRequest<BaseResponse<UserFullProfileD
     public string PhoneNumber { get; set; }
     public string FullName { get; set; }
     // public IFormFile? AvatarImage { get; set; }
-    public string Name { get; set; }
     public string Field { get; set; }
-    public Address[] Addresses { get; set; }
+    public string Addresses { get; set; }
 }

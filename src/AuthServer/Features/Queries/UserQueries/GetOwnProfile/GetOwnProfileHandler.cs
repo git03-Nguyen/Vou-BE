@@ -62,7 +62,6 @@ public class GetOwnProfileHandler : IRequestHandler<GetOwnProfileQuery, BaseResp
                     IsBlocked = user.IsBlocked,
                     BlockedDate = user.BlockedDate,
                     // For counterpart
-                    Name = isCounterPart ? counterPart.Name : null,
                     Field = isCounterPart ? counterPart.Field : null,
                     Addresses = isCounterPart ? counterPart.Addresses : null,
                     // For player

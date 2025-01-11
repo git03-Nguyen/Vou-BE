@@ -67,14 +67,6 @@ public class CreateUserValidator : AbstractValidator<CreateUserCommand>
         // For CounterPart
         When(x => x.Role == Constants.COUNTERPART, () =>
         {
-            RuleFor(x => x.Name)
-                .Cascade(CascadeMode.Stop)
-                .NotNull()
-                .NotEmpty()
-                .WithMessage("Name is required")
-                .Matches(Regexes.VALID_COUNTERPART_NAME)
-                .WithMessage("Name is invalid");
-            
             RuleFor(x => x.Field)
                 .Cascade(CascadeMode.Stop)
                 .NotNull()
@@ -89,7 +81,7 @@ public class CreateUserValidator : AbstractValidator<CreateUserCommand>
                 .NotEmpty()
                 .WithMessage("Addresses is required");
             
-            RuleFor(x => x.Addresses![0].AddressText)
+            RuleFor(x => x.Addresses)
                 .NotEmpty()
                 .Matches(Regexes.VALID_ADDRESS_TEXT)
                 .WithMessage("AddressText is invalid");

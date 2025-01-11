@@ -17,9 +17,8 @@ public class CreateUserCommand : IRequest<BaseResponse<UserFullProfileDto>>
     public string Role { get; set; }
     
     // For CounterPart
-    public string? Name { get; set; }
     public string? Field { get; set; }
-    public Address[]? Addresses { get; set; }
+    public string Addresses { get; set; }
     
     // For Player
     public DateTime? BirthDate { get; set; }

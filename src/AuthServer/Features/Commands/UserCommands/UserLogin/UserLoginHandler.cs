@@ -165,7 +165,6 @@ public class UserLoginHandler : IRequestHandler<UserLoginCommand, BaseResponse<U
                     IsBlocked = user.IsBlocked,
                     BlockedDate = user.BlockedDate,
                     // For counterpart
-                    Name = counterPart?.Name,
                     Field = counterPart?.Field,
                     Addresses = counterPart?.Addresses,
                     // For player
