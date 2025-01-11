@@ -15,4 +15,15 @@ public class CustomHttpContextAccessor : ICustomHttpContextAccessor
     public string GetCurrentRole() => _httpContextAccessor.HttpContext?.User.FindFirst("role")?.Value ?? string.Empty;
     public string GetCurrentEmail() => _httpContextAccessor.HttpContext?.User.FindFirst("email")?.Value ?? string.Empty;
     public string GetCurrentUserName() => _httpContextAccessor.HttpContext?.User.FindFirst("username")?.Value ?? string.Empty;
+    public string GetCurrentIpAddress()
+    {
+        var ip = _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+        return ip ?? string.Empty;
+    }
+
+    public string GetCurrentJwtToken()
+    {
+        var token = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString();
+        return token?.Replace("Bearer ", string.Empty) ?? string.Empty;
+    }
 }

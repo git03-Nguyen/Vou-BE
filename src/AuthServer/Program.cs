@@ -30,12 +30,12 @@ public class Program
             .ConfigureDIServices(builder.Configuration)
             .ConfigureMediatRService(typeof(Program).Assembly)
             .ConfigureFluentValidation(typeof(Program).Assembly)
-            .ConfigureSwagger(builder.Environment)
+            .ConfigureSwaggerDocs(builder.Configuration)
             .ConfigureExceptionHandler();
 
         // Configure the HTTP request pipeline.
         var app = builder.Build();
-        app.UseSwaggerService(app.Environment)
+        app.UseSwaggerDocs(app.Environment)
             .UseHttpsRedirection()
             .UseRouting()
             .UseExceptionHandler()

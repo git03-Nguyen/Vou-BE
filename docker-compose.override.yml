@@ -1,0 +1,64 @@
+services:
+  
+  #############################
+  ########## EXTENSION ########
+  #############################
+  elasticsearch:
+    environment:
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=DkIedPPSCb
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+
+  kibana:
+    environment:
+      - ELASTICSEARCH_HOSTS=http://localhost:9200
+      - ELASTICSEARCH_USERNAME=admin
+      - ELASTICSEARCH_PASSWORD=DkIedPPSCb
+    ports:
+      - "5601:5601"
+    volumes:
+      - kibana-data:/usr/share/kibana/data
+  
+  #############################
+  ######### DATABASE ##########
+  #############################
+  voudb:
+    container_name: voudb
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin1234
+      - POSTGRES_DB=voudb
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data1/
+    
+  #############################
+  ######### SERVICES ##########
+  #############################
+  authserver:
+    container_name: authserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000
+      - "DatabaseSettings:ConnectionString=Server=localhost;Port=5432;Database=authdb;User Id=admin;Password=admin1234;"
+    depends_on:
+      - voudb
+    ports:
+      - "5000"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ~/.aspnet/https:/https:ro
+      
+      
+  #############################
+  ######## BACKGROUND #########
+  #############################
+  

@@ -1,5 +1,5 @@
 using ApiGateway.StartupRegistrations;
-using Shared.Constants;
+using Ocelot.Middleware;
 using Shared.StartupRegistrations;
 
 namespace ApiGateway;
@@ -12,25 +12,26 @@ public class Program
 
         builder.Host.UseLogging();
         builder.Configuration
+            .AddOcelotConfiguration()
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables();
         
         // Add services to the container.
         builder.Services
             .ConfigureAuthentication(builder.Configuration)
-            .ConfigureOcelot(builder.Configuration, builder.Environment)
-            .ConfigureSwagger(builder.Environment)
+            .ConfigureOcelot(builder.Configuration)
             .ConfigureCors(builder.Configuration);
-
+        
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
-        app.UseCors(CommonConstants.CorsPolicyName);
+        app.UseSwagger(app.Environment);
+        app.UseCustomCors();
         app.UseAuthentication();
         app.UseWebSockets();
-        app.UseOcelot(app.Environment);
         app.UseHttpsRedirection();
         app.UseAuthorization();
+        app.UseOcelot().Wait();
         app.Run();
     }
 }

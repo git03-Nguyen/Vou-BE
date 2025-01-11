@@ -13,7 +13,7 @@ public static class LoggingRegistrations
     {
         hostBuilder.UseSerilog((context, loggerConfiguration) =>
         {
-            var serviceOptions = context.Configuration.GetSection(ServiceOptions.OptionName).Get<ServiceOptions>();
+            var serviceOptions = context.Configuration.GetSection(ServicesOptions.OptionName).Get<ServicesOptions>();
             var loggingOptions = context.Configuration.GetSection(LoggingOptions.OptionName).Get<LoggingOptions>();
             var serviceName = serviceOptions?.Name ?? "Unknown.Service";
             var environmentName = context.HostingEnvironment.EnvironmentName;

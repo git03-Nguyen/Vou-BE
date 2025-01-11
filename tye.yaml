@@ -1,0 +1,53 @@
+# tye application configuration file
+# read all about it at https://github.com/dotnet/tye
+#
+# when you've given us a try, we'd love to know what you think:
+#    https://aka.ms/AA7q20u
+#
+name: vou-be
+services:
+  - name: apigateway
+    project: ./src/ApiGateway/ApiGateway.csproj
+    env_file:
+      - ./tye-env
+    bindings:
+      - port: 5000
+        protocol: https
+
+  - name: authserver
+    project: ./src/AuthServer/AuthServer.csproj
+    env_file:
+      - ./tye-env
+    bindings:
+      - port: 5100
+        protocol: http
+
+  - name: eventservice
+    project: ./src/EventService/EventService.csproj
+    env_file:
+      - ./tye-env
+    bindings:
+      - port: 5200
+        protocol: http
+
+  - name: gameservice
+    project: ./src/GameService/GameService.csproj
+    env_file:
+      - ./tye-env
+    bindings:
+      - port: 5300
+        protocol: http
+
+  - name: paymentservice
+    project: ./src/PaymentService/PaymentService.csproj
+    env_file:
+      - ./tye-env
+    bindings:
+      - port: 5400
+        protocol: http
+        
+#  - name: backofficeservicejobs
+#    executable: dotnet
+#    args: run -p BackOffice.Service.Jobs/BackOffice.Service.Jobs.csproj
+#    env_file:
+#      - ./tye-env

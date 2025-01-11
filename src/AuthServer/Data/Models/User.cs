@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
-using AuthServer.Common;
 using Microsoft.AspNetCore.Identity;
-using Shared.Data;
+using Shared.Domain;
 
 namespace AuthServer.Data.Models;
 
@@ -16,10 +15,11 @@ public class User : IdentityUser, IBaseEntity
     
     public bool IsBlocked { get; set; }
     public DateTime? BlockedDate { get; set; }
-    
     public bool IsDeleted { get; set; }
     public DateTime? CreatedDate { get; set; } = DateTime.Now;
     public DateTime? ModifiedDate { get; set; } = DateTime.Now;
     public DateTime? DeletedDate { get; set; }
     public string? CreatedBy { get; set; }
+
+    public bool IsActive() => !IsDeleted && !IsBlocked;
 }

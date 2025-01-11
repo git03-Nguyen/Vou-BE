@@ -9,6 +9,36 @@
           "Url": "http://localhost:5100/swagger/v1/swagger.json"
         }
       ]
+    },
+    {
+      "Key": "eventservice",
+      "Config": [
+        {
+          "Name": "EventService API",
+          "Version": "v1",
+          "Url": "http://localhost:5200/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "gameservice",
+      "Config": [
+        {
+          "Name": "GameService API",
+          "Version": "v1",
+          "Url": "http://localhost:5300/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "paymentservice",
+      "Config": [
+        {
+          "Name": "PaymentService API",
+          "Version": "v1",
+          "Url": "http://localhost:5400/swagger/v1/swagger.json"
+        }
+      ]
     }
   ]
 }

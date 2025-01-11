@@ -1,45 +1,66 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Shared.Filters;
+using Shared.Options;
 
 namespace Shared.StartupRegistrations;
 
 public static class SwaggerDocsRegistrations
 {
-    public static IServiceCollection ConfigureSwagger(this IServiceCollection services, IWebHostEnvironment environment)
+    public static IServiceCollection ConfigureSwagger(this IServiceCollection services, IConfiguration configuration)
     {
-        if (environment.IsProduction()) return services;
+        var servicesOptions = configuration.GetSection(ServicesOptions.OptionName).Get<ServicesOptions>();
+        var currentService = servicesOptions?.Name ?? "Service";
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(options =>
         {
-            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            options.SwaggerDoc("v1", new OpenApiInfo
             {
-                Name = "Authorization",
-                In = ParameterLocation.Header,
-                Description = @"Please enter token: ""Bearer {your token}""",
-                Type = SecuritySchemeType.ApiKey,
-                BearerFormat = "JWT",
-                Scheme =  "Bearer"
-            });
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
+                Title = $"{currentService} APIs Document",
+                Version = "v1",
+                Description = "This is the api detailed description for the project.\n Accepted value for {apiVersion} : [1]",
+                Contact = new OpenApiContact
                 {
-                    new OpenApiSecurityScheme
-                    {
-                        Name =  "Bearer",
-                        In = ParameterLocation.Header,
-                        Reference = new OpenApiReference
-                        {
-                            Id =  "Bearer",
-                            Type = ReferenceType.SecurityScheme
-                        }
-                    },
-                    Array.Empty<string>()
+                    Name = "Author",
+                    Email = "nguyendinhanhvlqt@gmail.com"
                 }
             });
+
+            options.SchemaFilter<SwaggerEnumFilter>();
+            options.CustomSchemaIds(type => type.ToString());
+
+            var securityScheme = new OpenApiSecurityScheme
+            {
+                Description = "Enter JWT Bearer token",
+                Name = "Authorization",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                Reference = new OpenApiReference
+                {
+                    Id = "Bearer",
+                    Type = ReferenceType.SecurityScheme
+                }
+            };
+
+            options.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {securityScheme, Array.Empty<string>()}
+            });
+            options.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
+            options.IgnoreObsoleteActions();
+            options.IgnoreObsoleteProperties();
+            options.CustomSchemaIds(type => type.FullName);
+
+            options.AddSignalRSwaggerGen();
         });
+        
         return services;
     }
 
@@ -47,7 +68,7 @@ public static class SwaggerDocsRegistrations
     {
         if (environment.IsProduction()) return app;
         app.UseSwagger();
-        app.UseSwaggerUI();
+        app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v2/swagger.json", "Vou-BE"));
         return app;
     }
 }
