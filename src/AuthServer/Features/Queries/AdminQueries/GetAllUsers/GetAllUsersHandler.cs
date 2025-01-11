@@ -32,7 +32,7 @@ public class GetAllUsersHandler : IRequestHandler<GetAllUsersQuery, BaseResponse
             var users = await
                 (
                     from user in _userManager.Users
-                    where user.IsActive()
+                    where !user.IsDeleted && !user.IsBlocked
                     join counterPart in _unitOfWork.CounterParts.GetAll()
                         on user.Id equals counterPart.Id into counterPartJoin
                     from counterPart in counterPartJoin.DefaultIfEmpty()

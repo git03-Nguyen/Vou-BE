@@ -44,7 +44,7 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, BaseResponse
             var phoneNumber = request.PhoneNumber.Trim();
             var existedUser = await _userManager.Users
                 .Where(u => 
-                    u.IsActive()
+                    !u.IsDeleted && !u.IsBlocked
                     && (u.NormalizedEmail == email.ToUpper()
                         || u.NormalizedUserName == userName.ToUpper() 
                         || u.PhoneNumber == phoneNumber))

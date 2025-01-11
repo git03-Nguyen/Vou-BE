@@ -38,7 +38,7 @@ public class GetOwnProfileHandler : IRequestHandler<GetOwnProfileQuery, BaseResp
             var currentUser = await
             (
                 from user in _userManager.Users
-                where user.IsActive() && user.Role == userRole && user.Id == userId
+                where !user.IsDeleted && !user.IsBlocked && user.Role == userRole && user.Id == userId
                 join counterPart in _unitOfWork.CounterParts.GetAll()
                     on user.Id equals counterPart.Id into counterPartJoin
                 from counterPart in counterPartJoin.DefaultIfEmpty()

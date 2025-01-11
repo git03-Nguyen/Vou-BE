@@ -44,7 +44,7 @@ public class UserLoginHandler : IRequestHandler<UserLoginCommand, BaseResponse<U
             var user = isEmailOrUserName
                 ? await _userManager.FindByEmailAsync(request.EmailOrUserName)
                 : await _userManager.FindByNameAsync(request.EmailOrUserName);
-            if (user is null || !user.IsActive())
+            if (user is null || user.IsDeleted && user.IsBlocked)
             {
                 response.ToUnauthorizedResponse("Incorrect email, username or user is blocked");
                 return response;

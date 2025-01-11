@@ -37,10 +37,10 @@ public class RegisterCounterPartHandler : IRequestHandler<RegisterCounterPartCom
             var phoneNumber = request.PhoneNumber.Trim();
             var existedUser = await _userManager.Users
                 .Where(u => 
-                    u.IsActive() 
-                    && (u.NormalizedEmail == email.ToUpper()
-                        || u.NormalizedUserName == userName.ToUpper() 
-                        || u.PhoneNumber == phoneNumber))
+                    !u.IsDeleted && !u.IsBlocked
+                     && (u.NormalizedEmail == email.ToUpper()
+                         || u.NormalizedUserName == userName.ToUpper() 
+                         || u.PhoneNumber == phoneNumber))
                 .AsNoTracking()
                 .FirstOrDefaultAsync(cancellationToken); 
             if (existedUser is not null)
