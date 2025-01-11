@@ -33,9 +33,6 @@ public static class SwaggerDocsRegistrations
             options.SchemaFilter<SwaggerEnumFilter>();
             options.CustomSchemaIds(type => type.ToString());
 
-            var filePath = Path.Combine(AppContext.BaseDirectory, $"{currentService}.xml");
-            options.IncludeXmlComments(filePath, true);
-
             var securityScheme = new OpenApiSecurityScheme
             {
                 Description = "Enter JWT Bearer token",
@@ -71,7 +68,7 @@ public static class SwaggerDocsRegistrations
     {
         if (environment.IsProduction()) return app;
         app.UseSwagger();
-        app.UseSwaggerUI();
+        app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v2/swagger.json", "Vou-BE"));
         return app;
     }
 }

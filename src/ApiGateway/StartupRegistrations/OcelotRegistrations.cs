@@ -3,7 +3,6 @@ using Microsoft.OpenApi.Models;
 using MMLib.SwaggerForOcelot.DependencyInjection;
 using Ocelot.Cache.CacheManager;
 using Ocelot.DependencyInjection;
-using Ocelot.Middleware;
 
 namespace ApiGateway.StartupRegistrations;
 
@@ -63,7 +62,7 @@ public static class OcelotRegistrations
         if (!environment.IsProduction())
         {
             app.UseSwagger();
-            app.UseSwaggerForOcelotUI(options => { options.PathToSwaggerGenerator = "/swagger/docs"; });
+            app.UseSwaggerForOcelotUI();
         }
 
         return app;

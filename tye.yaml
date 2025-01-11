@@ -7,7 +7,7 @@
 name: vou-be
 services:
   - name: apigateway
-    project: ApiGateway/ApiGateway.csproj
+    project: ./src/ApiGateway/ApiGateway.csproj
     env_file:
       - ./tye-env
     bindings:
@@ -15,7 +15,7 @@ services:
         protocol: https
 
   - name: authserver
-    project: AuthServer/AuthServer.csproj
+    project: ./src/AuthServer/AuthServer.csproj
     env_file:
       - ./tye-env
     bindings:
@@ -23,7 +23,7 @@ services:
         protocol: http
 
   - name: eventservice
-    project: EventService/EventService.csproj
+    project: ./src/EventService/EventService.csproj
     env_file:
       - ./tye-env
     bindings:
@@ -31,7 +31,7 @@ services:
         protocol: http
 
   - name: gameservice
-    project: GameService/GameService.csproj
+    project: ./src/GameService/GameService.csproj
     env_file:
       - ./tye-env
     bindings:
@@ -39,7 +39,7 @@ services:
         protocol: http
 
   - name: paymentservice
-    project: PaymentService/PaymentService.csproj
+    project: ./src/PaymentService/PaymentService.csproj
     env_file:
       - ./tye-env
     bindings:

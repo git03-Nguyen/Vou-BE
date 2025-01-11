@@ -20,10 +20,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventService", "src\EventSe
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Configurations", "Configurations", "{8147F95C-CB08-4C27-A8C5-F3435866833B}"
 	ProjectSection(SolutionItems) = preProject
-		src\docker-compose.yml = src\docker-compose.yml
-		src\docker-compose.override.yml = src\docker-compose.override.yml
-		src\tye.yaml = src\tye.yaml
-		src\tye-env = src\tye-env
+		docker-compose.override.yml = docker-compose.override.yml
+		docker-compose.yml = docker-compose.yml
+		tye.yaml = tye.yaml
+		tye-env = tye-env
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameService", "src\GameService\GameService.csproj", "{B891BB33-AECE-4C97-9DE5-426F45D30315}"
