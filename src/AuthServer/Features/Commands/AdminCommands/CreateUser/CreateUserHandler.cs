@@ -157,7 +157,7 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, BaseResponse
         {
             Id = user.Id,
             Field = request.Field ?? string.Empty,
-            Addresses = request.Addresses,
+            Addresses = request.Address,
             CreatedBy = adminId
         };
         await _unitOfWork.CounterParts.AddAsync(counterPart, cancellationToken);

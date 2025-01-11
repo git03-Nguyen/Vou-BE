@@ -56,13 +56,10 @@ public class CreateUserValidator : AbstractValidator<CreateUserCommand>
             .Must(x => x == Constants.PLAYER || x == Constants.ADMIN || x == Constants.COUNTERPART)
             .WithMessage("Role is invalid");
         
-        // When(x => x.AvatarImage is not null, () =>
-        // {
-        //     RuleFor(x => x.AvatarImage!.Length)
-        //         .Cascade(CascadeMode.Stop)
-        //         .LessThanOrEqualTo(1024 * 1024)
-        //         .WithMessage("AvatarImage is too large");
-        // });
+        RuleFor(x => x.AvatarUrl)
+            .Cascade(CascadeMode.Stop)
+            .Matches(Regexes.VALID_URL)
+            .WithMessage("AvatarUrl is invalid");
         
         // For CounterPart
         When(x => x.Role == Constants.COUNTERPART, () =>
@@ -75,13 +72,13 @@ public class CreateUserValidator : AbstractValidator<CreateUserCommand>
                 .Matches(Regexes.VALID_COUNTERPART_FIELD)
                 .WithMessage("Field is invalid");
 
-            RuleFor(x => x.Addresses)
+            RuleFor(x => x.Address)
                 .Cascade(CascadeMode.Stop)
                 .NotNull()
                 .NotEmpty()
                 .WithMessage("Addresses is required");
             
-            RuleFor(x => x.Addresses)
+            RuleFor(x => x.Address)
                 .NotEmpty()
                 .Matches(Regexes.VALID_ADDRESS_TEXT)
                 .WithMessage("AddressText is invalid");
@@ -105,13 +102,10 @@ public class CreateUserValidator : AbstractValidator<CreateUserCommand>
                 .IsInEnum()
                 .WithMessage("BirthDate is required");
             
-            When(x => x.FacebookUrl is not null, () =>
-            {
-                RuleFor(x => x.FacebookUrl)
-                    .Cascade(CascadeMode.Stop)
-                    .Matches(Regexes.VALID_FACEBOOK_URL)
-                    .WithMessage("FacebookUrl is invalid");
-            });
+            RuleFor(x => x.FacebookUrl)
+                .Cascade(CascadeMode.Stop)
+                .Matches(Regexes.VALID_FACEBOOK_URL)
+                .WithMessage("FacebookUrl is invalid");
         });
     }
 }

@@ -47,13 +47,10 @@ public class RegisterCounterPartValidator : AbstractValidator<RegisterCounterPar
             .Matches(Regexes.VALID_FULLNAME)
             .WithMessage("FullName is invalid");
         
-        // When(x => x.AvatarImage is not null, () =>
-        // {
-        //     RuleFor(x => x.AvatarImage!.Length)
-        //         .Cascade(CascadeMode.Stop)
-        //         .LessThanOrEqualTo(1024 * 1024)
-        //         .WithMessage("AvatarImage is too large");
-        // });
+        RuleFor(x => x.AvatarUrl)
+            .Cascade(CascadeMode.Stop)
+            .Matches(Regexes.VALID_URL)
+            .WithMessage("AvatarUrl is invalid");
         
         RuleFor(x => x.Field)
             .Cascade(CascadeMode.Stop)
@@ -63,13 +60,13 @@ public class RegisterCounterPartValidator : AbstractValidator<RegisterCounterPar
             .Matches(Regexes.VALID_COUNTERPART_FIELD)
             .WithMessage("Field is invalid");
 
-        RuleFor(x => x.Addresses)
+        RuleFor(x => x.Address)
             .Cascade(CascadeMode.Stop)
             .NotNull()
             .NotEmpty()
             .WithMessage("Addresses is required");
             
-        RuleFor(x => x.Addresses)
+        RuleFor(x => x.Address)
             .NotEmpty()
             .Matches(Regexes.VALID_ADDRESS_TEXT)
             .WithMessage("AddressText is invalid");

@@ -46,14 +46,11 @@ public class RegisterPlayerValidator : AbstractValidator<RegisterPlayerCommand>
             .WithMessage("FullName is required")
             .Matches(Regexes.VALID_FULLNAME)
             .WithMessage("FullName is invalid");
-        
-        // When(x => x.AvatarImage is not null, () =>
-        // {
-        //     RuleFor(x => x.AvatarImage!.Length)
-        //         .Cascade(CascadeMode.Stop)
-        //         .LessThanOrEqualTo(1024 * 1024)
-        //         .WithMessage("AvatarImage is too large");
-        // });
+
+        RuleFor(x => x.AvatarUrl)
+            .Cascade(CascadeMode.Stop)
+            .Matches(Regexes.VALID_URL)
+            .WithMessage("AvatarUrl is invalid");
         
         RuleFor(x => x.BirthDate)
             .Cascade(CascadeMode.Stop)
@@ -70,12 +67,9 @@ public class RegisterPlayerValidator : AbstractValidator<RegisterPlayerCommand>
             .IsInEnum()
             .WithMessage("BirthDate is required");
             
-        When(x => x.FacebookUrl is not null, () =>
-        {
-            RuleFor(x => x.FacebookUrl)
-                .Cascade(CascadeMode.Stop)
-                .Matches(Regexes.VALID_FACEBOOK_URL)
-                .WithMessage("FacebookUrl is invalid");
-        });
+        RuleFor(x => x.FacebookUrl)
+            .Cascade(CascadeMode.Stop)
+            .Matches(Regexes.VALID_FACEBOOK_URL)
+            .WithMessage("FacebookUrl is invalid");
     }
 }
