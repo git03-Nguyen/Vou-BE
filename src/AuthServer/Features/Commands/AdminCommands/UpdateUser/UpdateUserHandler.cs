@@ -102,7 +102,6 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, BaseResponse
                  }
              }
              
-            
              if (request.FullName != null)
              {
                      user.FullName = request.FullName;
@@ -122,7 +121,7 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, BaseResponse
              }
              if (counterpart != null)
              {
-                 _unitOfWork.CounterParts.Update(counterpart);
+               _unitOfWork.CounterParts.Update(counterpart);
              }
              await _unitOfWork.SaveChangesAsync(cancellationToken);
             
@@ -142,7 +141,6 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, BaseResponse
                 IsBlocked = user.IsBlocked,
                 BlockedDate = user.BlockedDate,
                 // For counterpart
-                Name = counterpart?.Name,
                 Field =counterpart?.Field,
                 Addresses = counterpart?.Addresses,
                 // For player

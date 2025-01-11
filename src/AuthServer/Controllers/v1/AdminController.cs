@@ -84,7 +84,7 @@ public class AdminController : ControllerBase
         return response.ToObjectResult();
     }
     
-    [HttpPatch("UpdateProfile")]
+    [HttpPatch("UpdateUserProfile")]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserCommand request, CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(request, cancellationToken);
