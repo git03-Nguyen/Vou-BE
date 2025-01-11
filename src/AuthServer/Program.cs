@@ -32,6 +32,7 @@ public class Program
             .ConfigureFluentValidation(typeof(Program).Assembly)
             .ConfigureSwagger(builder.Configuration)
             .ConfigureExceptionHandler();
+        
 
         // Configure the HTTP request pipeline.
         var app = builder.Build();
