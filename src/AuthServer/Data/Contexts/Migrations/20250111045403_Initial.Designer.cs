@@ -7,13 +7,14 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using Shared.Contracts;
 
 #nullable disable
 
 namespace AuthServer.Data.Contexts.Migrations
 {
     [DbContext(typeof(AuthDbContext))]
-    [Migration("20250107171100_Initial")]
+    [Migration("20250111045403_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -26,6 +27,79 @@ namespace AuthServer.Data.Contexts.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("AuthServer.Data.Models.CounterPart", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<Address[]>("Addresses")
+                        .HasColumnType("jsonb");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("DeletedDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Field")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("ModifiedDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CounterParts", "auth");
+                });
+
+            modelBuilder.Entity("AuthServer.Data.Models.Player", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("BirthDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<DateTime?>("DeletedDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("DeviceId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FacebookUrl")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("ModifiedDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Players", "auth");
+                });
 
             modelBuilder.Entity("AuthServer.Data.Models.User", b =>
                 {
@@ -128,21 +202,21 @@ namespace AuthServer.Data.Contexts.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "9de65cd0-9b44-4266-a902-d8d907a13671",
+                            Id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
                             AccessFailedCount = 0,
                             ConcurrencyStamp = "b5c97c3c-4201-452b-a3c8-e3a74cc1e1f9",
                             CreatedBy = "SYSTEM",
-                            CreatedDate = new DateTime(2025, 1, 8, 0, 10, 59, 559, DateTimeKind.Local).AddTicks(2635),
+                            CreatedDate = new DateTime(2025, 1, 11, 11, 54, 2, 174, DateTimeKind.Local).AddTicks(6068),
                             Email = "admin@admin.com",
                             EmailConfirmed = false,
                             FullName = "Quản trị viên",
                             IsBlocked = false,
                             IsDeleted = false,
                             LockoutEnabled = false,
-                            ModifiedDate = new DateTime(2025, 1, 8, 0, 10, 59, 559, DateTimeKind.Local).AddTicks(2653),
+                            ModifiedDate = new DateTime(2025, 1, 11, 11, 54, 2, 174, DateTimeKind.Local).AddTicks(6083),
                             NormalizedEmail = "ADMIN@ADMIN.COM",
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEFbM0iIX4wZv1ay/yZApBfh5f6Rv60QDiMxUAvvu+lUfdj3SNhAJpoI+jcvg+v9DbQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEEd4UUcawoYEHG5S0lAixhtqKTYxLeQp5Brn2W/IZ32jQe+fUODN7aSGIWnr4plnfw==",
                             PhoneNumberConfirmed = false,
                             Role = "ADMIN",
                             SecurityStamp = "TQXRJCFWDCRPAM7NWGC6DL2G3W5MMXKT",
@@ -179,19 +253,19 @@ namespace AuthServer.Data.Contexts.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "c32ba259-6094-474b-a730-60b8aae724e2",
+                            Id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
                             Name = "ADMIN",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "d999706f-5829-4be8-bc51-05383533dfb3",
+                            Id = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
                             Name = "COUNTERPART",
                             NormalizedName = "COUNTERPART"
                         },
                         new
                         {
-                            Id = "eb161112-0780-4099-94cc-c89a78257aff",
+                            Id = "cccccccc-cccc-cccc-cccc-cccccccccccc",
                             Name = "PLAYER",
                             NormalizedName = "PLAYER"
                         });
@@ -286,8 +360,8 @@ namespace AuthServer.Data.Contexts.Migrations
                     b.HasData(
                         new
                         {
-                            UserId = "9de65cd0-9b44-4266-a902-d8d907a13671",
-                            RoleId = "c32ba259-6094-474b-a730-60b8aae724e2"
+                            UserId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                            RoleId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
                         });
                 });
 
@@ -308,6 +382,24 @@ namespace AuthServer.Data.Contexts.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", "auth");
+                });
+
+            modelBuilder.Entity("AuthServer.Data.Models.CounterPart", b =>
+                {
+                    b.HasOne("AuthServer.Data.Models.User", null)
+                        .WithOne()
+                        .HasForeignKey("AuthServer.Data.Models.CounterPart", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("AuthServer.Data.Models.Player", b =>
+                {
+                    b.HasOne("AuthServer.Data.Models.User", null)
+                        .WithOne()
+                        .HasForeignKey("AuthServer.Data.Models.Player", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

@@ -3,6 +3,7 @@ using Asp.Versioning;
 using AuthServer.Features.Commands.AdminCommands.BlockUser;
 using AuthServer.Features.Commands.AdminCommands.CreateUser;
 using AuthServer.Features.Commands.AdminCommands.UnblockUser;
+using AuthServer.Features.Commands.UserCommands.ChangePassword;
 using AuthServer.Features.Commands.UserCommands.UserLogin;
 using AuthServer.Features.Queries.AdminQueries.GetAllUsers;
 using AuthServer.Features.Queries.UserQueries.GetOwnProfile;
@@ -71,6 +72,14 @@ public class AdminController : ControllerBase
     public async Task<IActionResult> GetOwnProfile(CancellationToken cancellationToken)
     {
         var request = new GetOwnProfileQuery();
+        var response = await _mediator.Send(request, cancellationToken);
+        return response.ToObjectResult();
+    }
+    
+    [Authorize]
+    [HttpPost("ChangePassword")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand request, CancellationToken cancellationToken)
+    {
         var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
     }

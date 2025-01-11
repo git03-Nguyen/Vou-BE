@@ -33,7 +33,7 @@ public static class AuthDbContextSeeds
                 FullName = "Quản trị viên",
                 Email = "admin@admin.com",
                 NormalizedEmail = "ADMIN@ADMIN.COM",
-                PasswordHash = "AQAAAAIAAYagAAAAEFbM0iIX4wZv1ay/yZApBfh5f6Rv60QDiMxUAvvu+lUfdj3SNhAJpoI+jcvg+v9DbQ==", // password: Admin@123
+                PasswordHash = "AQAAAAIAAYagAAAAEEd4UUcawoYEHG5S0lAixhtqKTYxLeQp5Brn2W/IZ32jQe+fUODN7aSGIWnr4plnfw==", // password: Admin@123
                 SecurityStamp = "TQXRJCFWDCRPAM7NWGC6DL2G3W5MMXKT",
                 ConcurrencyStamp = "b5c97c3c-4201-452b-a3c8-e3a74cc1e1f9",
                 CreatedBy = Constants.SYSTEM,
