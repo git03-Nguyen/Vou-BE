@@ -120,7 +120,7 @@ public class RegisterCounterPartHandler : IRequestHandler<RegisterCounterPartCom
         {
             Id = user.Id,
             Field = request.Field,
-            Addresses = request.Addresses,
+            Addresses = request.Address,
         };
         await _unitOfWork.CounterParts.AddAsync(counterPart, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

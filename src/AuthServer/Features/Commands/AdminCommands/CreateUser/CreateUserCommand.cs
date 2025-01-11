@@ -12,13 +12,13 @@ public class CreateUserCommand : IRequest<BaseResponse<UserFullProfileDto>>
     public string Password { get; set; }
     public string PhoneNumber { get; set; }
     public string FullName { get; set; }
-    // public IFormFile? AvatarImage { get; set; }
+    public string? AvatarUrl { get; set; }
     
     public string Role { get; set; }
     
     // For CounterPart
     public string? Field { get; set; }
-    public string Addresses { get; set; }
+    public string Address { get; set; }
     
     // For Player
     public DateTime? BirthDate { get; set; }

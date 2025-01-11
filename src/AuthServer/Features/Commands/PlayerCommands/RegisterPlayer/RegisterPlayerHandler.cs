@@ -58,6 +58,7 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
                 UserName = request.UserName,
                 FullName = request.FullName,
                 PhoneNumber = request.PhoneNumber,
+                AvatarUrl = request.AvatarUrl ?? Common.Constants.DefaultAvatarUrl,
                 Role = Constants.COUNTERPART
             };
             
