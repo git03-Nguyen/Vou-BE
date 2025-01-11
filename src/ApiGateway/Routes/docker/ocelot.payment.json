@@ -1,0 +1,31 @@
+{
+  "Routes": [
+    // HealthCheck - public
+    {
+      "SwaggerKey": "paymentservice",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "paymentservice",
+          "Port": 5100
+        }
+      ],
+      "DownstreamPathTemplate": "/",
+      "UpstreamPathTemplate": "/PaymentService",
+      "UpstreamHttpMethod": [ "GET" ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "15s",
+        "PeriodTimespan": 1,
+        "Limit": 100
+      },
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": null,
+        "AllowedScopes": []
+      }
+    }
+  ]
+}

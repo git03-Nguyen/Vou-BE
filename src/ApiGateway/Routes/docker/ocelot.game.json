@@ -1,0 +1,58 @@
+{
+  "Routes": [
+    // HealthCheck - public
+    {
+      "SwaggerKey": "gameservice",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "gameservice",
+          "Port": 5100
+        }
+      ],
+      "DownstreamPathTemplate": "/",
+      "UpstreamPathTemplate": "/GameService",
+      "UpstreamHttpMethod": [ "GET" ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "15s",
+        "PeriodTimespan": 1,
+        "Limit": 100
+      },
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": null,
+        "AllowedScopes": []
+      }
+    },
+    // GameController
+    {
+      "SwaggerKey": "gameservice",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "gameservice",
+          "Port": 5100
+        }
+      ],
+      "DownstreamPathTemplate": "/api/1/Game/{everything}",
+      "UpstreamPathTemplate": "/GameService/api/1/Game/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "15s",
+        "PeriodTimespan": 1,
+        "Limit": 100
+      },
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "IdentityApiKey",
+        "AllowedScopes": [ "service_scope" ]
+      }
+    }
+  ]
+}

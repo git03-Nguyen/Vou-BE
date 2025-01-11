@@ -12,25 +12,25 @@ public static class AuthRegistrations
         var authServerOptions = configuration.GetSection(AuthenticationOptions.OptionName).Get<AuthenticationOptions>();
         var secretBytes = Encoding.ASCII.GetBytes(authServerOptions?.Secret ?? String.Empty);
         services.AddAuthentication(x =>
+        {
+            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, option =>
+        {
+            option.Authority = authServerOptions?.Authority;
+            option.RequireHttpsMetadata = false;
+            option.SaveToken = true;
+            option.TokenValidationParameters = new TokenValidationParameters
             {
-                x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, option =>
-            {
-                option.Authority = authServerOptions?.Authority;
-                option.RequireHttpsMetadata = false;
-                option.SaveToken = true;
-                option.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateAudience = false,
-                    ValidateIssuer = false,
-                    ValidateIssuerSigningKey = false,
-                    RequireExpirationTime = true,
-                    ValidateLifetime = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(secretBytes)
-                };
-            });
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = false,
+                RequireExpirationTime = true,
+                ValidateLifetime = true,
+                IssuerSigningKey = new SymmetricSecurityKey(secretBytes)
+            };
+        });
         
         return services;
     }

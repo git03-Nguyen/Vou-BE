@@ -26,22 +26,45 @@ services:
   voudb:
     image: postgres
     
-    
   #############################
   ######### SERVICES ##########
   #############################  
+  
+  apigateway:
+    image: ${DOCKER_REGISTRY-}apigateway
+    build:
+      context: .
+      dockerfile: src/ApiGateway/Dockerfile
+  
   authserver:
     image: ${DOCKER_REGISTRY-}authserver
     build:
       context: .
-      dockerfile: AuthServer/Dockerfile
+      dockerfile: src/AuthServer/Dockerfile
       
+  eventservice:
+    image: ${DOCKER_REGISTRY-}eventservice
+    build:
+      context: .
+      dockerfile: src/EventService/Dockerfile
+      
+  gameservice:
+    image: ${DOCKER_REGISTRY-}gameservice
+    build:
+      context: .
+      dockerfile: src/GameService/Dockerfile
+      
+  paymentservice:
+    image: ${DOCKER_REGISTRY-}paymentservice
+    build:
+      context: .
+      dockerfile: src/PaymentService/Dockerfile
       
   #############################
   ######## BACKGROUND #########
   #############################
-  
-  
+
+
   
 volumes:
   db-data:

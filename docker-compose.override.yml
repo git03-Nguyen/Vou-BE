@@ -43,20 +43,95 @@ services:
   #############################
   ######### SERVICES ##########
   #############################
-  authserver:
-    container_name: authserver
+  apigateway:
+    container_name: apigateway
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=docker
       - ASPNETCORE_URLS=http://+:5000
-      - "DatabaseSettings:ConnectionString=Server=localhost;Port=5432;Database=authdb;User Id=admin;Password=admin1234;"
+      - DatabaseSettings__ConnectionString=Host=voudb;Port=5432;Database=voudb;Username=admin;Password=admin1234;
+      - Authentication__Authority=http://authserver:5100
+      - Authentication__Secret=my_very_very_very_very_long_long_secret
+      - Logging__Elk__Enabled=false
+      - Logging__Elk__Uri=http://elasticsearch:9200
     depends_on:
       - voudb
     ports:
-      - "5000"
+      - "5000:5000"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ~/.aspnet/https:/https:ro
-      
+  
+  authserver:
+    container_name: authserver
+    environment:
+      - ASPNETCORE_ENVIRONMENT=docker
+      - ASPNETCORE_URLS=http://+:5100
+      - DatabaseSettings__ConnectionString=Server=voudb;Port=5432;Database=voudb;Username=admin;Password=admin1234;
+      - Authentication__Authority=http://authserver:5100
+      - Authentication__Secret=my_very_very_very_very_long_long_secret
+      - Logging__Elk__Enabled=false
+      - Logging__Elk__Uri=http://elasticsearch:9200
+    depends_on:
+      - voudb
+    ports:
+      - "5100:5100"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ~/.aspnet/https:/https:ro
+        
+  eventservice:
+    container_name: eventservice
+    environment:
+      - ASPNETCORE_ENVIRONMENT=docker
+      - ASPNETCORE_URLS=http://+:5200
+      - DatabaseSettings__ConnectionString=Host=voudb;Port=5432;Database=voudb;Username=admin;Password=admin1234;
+      - Authentication__Authority=http://authserver:5100
+      - Authentication__Secret=my_very_very_very_very_long_long_secret
+      - Logging__Elk__Enabled=false
+      - Logging__Elk__Uri=http://elasticsearch:9200
+    depends_on:
+      - voudb
+    ports:
+      - "5200:5200"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ~/.aspnet/https:/https:ro
+    
+  gameservice:
+    container_name: gameservice
+    environment:
+      - ASPNETCORE_ENVIRONMENT=docker
+      - ASPNETCORE_URLS=http://+:5300
+      - DatabaseSettings__ConnectionString=Host=voudb;Port=5432;Database=voudb;Username=admin;Password=admin1234;
+      - Authentication__Authority=http://authserver:5100
+      - Authentication__Secret=my_very_very_very_very_long_long_secret
+      - Logging__Elk__Enabled=false
+      - Logging__Elk__Uri=http://elasticsearch:9200
+    depends_on:
+      - voudb
+    ports:
+      - "5300:5300"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ~/.aspnet/https:/https:ro
+  
+  paymentservice:
+    container_name: paymentservice
+    environment:
+      - ASPNETCORE_ENVIRONMENT=docker
+      - ASPNETCORE_URLS=http://+:5400
+      - DatabaseSettings__ConnectionString=Host=voudb;Port=5432;Database=voudb;Username=admin;Password=admin1234;
+      - Authentication__Authority=http://authserver:5100
+      - Authentication__Secret=my_very_very_very_very_long_long_secret
+      - Logging__Elk__Enabled=false
+      - Logging__Elk__Uri=http://elasticsearch:9200
+    depends_on:
+      - voudb
+    ports:
+      - "5400:5400"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ~/.aspnet/https:/https:ro
       
   #############################
   ######## BACKGROUND #########

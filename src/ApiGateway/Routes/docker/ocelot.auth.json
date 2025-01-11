@@ -1,0 +1,112 @@
+{
+  "Routes": [
+    // HealthCheck - public
+    {
+      "SwaggerKey": "authserver",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authserver",
+          "Port": 5100
+        }
+      ],
+      "DownstreamPathTemplate": "/",
+      "UpstreamPathTemplate": "/AuthServer",
+      "UpstreamHttpMethod": [ "GET" ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "15s",
+        "PeriodTimespan": 1,
+        "Limit": 100
+      },
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": null,
+        "AllowedScopes": []
+      }
+    },
+    // AdminController
+    {
+      "SwaggerKey": "authserver",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authserver",
+          "Port": 5100
+        }
+      ],
+      "DownstreamPathTemplate": "/api/1/Admin/{everything}",
+      "UpstreamPathTemplate": "/AuthServer/api/1/Admin/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "15s",
+        "PeriodTimespan": 1,
+        "Limit": 100
+      },
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": null,
+        "AllowedScopes": []
+      }
+    },
+    // CounterPartController
+    {
+      "SwaggerKey": "authserver",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authserver",
+          "Port": 5100
+        }
+      ],
+      "DownstreamPathTemplate": "/api/1/CounterPart/{everything}",
+      "UpstreamPathTemplate": "/AuthService/api/1/CounterPart/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "15s",
+        "PeriodTimespan": 1,
+        "Limit": 50
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": null,
+        "AllowedScopes": []
+      },
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      }
+    },
+    // PlayerController
+    {
+      "SwaggerKey": "authserver",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "authserver",
+          "Port": 5100
+        }
+      ],
+      "DownstreamPathTemplate": "/api/1/Player/{everything}",
+      "UpstreamPathTemplate": "/AuthService/api/1/Player/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "15s",
+        "PeriodTimespan": 1,
+        "Limit": 50
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": null,
+        "AllowedScopes": []
+      },
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      }
+    }
+  ]
+}

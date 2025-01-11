@@ -1,0 +1,44 @@
+{
+  "SwaggerEndPoints": [
+    {
+      "Key": "authserver",
+      "Config": [
+        {
+          "Name": "AuthServer API",
+          "Version": "v1",
+          "Url": "http://authserver:5100/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "eventservice",
+      "Config": [
+        {
+          "Name": "EventService API",
+          "Version": "v1",
+          "Url": "http://eventservice:5200/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "gameservice",
+      "Config": [
+        {
+          "Name": "GameService API",
+          "Version": "v1",
+          "Url": "http://gameservice:5300/swagger/v1/swagger.json"
+        }
+      ]
+    },
+    {
+      "Key": "paymentservice",
+      "Config": [
+        {
+          "Name": "PaymentService API",
+          "Version": "v1",
+          "Url": "http://paymentservice:5400/swagger/v1/swagger.json"
+        }
+      ]
+    }
+  ]
+}

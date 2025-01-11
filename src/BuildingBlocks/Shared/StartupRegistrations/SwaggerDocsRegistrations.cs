@@ -68,7 +68,7 @@ public static class SwaggerDocsRegistrations
     {
         if (environment.IsProduction()) return app;
         app.UseSwagger();
-        app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v2/swagger.json", "Vou-BE"));
+        app.UseSwaggerUI();
         return app;
     }
 }

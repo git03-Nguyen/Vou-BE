@@ -13,11 +13,10 @@ public static class OcelotRegistrations
         var currentEnv = configuration.GetSection("ASPNETCORE_ENVIRONMENT").Value;
         var ocelotOptions = configuration.GetSection(OcelotOptions.OptionName).Get<OcelotOptions>();
         var path = ocelotOptions?.Path ?? "Routes";
-        var env = ocelotOptions?.Environment ?? currentEnv;
 
         if (string.Equals(currentEnv, "localhost", StringComparison.OrdinalIgnoreCase))
         {
-            var environments = new[] { "localhost" };
+            var environments = new[] { "localhost", "docker" };
             foreach (var environment in environments)
             {
                 configuration.AddOcelotWithSwaggerSupport(options =>
@@ -28,7 +27,7 @@ public static class OcelotRegistrations
             }
         }
         
-        configuration.AddJsonFile($"ocelot.{env?.ToLower()}.json", optional: true, reloadOnChange: true);
+        configuration.AddJsonFile($"ocelot.{currentEnv?.ToLower()}.json", optional: true, reloadOnChange: true);
         return configuration;
     }
     

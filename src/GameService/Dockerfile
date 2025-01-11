@@ -6,6 +6,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["src/GameService/GameService.csproj", "src/GameService/"]
+COPY ["src/BuildingBlocks/Shared/Shared.csproj", "src/BuildingBlocks/Shared/"]
 RUN dotnet restore "src/GameService/GameService.csproj"
 COPY . .
 WORKDIR "/src/src/GameService"
