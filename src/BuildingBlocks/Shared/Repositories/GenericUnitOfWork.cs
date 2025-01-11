@@ -6,7 +6,7 @@ namespace Shared.Repositories;
 public abstract class GenericUnitOfWork<TDbContext> : IGenericUnitOfWork, IAsyncDisposable where TDbContext: DbContext
 {
     protected readonly TDbContext DbContext;
-    protected IDbContextTransaction Transaction;
+    protected IDbContextTransaction? Transaction;
     public GenericUnitOfWork(TDbContext dbContext)
     {
         DbContext = dbContext;
@@ -35,8 +35,11 @@ public abstract class GenericUnitOfWork<TDbContext> : IGenericUnitOfWork, IAsync
 
     public async ValueTask DisposeAsync()
     {
+        if (Transaction is not null)
+        {
+            await Transaction.DisposeAsync();
+        }
         await DbContext.DisposeAsync();
-        await Transaction.DisposeAsync();
         GC.SuppressFinalize(this);
     }
 }

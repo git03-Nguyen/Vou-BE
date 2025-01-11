@@ -1,4 +1,5 @@
 using IdentityModel;
+using IdentityServer4;
 using IdentityServer4.Models;
 
 namespace AuthServer.Common;
@@ -8,11 +9,15 @@ public static class AuthConfig
     public static IEnumerable<ApiScope> ApiScopes =>
     [
         new("service_scope", "Service Scope"),
+        new(IdentityServerConstants.StandardScopes.OfflineAccess)
     ];
     
     public static IEnumerable<ApiResource> ApiResources =>
     [
-        new("service_api", "Service API") { Scopes = { "service_scope" } }
+        new("service_api", "Service API")
+        {
+            Scopes = { "service_scope" },
+        }
     ];
 
     // Identity resources are data like user ID, name, or email address of a user
@@ -30,13 +35,18 @@ public static class AuthConfig
             ClientId = "pwd.client",
             ClientName = "Password-Flow Client",
             AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-            ClientSecrets = { new Secret("secret".Sha256()) },
-            AccessTokenLifetime = 604800, // 7 days
+            ClientSecrets = { new Secret("client_secret".Sha256()) },
+            AccessTokenLifetime = 86400, // 1 days
+            AccessTokenType = AccessTokenType.Jwt,
+            AllowOfflineAccess = true,
+            RefreshTokenUsage = TokenUsage.OneTimeOnly,
+            RefreshTokenExpiration = TokenExpiration.Absolute,
+            AbsoluteRefreshTokenLifetime = 604800, // 7 days
             AllowedScopes =
             {
                 "service_scope"
             },
-            AllowOfflineAccess = true
+            UpdateAccessTokenClaimsOnRefresh = true
         }
     ];
 }

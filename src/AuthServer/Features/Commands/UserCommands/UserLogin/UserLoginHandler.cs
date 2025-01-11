@@ -3,6 +3,7 @@ using AuthServer.Common;
 using AuthServer.Data.Models;
 using AuthServer.DTOs;
 using AuthServer.Repositories;
+using IdentityServer4;
 using IdentityServer4.Models;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -90,8 +91,8 @@ public class UserLoginHandler : IRequestHandler<UserLoginCommand, BaseResponse<U
             var client = AuthConfig.Clients.First(c => c.AllowedGrantTypes.Contains(GrantType.ResourceOwnerPassword));
             var grantType = GrantType.ResourceOwnerPassword;
             var clientId = client.ClientId;
-            var clientSecret = client.ClientSecrets.First().Value;
-            var scope = string.Join(" ", client.AllowedScopes);
+            var clientSecret = "client_secret";
+            var scope = string.Join(" ", client.AllowedScopes.Concat([IdentityServerConstants.StandardScopes.OfflineAccess]));
             var identityServerUrl = _authenticationOptions.Authority;
             var identityServerTokenEndpoint = _authenticationOptions.Authority + "/connect/token";
             
@@ -105,7 +106,7 @@ public class UserLoginHandler : IRequestHandler<UserLoginCommand, BaseResponse<U
                 { "grant_type", grantType },
                 { "client_id", clientId },
                 { "client_secret", clientSecret },
-                { isEmailOrUserName ? "email" : "username", request.EmailOrUserName },
+                { "username", user.UserName ?? string.Empty },
                 { "password", request.Password },
                 { "scope", scope }
             };
@@ -140,11 +141,15 @@ public class UserLoginHandler : IRequestHandler<UserLoginCommand, BaseResponse<U
                 player = await _unitOfWork.Players.Where(x => x.Id == user.Id).FirstOrDefaultAsync(cancellationToken);
             }
             
+            var hasAccessToken = httpResponseDictionary.TryGetValue("access_token", out var accessToken);
+            var hasRefreshToken = httpResponseDictionary.TryGetValue("refresh_token", out var refreshToken);
+            var hasExpiresIn = httpResponseDictionary.TryGetValue("expires_in", out var expiresIn);
+            
             var responseData = new UserLoginResponseDto
             {
-                AccessToken = httpResponseDictionary["access_token"].ToString(),
-                RefreshToken = httpResponseDictionary["refresh_token"].ToString(),
-                ExpiresIn = httpResponseDictionary["expires_in"].GetInt32(),
+                AccessToken = hasAccessToken ? accessToken.ToString() : string.Empty,
+                RefreshToken = hasRefreshToken ? refreshToken.ToString() : string.Empty,
+                ExpiresIn = hasExpiresIn ? expiresIn.GetInt32() : 0,
                 FullProfile = new UserFullProfileDto
                 {
                     Id = user.Id,

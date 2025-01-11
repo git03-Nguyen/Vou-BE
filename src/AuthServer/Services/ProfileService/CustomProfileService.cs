@@ -22,8 +22,9 @@ public class CustomProfileService : IProfileService
         var roles = await _userManager.GetRolesAsync(user);
         var claims = new List<Claim>
         {
-            new(JwtClaimTypes.Subject, user.Id),
+            new(JwtClaimTypes.Id, user.Id),
             new(JwtClaimTypes.Email, user.Email ?? string.Empty),
+            new("username", user.UserName ?? string.Empty),
             new(JwtClaimTypes.Role, roles.FirstOrDefault() ?? "USER"),
         };
         context.IssuedClaims.AddRange(claims);
