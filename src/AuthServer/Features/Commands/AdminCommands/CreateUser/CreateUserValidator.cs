@@ -76,10 +76,7 @@ public class CreateUserValidator : AbstractValidator<CreateUserCommand>
                 .Cascade(CascadeMode.Stop)
                 .NotNull()
                 .NotEmpty()
-                .WithMessage("Addresses is required");
-            
-            RuleFor(x => x.Address)
-                .NotEmpty()
+                .WithMessage("Addresses is required")
                 .Matches(Regexes.VALID_ADDRESS_TEXT)
                 .WithMessage("AddressText is invalid");
         });
@@ -100,7 +97,7 @@ public class CreateUserValidator : AbstractValidator<CreateUserCommand>
                 .NotNull()
                 .NotEmpty()
                 .IsInEnum()
-                .WithMessage("BirthDate is required");
+                .WithMessage("Gender is required");
             
             RuleFor(x => x.FacebookUrl)
                 .Cascade(CascadeMode.Stop)

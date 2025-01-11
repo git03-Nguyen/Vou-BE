@@ -72,7 +72,7 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, BaseResponse
                         _logger.LogInformation(player.Gender.ToString());
                     }
 
-                    if (!string.IsNullOrEmpty(request.FacebookUrl))
+                    if (request.FacebookUrl != null)
                     {
                         player.FacebookUrl = request.FacebookUrl;
                     }
@@ -90,7 +90,7 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, BaseResponse
                  }
                  else
                  {
-                     if (!string.IsNullOrEmpty(request.Field))
+                     if (request.Field != null)
                      {
                          counterpart.Field = request.Field;
                      }

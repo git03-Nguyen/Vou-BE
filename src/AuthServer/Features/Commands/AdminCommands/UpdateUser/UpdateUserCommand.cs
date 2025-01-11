@@ -25,7 +25,7 @@ public class UpdateUserCommand : IRequest<BaseResponse<UserFullProfileDto>>
     //for counterpart
     public string? Field { get; set; }
     
-    public string Addresses { get; set; }
+    public string? Addresses { get; set; }
     
     
 }
