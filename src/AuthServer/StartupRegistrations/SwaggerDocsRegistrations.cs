@@ -29,8 +29,8 @@ public static class SwaggerDocsRegistrations
             options.SchemaFilter<SwaggerEnumFilter>();
             options.CustomSchemaIds(type => type.ToString());
 
-            var filePath = Path.Combine(AppContext.BaseDirectory, $"{currentService}.xml");
-            options.IncludeXmlComments(filePath, true);
+            // var filePath = Path.Combine(AppContext.BaseDirectory, $"{currentService}.xml");
+            // options.IncludeXmlComments(filePath, true);
 
             options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
             {
