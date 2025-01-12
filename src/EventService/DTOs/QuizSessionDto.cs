@@ -9,6 +9,6 @@ public class QuizSessionDto
     public string EventId { get; set; }
     public VoucherDto? Voucher { get; set; }
     public QuizSetDto QuizSet { get; set; }
-    public uint TakeTop { get; set; } = 50; // 50%
+    public int TakeTop { get; set; } = 50; // 50%
     public DateTime StartTime { get; set; }
 }

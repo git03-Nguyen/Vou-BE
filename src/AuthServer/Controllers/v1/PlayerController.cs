@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using AuthServer.Features.Commands.PlayerCommands.RegisterPlayer;
 using AuthServer.Features.Commands.UserCommands.ChangePassword;
+using AuthServer.Features.Commands.UserCommands.UpdateOwnUserProfile;
 using AuthServer.Features.Commands.UserCommands.UserLogin;
 using AuthServer.Features.Queries.UserQueries.GetOwnProfile;
 using MediatR;
@@ -60,4 +61,11 @@ public class PlayerController : ControllerBase
     //     var response = await _mediator.Send(command, cancellationToken);
     //     return response.ToObjectResult();
     // }
+    
+    [HttpPatch("UpdateProfile")]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateOwnUserProfileCommand request, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(request, cancellationToken);
+        return response.ToObjectResult();
+    }
 }

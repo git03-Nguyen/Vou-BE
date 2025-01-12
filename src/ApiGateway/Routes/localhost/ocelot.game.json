@@ -117,8 +117,8 @@
           "Port": 5300
         }
       ],
-      "DownstreamPathTemplate": "/api/1/Player/{everything}",
-      "UpstreamPathTemplate": "/GameService/api/1/Player/{everything}",
+      "DownstreamPathTemplate": "/ws/{everything}",
+      "UpstreamPathTemplate": "/ws/{everything}",
       "DownstreamScheme": "ws",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
       "LoadBalancerOptions": {

@@ -1,8 +1,8 @@
-namespace EventService.DTOs;
+namespace EventService.DTOs.InputDtos;
 
-public class ShakeSessionDto
+public class ShakeSessionInputDto
 {
-    public VoucherDto? Voucher { get; set; }
+    public string VoucherId { get; set; }
     public long Price { get; set; }
     public int WinRate { get; set; }
     public int AverageDiamond { get; set; }

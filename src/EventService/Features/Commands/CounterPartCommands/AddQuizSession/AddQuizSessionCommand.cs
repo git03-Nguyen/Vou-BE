@@ -1,14 +1,14 @@
-using Shared.Domain;
-using Shared.Enums;
+using EventService.DTOs;
+using MediatR;
+using Shared.Response;
 
-namespace EventService.Data.Models;
+namespace EventService.Features.Commands.CounterPartCommands.AddQuizSession;
 
-public class QuizSession : BaseEntity
+public class AddQuizSessionCommand : IRequest<BaseResponse<FullEventDto>>
 {
     public string EventId { get; set; }
     public string VoucherId { get; set; }
     public string QuizSetId { get; set; }
     public int TakeTop { get; set; } = 50; // 50%
     public DateTime StartTime { get; set; }
-    public QuizSessionStatus Status { get; set; } = QuizSessionStatus.Pending;
 }
