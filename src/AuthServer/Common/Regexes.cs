@@ -10,6 +10,7 @@ public static class Regexes
     public static readonly string VALID_COUNTERPART_FIELD = @"^[\p{L}0-9'. ]{1,50}$";
     public static readonly string VALID_ADDRESS_TEXT = @"^[\p{L}0-9'., ]{1,250}$";
     public static readonly string VALID_FACEBOOK_URL = @"^((https?:\/\/)?(www\.)?)?facebook\.com\/[a-zA-Z0-9.]+$";
-    public static readonly string VALID_URL = @"^((https?:\/\/)?(www\.)?)?[a-zA-Z0-9.]+\.[a-z]+$";
+    public static readonly string VALID_URL = @"^((https?):\/\/)?([a-zA-Z0-9\-\.]+)\.([a-zA-Z]{2,3})(\/[a-zA-Z0-9\-\._\?\,\'\/\\\+&amp;%\$#\=~]*)?$";
+
     
 }
