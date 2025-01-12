@@ -2,6 +2,7 @@ using System.Text.Json;
 using AuthServer.Data.Models;
 using AuthServer.DTOs;
 using AuthServer.Repositories;
+using AuthServer.Services.EmailService;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -16,11 +17,13 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
     private readonly ILogger<RegisterPlayerValidator> _logger;
     private readonly UserManager<User> _userManager;
     private readonly IUnitOfWork _unitOfWork;
-    public RegisterPlayerHandler(ILogger<RegisterPlayerValidator> logger, UserManager<User> userManager, IUnitOfWork unitOfWork)
+    private readonly IEmailService _emailService;
+    public RegisterPlayerHandler(ILogger<RegisterPlayerValidator> logger, UserManager<User> userManager, IUnitOfWork unitOfWork, IEmailService emailService)
     {
         _logger = logger;
         _userManager = userManager;
         _unitOfWork = unitOfWork;
+        _emailService = emailService;
     }
 
     public async Task<BaseResponse<UserFullProfileDto>> Handle(RegisterPlayerCommand request, CancellationToken cancellationToken)
@@ -49,6 +52,9 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
                 response.ToBadRequestResponse("User already exists");
                 return response;
             }
+            //Generate OTP activate code
+            var random = new Random();
+            var otp =  random.Next(100000, 999999).ToString();
             
             // 2. Create user
             var user = new User
@@ -59,7 +65,9 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
                 FullName = request.FullName,
                 PhoneNumber = request.PhoneNumber,
                 AvatarUrl = request.AvatarUrl ?? Common.Constants.DefaultAvatarUrl,
-                Role = Constants.PLAYER
+                Role = Constants.PLAYER,
+                OtpActivateCode = otp,
+                OtpActivateExpiredTime = DateTime.Now.AddMinutes(30)
             };
             
             // 3. Add user
@@ -96,8 +104,10 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
                 FacebookUrl = player.FacebookUrl,
                 BirthDate = player.BirthDate
             };
-            
-            response.ToSuccessResponse(responseData);
+            await _userManager.UpdateAsync(user);
+            // 5. Send email
+            await SendActivateOtp(user);
+            response.ToSuccessResponse(responseData, "Register successfully. Please check your email to activate account");
         }
         catch (Exception e)
         {
@@ -129,5 +139,12 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
         await _unitOfWork.Players.AddAsync(player, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return player;
+    }
+    //send OTP to activate account
+    private async Task SendActivateOtp(User user)
+    {
+        if (user.OtpActivateCode != null)
+            await _emailService.SendEmailAsync(user.Email, Common.Constants.ActivateSubjectEmail,
+                Common.Constants.GetOtpActivateAccountMessage(user.OtpActivateCode));
     }
 }

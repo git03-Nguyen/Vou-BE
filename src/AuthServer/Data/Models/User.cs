@@ -20,4 +20,12 @@ public class User : IdentityUser, IBaseEntity
     public DateTime? ModifiedDate { get; set; } = DateTime.Now;
     public DateTime? DeletedDate { get; set; }
     public string? CreatedBy { get; set; }
+    
+    //OTP activate account code and expired time
+    public string? OtpActivateCode { get; set; }
+    public DateTime? OtpActivateExpiredTime { get; set; }
+    //OTP reset password code and expired time
+    public string? OtpResetPasswordCode { get; set; }
+    public DateTime? OtpResetPasswordExpiredTime { get; set; }
+    
 }

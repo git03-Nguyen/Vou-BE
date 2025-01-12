@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using AuthServer.Features.Commands.CounterPartCommands.RegisterCounterPart;
 using AuthServer.Features.Commands.UserCommands.ChangePassword;
+using AuthServer.Features.Commands.UserCommands.ConfirmActivateOtp;
 using AuthServer.Features.Commands.UserCommands.UpdateOwnUserProfile;
 using AuthServer.Features.Commands.UserCommands.UserLogin;
 using AuthServer.Features.Queries.UserQueries.GetOwnProfile;
@@ -18,6 +19,7 @@ namespace AuthServer.Controllers.v1;
 public class CounterPartController : ControllerBase
 {
     private readonly IMediator _mediator;
+    
     public CounterPartController(IMediator mediator)
     {
         _mediator = mediator;
@@ -69,4 +71,12 @@ public class CounterPartController : ControllerBase
         var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
     }
+    
+    [HttpPatch("ActivateAccount")]
+    public async Task<IActionResult> ActivateAccount([FromBody] ConfirmActivateOtpCommand request, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(request, cancellationToken);
+        return response.ToObjectResult();
+    }
+        
 }

@@ -10,6 +10,7 @@
     <ItemGroup>
         <PackageReference Include="IdentityServer4" Version="4.1.2" />
         <PackageReference Include="IdentityServer4.AspNetIdentity" Version="4.1.2" />
+        <PackageReference Include="MailKit" Version="4.9.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="6.0.12" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.9" />
         <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
@@ -39,7 +40,6 @@
     <ItemGroup>
       <Folder Include="Extensions\" />
       <Folder Include="Features\Commands\AdminCommands\ResetUserPassword\" />
-      <Folder Include="Features\Commands\UserCommands\" />
       <Folder Include="Features\Queries\AdminQueries\" />
       <Folder Include="Features\Queries\CounterPartQueries\" />
       <Folder Include="Features\Queries\PlayerQueries\" />
