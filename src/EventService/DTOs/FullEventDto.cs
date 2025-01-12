@@ -9,6 +9,7 @@ public class FullEventDto
     public string Description { get; set; }
     public string ImageUrl { get; set; }
     public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
     public EventStatus Status { get; set; }
     public DateTime? CreatedDate { get; set; }
     public ShakeSessionDto? ShakeSession { get; set; }
