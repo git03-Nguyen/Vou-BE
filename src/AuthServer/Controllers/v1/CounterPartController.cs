@@ -18,6 +18,7 @@ namespace AuthServer.Controllers.v1;
 public class CounterPartController : ControllerBase
 {
     private readonly IMediator _mediator;
+    
     public CounterPartController(IMediator mediator)
     {
         _mediator = mediator;

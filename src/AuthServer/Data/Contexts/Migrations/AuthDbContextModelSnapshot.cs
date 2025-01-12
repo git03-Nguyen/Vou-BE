@@ -30,7 +30,6 @@ namespace AuthServer.Data.Contexts.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Addresses")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("CreatedBy")
@@ -155,6 +154,18 @@ namespace AuthServer.Data.Contexts.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
+                    b.Property<string>("OtpActivateCode")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("OtpActivateExpiredTime")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("OtpResetPasswordCode")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("OtpResetPasswordExpiredTime")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text");
 
@@ -199,14 +210,14 @@ namespace AuthServer.Data.Contexts.Migrations
                             AccessFailedCount = 0,
                             ConcurrencyStamp = "b5c97c3c-4201-452b-a3c8-e3a74cc1e1f9",
                             CreatedBy = "SYSTEM",
-                            CreatedDate = new DateTime(2025, 1, 12, 12, 9, 52, 226, DateTimeKind.Local).AddTicks(7922),
+                            CreatedDate = new DateTime(2025, 1, 12, 19, 3, 55, 541, DateTimeKind.Local).AddTicks(1539),
                             Email = "admin@admin.com",
                             EmailConfirmed = false,
                             FullName = "Quản trị viên",
                             IsBlocked = false,
                             IsDeleted = false,
                             LockoutEnabled = false,
-                            ModifiedDate = new DateTime(2025, 1, 12, 12, 9, 52, 226, DateTimeKind.Local).AddTicks(7935),
+                            ModifiedDate = new DateTime(2025, 1, 12, 19, 3, 55, 541, DateTimeKind.Local).AddTicks(1573),
                             NormalizedEmail = "ADMIN@ADMIN.COM",
                             NormalizedUserName = "ADMIN",
                             PasswordHash = "AQAAAAIAAYagAAAAEEd4UUcawoYEHG5S0lAixhtqKTYxLeQp5Brn2W/IZ32jQe+fUODN7aSGIWnr4plnfw==",
