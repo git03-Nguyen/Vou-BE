@@ -19,15 +19,31 @@ public static class Constants
     public static string GetOtpActivateAccountMessage(string otp)
     {
         return $@"
-        Thank you for registering with Vou App!
-        
-        Your OTP activation code is: {otp}
-        Please use this code to complete your registration.
+        <div style='font-family: Arial, sans-serif; line-height: 1.6; color: #333;'>
+            <h2 style='color: #4CAF50;'>Welcome to Vou App!</h2>
+            
+            <p>Thank you for registering with us. We are excited to have you on board!</p>
+            
+            <p style='font-size: 1.2em;'>
+                <strong>Your OTP activation code is:</strong>
+                <span style='color: #FF5722; font-weight: bold;'>{otp}</span>
+            </p>
 
-        Note: This code will expire in 5 minutes.
+            <p>Please use this code to complete your registration. The code is valid for <strong>5 minutes</strong>.</p>
+            
+            <hr style='border: none; border-top: 1px solid #DDD; margin: 20px 0;' />
 
-        Best regards,
-        The Vou App Team
+            <p style='font-size: 0.9em; color: #555;'>
+                If you did not request this code, please ignore this email or contact our support team.
+            </p>
+            
+            <p>Thank you for choosing Vou App!</p>
+            
+            <p style='margin-top: 20px; font-size: 0.9em; color: #888;'>
+                Best regards, <br />
+                <strong>The Vou App Team</strong>
+            </p>
+        </div>
     ";
     }
 }

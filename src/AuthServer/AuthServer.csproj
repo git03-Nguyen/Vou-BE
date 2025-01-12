@@ -40,7 +40,6 @@
     <ItemGroup>
       <Folder Include="Extensions\" />
       <Folder Include="Features\Commands\AdminCommands\ResetUserPassword\" />
-      <Folder Include="Features\Commands\UserCommands\" />
       <Folder Include="Features\Queries\AdminQueries\" />
       <Folder Include="Features\Queries\CounterPartQueries\" />
       <Folder Include="Features\Queries\PlayerQueries\" />

@@ -102,6 +102,8 @@ public class RegisterCounterPartHandler : IRequestHandler<RegisterCounterPartCom
                 Field = counterPart.Field,
                 Addresses = counterPart.Addresses
             };
+            //Save to database
+            await _userManager.UpdateAsync(user);
             
             //5. Send OTP to activate account
             await SendActivateOtp(user);
@@ -142,7 +144,6 @@ public class RegisterCounterPartHandler : IRequestHandler<RegisterCounterPartCom
     //send OTP to activate account
     private async Task SendActivateOtp(User user)
     {
-        await _userManager.UpdateAsync(user);
         if (user.OtpActivateCode != null)
             await _emailService.SendEmailAsync(user.Email, Common.Constants.ActivateSubjectEmail,
                 Common.Constants.GetOtpActivateAccountMessage(user.OtpActivateCode));
