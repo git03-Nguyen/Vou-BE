@@ -1,4 +1,4 @@
-namespace AuthServer.Common;
+namespace Shared.Common;
 
 public static class Regexes
 {
@@ -9,7 +9,7 @@ public static class Regexes
     public static readonly string VALID_FULLNAME = @"^[\p{L}0-9'. ]{1,50}$";
     public static readonly string VALID_COUNTERPART_FIELD = @"^[\p{L}0-9'. ]{1,50}$";
     public static readonly string VALID_ADDRESS_TEXT = @"^[\p{L}0-9'., ]{1,250}$";
-    public static readonly string VALID_FACEBOOK_URL = @"^((https?:\/\/)?(www\.)?)?facebook\.com\/[a-zA-Z0-9.]+$";
-    public static readonly string VALID_URL = @"^((https?:\/\/)?(www\.)?)?[a-zA-Z0-9.]+\.[a-z]+$";
+    public static readonly string VALID_FACEBOOK_URL = @"^https?://.*facebook";
+    public static readonly string VALID_URL = @"^https?://";
     
 }

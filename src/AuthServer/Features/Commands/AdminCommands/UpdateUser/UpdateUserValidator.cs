@@ -1,5 +1,6 @@
 using AuthServer.Common;
 using FluentValidation;
+using Shared.Common;
 
 namespace AuthServer.Features.Commands.AdminCommands.UpdateUser;
 

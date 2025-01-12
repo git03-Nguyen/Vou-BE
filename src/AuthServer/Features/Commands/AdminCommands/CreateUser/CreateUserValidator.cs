@@ -1,5 +1,6 @@
 using AuthServer.Common;
 using FluentValidation;
+using Shared.Common;
 using Constants = Shared.Common.Constants;
 
 namespace AuthServer.Features.Commands.AdminCommands.CreateUser;

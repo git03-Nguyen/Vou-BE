@@ -14,7 +14,7 @@ public class Event : BaseEntity
     
     // For Shake game
     public string? ShakeVoucherId { get; set; }
-    public ulong? ShakePrice { get; set; } = 250;
-    public uint? ShakeWinRate { get; set; } = 80; // 80%
-    public uint? ShakeAverageDiamond { get; set; } = 50; // 50 diamonds
+    public long? ShakePrice { get; set; } = 250;
+    public int? ShakeWinRate { get; set; } = 80; // 80%
+    public int? ShakeAverageDiamond { get; set; } = 50; // 50 diamonds
 }

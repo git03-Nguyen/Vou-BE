@@ -5,52 +5,52 @@ using Microsoft.EntityFrameworkCore;
 using Shared.Response;
 using Shared.Services.HttpContextAccessor;
 
-namespace EventService.Features.Queries.CounterPartQueries.GetOwnEvents;
+namespace EventService.Features.Queries.CounterPartQueries.GetOwnEvent;
 
-public class GetOwnEventsHandler : IRequestHandler<GetOwnEventsQuery, BaseResponse<GetOwnEventsQueryResponse>>
+public class GetOwnEventHandler : IRequestHandler<GetOwnEventQuery, BaseResponse<FullEventDto>>
 {
-    private readonly ILogger<GetOwnEventsHandler> _logger;
+    private readonly ILogger<GetOwnEventHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICustomHttpContextAccessor _contextAccessor;
-    public GetOwnEventsHandler(ILogger<GetOwnEventsHandler> logger, IUnitOfWork unitOfWork, ICustomHttpContextAccessor contextAccessor)
+    public GetOwnEventHandler(ILogger<GetOwnEventHandler> logger, IUnitOfWork unitOfWork, ICustomHttpContextAccessor contextAccessor)
     {
         _logger = logger;
         _unitOfWork = unitOfWork;
         _contextAccessor = contextAccessor;
     }
 
-    public async Task<BaseResponse<GetOwnEventsQueryResponse>> Handle(GetOwnEventsQuery request, CancellationToken cancellationToken)
+    public async Task<BaseResponse<FullEventDto>> Handle(GetOwnEventQuery request, CancellationToken cancellationToken)
     {
         var userId = _contextAccessor.GetCurrentUserId();
-        var methodName = $"{nameof(GetOwnEventsHandler)}.{nameof(Handle)} UserId: {userId} =>";
+        var methodName = $"{nameof(GetOwnEventHandler)}.{nameof(Handle)} UserId: {userId}, EventId: {request.EventId} =>";
         _logger.LogInformation(methodName);
-        var response = new BaseResponse<GetOwnEventsQueryResponse>();
+        var response = new BaseResponse<FullEventDto>();
 
         try
         {
-            var events = await
+            var @event = await
             (
                 // Get events along with its shake session and voucher
-                from @event in _unitOfWork.Events.GetAll()
+                from _event in _unitOfWork.Events.GetAll()
                 join voucher in _unitOfWork.Vouchers.GetAll()
-                    on @event.ShakeVoucherId equals voucher.Id into eventVouchers
+                    on _event.ShakeVoucherId equals voucher.Id into eventVouchers
                 from eventVoucher in eventVouchers.DefaultIfEmpty()
-                where !@event.IsDeleted && @event.CounterPartId == userId
-                let hasShakeSession = @event.ShakeVoucherId != null
+                where !_event.IsDeleted && _event.CounterPartId == userId && _event.Id == request.EventId
+                let hasShakeSession = _event.ShakeVoucherId != null
                 select new FullEventDto
                 {
-                    Id = @event.Id,
-                    Name = @event.Name,
-                    Description = @event.Description,
-                    ImageUrl = @event.ImageUrl,
-                    StartDate = @event.StartDate,
-                    Status = @event.Status,
-                    CreatedDate = @event.CreatedDate,
+                    Id = _event.Id,
+                    Name = _event.Name,
+                    Description = _event.Description,
+                    ImageUrl = _event.ImageUrl,
+                    StartDate = _event.StartDate,
+                    Status = _event.Status,
+                    CreatedDate = _event.CreatedDate,
                     ShakeSession = hasShakeSession ? new ShakeSessionDto
                     {
-                        Price = @event.ShakePrice ?? 0,
-                        AverageDiamond = @event.ShakeAverageDiamond ?? 0,
-                        WinRate = @event.ShakeWinRate ?? 0,
+                        Price = _event.ShakePrice ?? 0,
+                        AverageDiamond = _event.ShakeAverageDiamond ?? 0,
+                        WinRate = _event.ShakeWinRate ?? 0,
                         Voucher = new VoucherDto
                         {
                             Id = eventVoucher.Id,
@@ -62,18 +62,16 @@ public class GetOwnEventsHandler : IRequestHandler<GetOwnEventsQuery, BaseRespon
                 }
             )
             .AsNoTracking()
-            .ToListAsync(cancellationToken);
+            .FirstOrDefaultAsync(cancellationToken);
             
-            if (events.Count == 0)
+            if (@event is null)
             {
-                var responseDat = new GetOwnEventsQueryResponse { Events = events };
-                response.ToSuccessResponse(responseDat);
+                response.ToNotFoundResponse();
                 return response;
             }
             
             // Populate events with .QuizSessions
-            var eventIds = events.Select(e => e.Id).ToList();
-            var quizSessions = await 
+            @event.QuizSessions = await 
             (
                 from quizSession in _unitOfWork.QuizSessions.GetAll()
                 join event_ in _unitOfWork.Events.GetAll()
@@ -82,7 +80,7 @@ public class GetOwnEventsHandler : IRequestHandler<GetOwnEventsQuery, BaseRespon
                     on event_.ShakeVoucherId equals voucher.Id
                 join quizSet in _unitOfWork.QuizSets.GetAll()
                     on quizSession.QuizSetId equals quizSet.Id
-                where eventIds.Contains(quizSession.EventId)
+                where quizSession.EventId == request.EventId
                 select new QuizSessionDto
                 {
                     Id = quizSession.Id,
@@ -106,16 +104,8 @@ public class GetOwnEventsHandler : IRequestHandler<GetOwnEventsQuery, BaseRespon
             )
             .AsNoTracking()
             .ToListAsync(cancellationToken);
-            
-            foreach (var @event in events)
-            {
-                @event.QuizSessions = quizSessions
-                    .Where(qs => qs.EventId == @event.Id)
-                    .ToList();
-            }
 
-            var responseData = new GetOwnEventsQueryResponse { Events = events };
-            response.ToSuccessResponse(responseData);
+            response.ToSuccessResponse(@event);
         }
         catch (Exception e)
         {
