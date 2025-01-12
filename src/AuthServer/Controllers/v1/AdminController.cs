@@ -3,6 +3,7 @@ using Asp.Versioning;
 using AuthServer.Features.Commands.AdminCommands.BlockUser;
 using AuthServer.Features.Commands.AdminCommands.CreateUser;
 using AuthServer.Features.Commands.AdminCommands.UnblockUser;
+using AuthServer.Features.Commands.AdminCommands.UpdateUser;
 using AuthServer.Features.Commands.UserCommands.ChangePassword;
 using AuthServer.Features.Commands.UserCommands.UserLogin;
 using AuthServer.Features.Queries.AdminQueries.GetAllUsers;
@@ -78,6 +79,13 @@ public class AdminController : ControllerBase
     
     [HttpPost("ChangePassword")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand request, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(request, cancellationToken);
+        return response.ToObjectResult();
+    }
+    
+    [HttpPatch("UpdateUserProfile")]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserCommand request, CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();

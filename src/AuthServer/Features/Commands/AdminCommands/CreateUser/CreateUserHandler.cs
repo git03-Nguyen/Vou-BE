@@ -64,7 +64,8 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, BaseResponse
                 UserName = request.UserName,
                 FullName = request.FullName,
                 PhoneNumber = request.PhoneNumber,
-                Role = request.Role
+                Role = request.Role,
+                EmailConfirmed = true
             };
             
             // 3. Add user

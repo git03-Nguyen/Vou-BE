@@ -21,7 +21,6 @@ public static class DatabaseRegistrations
         catch (Exception ex)
         {
             Console.WriteLine($"Error applying migrations: {ex.Message}");
-            throw;
         }
         
         return services;
