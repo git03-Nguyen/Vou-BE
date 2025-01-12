@@ -4,26 +4,42 @@ services:
   ########## EXTENSION ########
   #############################
   elasticsearch:
+    container_name: elasticsearch
     environment:
-      - bootstrap.memory_lock=true
       - discovery.type=single-node
+      - bootstrap.memory_lock=true
       - ELASTIC_PASSWORD=DkIedPPSCb
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
       - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
     ports:
       - "9200:9200"
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
 
   kibana:
+    container_name: kibana
     environment:
-      - ELASTICSEARCH_HOSTS=http://localhost:9200
-      - ELASTICSEARCH_USERNAME=admin
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=user
       - ELASTICSEARCH_PASSWORD=DkIedPPSCb
     ports:
       - "5601:5601"
     volumes:
       - kibana-data:/usr/share/kibana/data
+        
+  redis:
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    
+  zipkin:
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    volumes:
+      - zipkin-data:/zipkin
   
   #############################
   ######### DATABASE ##########
@@ -54,11 +70,14 @@ services:
       - Logging__Elk__Uri=http://elasticsearch:9200
     depends_on:
       - voudb
+    command: [ "dapr", "run", "--app-id", "apigateway", "--app-port", "5000", "--dapr-http-port", "3500", "--components-path", "/components", "--", "dotnet", "ApiGateway.dll" ]
     ports:
       - "5000:5000"
+      - "3500:3500"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ~/.aspnet/https:/https:ro
+      - ./components:/components # Dapr components
   
   authserver:
     container_name: authserver
@@ -72,11 +91,14 @@ services:
       - Logging__Elk__Uri=http://elasticsearch:9200
     depends_on:
       - voudb
+    command: [ "dapr", "run", "--app-id", "authserver", "--app-port", "5100", "--dapr-http-port", "3501", "--components-path", "/components", "--", "dotnet", "AuthServer.dll" ]
     ports:
       - "5100:5100"
+      - "3501:3501"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ~/.aspnet/https:/https:ro
+      - ./components:/components # Dapr components
         
   eventservice:
     container_name: eventservice
@@ -90,11 +112,14 @@ services:
       - Logging__Elk__Uri=http://elasticsearch:9200
     depends_on:
       - voudb
+    command: [ "dapr", "run", "--app-id", "eventservice", "--app-port", "5200", "--dapr-http-port", "3502", "--components-path", "/components", "--", "dotnet", "EventService.dll" ]
     ports:
       - "5200:5200"
+      - "3502:3502"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ~/.aspnet/https:/https:ro
+      - ./components:/components # Dapr components
     
   gameservice:
     container_name: gameservice
@@ -108,11 +133,14 @@ services:
       - Logging__Elk__Uri=http://elasticsearch:9200
     depends_on:
       - voudb
+    command: [ "dapr", "run", "--app-id", "gameservice", "--app-port", "5300", "--dapr-http-port", "3503", "--components-path", "/components", "--", "dotnet", "GameService.dll" ]
     ports:
       - "5300:5300"
+      - "3503:3503"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ~/.aspnet/https:/https:ro
+      - ./components:/components # Dapr components
   
   paymentservice:
     container_name: paymentservice
@@ -126,11 +154,14 @@ services:
       - Logging__Elk__Uri=http://elasticsearch:9200
     depends_on:
       - voudb
+    command: [ "dapr", "run", "--app-id", "paymentservice", "--app-port", "5400", "--dapr-http-port", "3504", "--components-path", "/components", "--", "dotnet", "PaymentService.dll" ]
     ports:
       - "5400:5400"
+      - "3504:3504"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ~/.aspnet/https:/https:ro
+      - ./components:/components # Dapr components
       
   #############################
   ######## BACKGROUND #########

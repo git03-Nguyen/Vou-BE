@@ -12,7 +12,7 @@ using Shared.Common;
 
 namespace AuthServer.Controllers.v1;
 
-[Authorize(Roles = Constants.COUNTERPART)]
+[Authorize(Policy = Constants.COUNTERPART)]
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/{apiVersion:apiVersion}/[controller]")]
@@ -42,7 +42,6 @@ public class CounterPartController : ControllerBase
         return response.ToObjectResult();
     }
     
-    [Authorize]
     [HttpPost("ChangePassword")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand request, CancellationToken cancellationToken)
     {

@@ -15,6 +15,7 @@ namespace AuthServer.Controllers.v1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/{apiVersion:apiVersion}/[controller]")]
+[Authorize(Policy = Constants.PLAYER)]
 public class PlayerController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -40,7 +41,6 @@ public class PlayerController : ControllerBase
         return response.ToObjectResult();
     }
     
-    [Authorize]
     [HttpPost("ChangePassword")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand request, CancellationToken cancellationToken)
     {

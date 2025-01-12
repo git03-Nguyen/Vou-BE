@@ -31,6 +31,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameService", "src\GameServ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaymentService", "src\PaymentService\PaymentService.csproj", "{F78ED0AE-9EF4-410B-83C8-0FA686D25460}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Components", "Components", "{2638BFE0-0F27-4C5D-9A1E-641D5CFBE7AD}"
+	ProjectSection(SolutionItems) = preProject
+		components\tracing.yaml = components\tracing.yaml
+		components\zipkin.yaml = components\zipkin.yaml
+		components\redis-pubsub.yaml = components\redis-pubsub.yaml
+		components\redis-state.yaml = components\redis-state.yaml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +53,7 @@ Global
 		{8147F95C-CB08-4C27-A8C5-F3435866833B} = {18863C29-6BB8-4BEB-B633-DDC1552BC190}
 		{B891BB33-AECE-4C97-9DE5-426F45D30315} = {18863C29-6BB8-4BEB-B633-DDC1552BC190}
 		{F78ED0AE-9EF4-410B-83C8-0FA686D25460} = {18863C29-6BB8-4BEB-B633-DDC1552BC190}
+		{2638BFE0-0F27-4C5D-9A1E-641D5CFBE7AD} = {18863C29-6BB8-4BEB-B633-DDC1552BC190}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{155AD6B0-9465-471D-93EB-4FD6D161F4D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

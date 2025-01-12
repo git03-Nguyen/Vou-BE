@@ -6,8 +6,25 @@ namespace EventService.Repositories;
 
 public class UnitOfWork : GenericUnitOfWork<EventDbContext>, IUnitOfWork
 {
-    public UnitOfWork(EventDbContext dbContext) : base(dbContext)
+    public UnitOfWork(EventDbContext dbContext,
+        IVoucherRepository voucherRepository,
+        IQuizSessionRepository quizSessionRepository,
+        IQuizSetRepository quizSetRepository,
+        IVoucherToPlayerRepository voucherToPlayerRepository,
+        IFavoriteEventRepository favoriteEventRepository,
+        IPlayerRepository playerRepository,
+        ICounterPartRepository counterPartRepository,
+        IEventRepository eventRepository) 
+        : base(dbContext)
     {
+        Vouchers = voucherRepository;
+        QuizSessions = quizSessionRepository;
+        QuizSets = quizSetRepository;
+        VoucherToPlayers = voucherToPlayerRepository;
+        FavoriteEvents = favoriteEventRepository;
+        Players = playerRepository;
+        CounterParts = counterPartRepository;
+        Events = eventRepository;
     }
 
     public IVoucherRepository Vouchers { get; set; }

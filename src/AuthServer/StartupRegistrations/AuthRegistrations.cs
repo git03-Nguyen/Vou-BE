@@ -18,15 +18,16 @@ public static class AuthRegistrations
     {
         services.AddIdentity<User, IdentityRole>(options =>
         {
-            options.Tokens.EmailConfirmationTokenProvider = EmailConfirmationTokenProvider<User>.ProviderName;
+            options.Password.RequireDigit = false;
+            options.Password.RequiredLength = 6;
+            options.Password.RequireLowercase = false;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireUppercase = false;
+            options.User.RequireUniqueEmail = true;
         })
         .AddEntityFrameworkStores<AuthDbContext>()
-        .AddDefaultTokenProviders()
-        .AddTokenProvider<EmailConfirmationTokenProvider<User>>(EmailConfirmationTokenProvider<User>.ProviderName);
+        .AddDefaultTokenProviders();
         
-        services.Configure<DataProtectionTokenProviderOptions>(options => options.TokenLifespan = TimeSpan.FromHours(1));
-        services.Configure<EmailConfirmationTokenProviderOptions>(options => options.TokenLifespan = TimeSpan.FromDays(365));
-       
         services.AddIdentityServer()
             .AddInMemoryClients(AuthConfig.Clients)
             .AddInMemoryIdentityResources(AuthConfig.IdentityResources)
@@ -39,7 +40,7 @@ public static class AuthRegistrations
         return services;
     }
 
-    public static IServiceCollection ConfigureAuthentication(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection ConfigureAuthenticate(this IServiceCollection services, IConfiguration configuration)
     {
         var authServerOptions = configuration.GetSection(AuthenticationOptions.OptionName).Get<AuthenticationOptions>();
         var authorityUrl = authServerOptions?.Authority;
@@ -65,6 +66,26 @@ public static class AuthRegistrations
                     IssuerSigningKey = new SymmetricSecurityKey(key)
                 };
             });
+
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy(Shared.Common.Constants.ADMIN, policy =>
+            {
+                policy.RequireAssertion(context => context.User.HasClaim("ROLE", Shared.Common.Constants.ADMIN));
+            });
+            
+            options.AddPolicy(Shared.Common.Constants.COUNTERPART, policy =>
+            {
+                policy.RequireAssertion(context => context.User.HasClaim("ROLE", Shared.Common.Constants.COUNTERPART));
+            });
+            
+            options.AddPolicy(Shared.Common.Constants.PLAYER, policy =>
+            {
+                policy.RequireAssertion(context => context.User.HasClaim("ROLE", Shared.Common.Constants.PLAYER));
+            });
+        });
+            
+        
         return services;
     }
 }

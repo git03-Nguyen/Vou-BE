@@ -9,7 +9,7 @@ using Shared.Common;
 
 namespace EventService.Controllers.v1;
 
-[Authorize(Roles = Constants.ADMIN)]
+[Authorize(Policy = Constants.ADMIN)]
 [ApiVersion("1.0")]
 [Route("api/{apiVersion:apiVersion}/[controller]")]
 public class AdminController : ControllerBase

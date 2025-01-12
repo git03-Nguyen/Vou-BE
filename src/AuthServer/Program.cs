@@ -23,7 +23,7 @@ public class Program
             .ConfigureCustomOptions(builder.Configuration)
             .ConfigureDbContext(builder.Configuration)
             .ConfigureIdentityServer(builder.Configuration)
-            .ConfigureAuthentication(builder.Configuration)
+            .ConfigureAuthenticate(builder.Configuration)
             .ConfigureApiVersioning()
             .ConfigureControllers()
             .ConfigureCustomHttpContext()

@@ -13,7 +13,7 @@ public class CustomHttpContextAccessor : ICustomHttpContextAccessor
 
     public bool IsAuthenticated() => _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
     public string GetCurrentUserId() => _httpContextAccessor.HttpContext?.User.FindFirst("id")?.Value ?? string.Empty;
-    public string GetCurrentRole() => _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value ?? string.Empty;
+    public string GetCurrentRole() => _httpContextAccessor.HttpContext?.User.FindFirst("ROLE")?.Value ?? string.Empty;
     public string GetCurrentEmail() => _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Email)?.Value ?? string.Empty;
     public string GetCurrentUserName() => _httpContextAccessor.HttpContext?.User.FindFirst("username")?.Value ?? string.Empty;
     public string GetCurrentIpAddress()

@@ -7,7 +7,7 @@ using Shared.Common;
 
 namespace GameService.Controllers;
 
-[Authorize(Roles = Constants.PLAYER)]
+[Authorize(Policy = Constants.PLAYER)]
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/{apiVersion:apiVersion}/{controller}")]
