@@ -117,16 +117,10 @@
           "Port": 5300
         }
       ],
-      "DownstreamPathTemplate": "/api/1/Player/{everything}",
-      "UpstreamPathTemplate": "/GameService/api/1/Player/{everything}",
+      "DownstreamPathTemplate": "/ws/{everything}",
+      "UpstreamPathTemplate": "/ws/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
-      "RateLimitOptions": {
-        "ClientWhitelist": [],
-        "EnableRateLimiting": true,
-        "Period": "15s",
-        "PeriodTimespan": 1,
-        "Limit": 100
-      },
+      "DownstreamScheme": "ws",
       "LoadBalancerOptions": {
         "Type": "LeastConnection"
       },

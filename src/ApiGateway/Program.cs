@@ -20,7 +20,8 @@ public class Program
         builder.Services
             .ConfigureAuthentication(builder.Configuration)
             .ConfigureOcelot(builder.Configuration)
-            .ConfigureCors(builder.Configuration);
+            .ConfigureCors(builder.Configuration)
+            .AddSignalR();
         
         var app = builder.Build();
 
