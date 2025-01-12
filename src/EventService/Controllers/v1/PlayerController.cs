@@ -7,7 +7,7 @@ using Shared.Common;
 
 namespace EventService.Controllers.v1;
 
-[Authorize(Roles = Constants.PLAYER)]
+[Authorize(Policy = Constants.PLAYER)]
 [ApiVersion("1.0")]
 [Microsoft.AspNetCore.Components.Route("api/{apiVersion:apiVersion}/[controller]")]
 public class PlayerController : ControllerBase

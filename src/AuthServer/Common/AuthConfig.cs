@@ -23,7 +23,6 @@ public static class AuthConfig
     // Identity resources are data like user ID, name, or email address of a user
     public static IEnumerable<IdentityResource> IdentityResources =>
     [
-        new("role", "Role", [JwtClaimTypes.Role])
     ];
 
     // Clients are applications that can access your resources, such as web applications, mobile apps, or microservices
@@ -35,7 +34,7 @@ public static class AuthConfig
             ClientId = "pwd.client",
             ClientName = "Password-Flow Client",
             AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
-            ClientSecrets = { new Secret("client_secret".Sha256()) },
+            ClientSecrets = { new Secret("my_very_very_very_very_long_long_secret".Sha256()) },
             AccessTokenLifetime = 86400, // 1 days
             AccessTokenType = AccessTokenType.Jwt,
             AllowOfflineAccess = true,

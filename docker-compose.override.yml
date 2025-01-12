@@ -6,11 +6,11 @@ services:
   elasticsearch:
     container_name: elasticsearch
     environment:
-      - bootstrap.memory_lock=true
       - discovery.type=single-node
+      - bootstrap.memory_lock=true
       - ELASTIC_PASSWORD=DkIedPPSCb
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
       - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
     ports:
       - "9200:9200"
     volumes:
@@ -19,8 +19,8 @@ services:
   kibana:
     container_name: kibana
     environment:
-      - ELASTICSEARCH_HOSTS=http://localhost:9200
-      - ELASTICSEARCH_USERNAME=admin
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=user
       - ELASTICSEARCH_PASSWORD=DkIedPPSCb
     ports:
       - "5601:5601"
@@ -33,6 +33,13 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
+    
+  zipkin:
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    volumes:
+      - zipkin-data:/zipkin
   
   #############################
   ######### DATABASE ##########

@@ -1,9 +1,13 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Shared.Common;
 using Shared.Options;
 
-namespace EventService.StartupRegistrations;
+namespace Shared.StartupRegistrations;
 
 public static class AuthRegistrations
 {
@@ -30,6 +34,24 @@ public static class AuthRegistrations
                 ValidateLifetime = true,
                 IssuerSigningKey = new SymmetricSecurityKey(secretBytes)
             };
+        });
+        
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy(Constants.ADMIN, policy =>
+            {
+                policy.RequireAssertion(context => context.User.HasClaim("ROLE", Constants.ADMIN));
+            });
+            
+            options.AddPolicy(Constants.COUNTERPART, policy =>
+            {
+                policy.RequireAssertion(context => context.User.HasClaim("ROLE", Constants.COUNTERPART));
+            });
+            
+            options.AddPolicy(Constants.PLAYER, policy =>
+            {
+                policy.RequireAssertion(context => context.User.HasClaim("ROLE", Constants.PLAYER));
+            });
         });
         
         return services;

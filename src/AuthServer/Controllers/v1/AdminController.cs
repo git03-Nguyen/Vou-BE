@@ -14,10 +14,10 @@ using Shared.Common;
 
 namespace AuthServer.Controllers.v1;
 
-[Authorize(Roles = Constants.ADMIN)]
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/{apiVersion:apiVersion}/[controller]")]
+[Authorize(Policy = Constants.ADMIN)]
 public class AdminController : ControllerBase
 {
     private readonly IMediator _mediator;

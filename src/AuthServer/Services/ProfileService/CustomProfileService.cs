@@ -25,7 +25,7 @@ public class CustomProfileService : IProfileService
             new(JwtClaimTypes.Id, user.Id),
             new(JwtClaimTypes.Email, user.Email ?? string.Empty),
             new("username", user.UserName ?? string.Empty),
-            new(JwtClaimTypes.Role, roles.FirstOrDefault() ?? "USER"),
+            new("ROLE", roles.FirstOrDefault() ?? string.Empty),
         };
         context.IssuedClaims.AddRange(claims);
     }

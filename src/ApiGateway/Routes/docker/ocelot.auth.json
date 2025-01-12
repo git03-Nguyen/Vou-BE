@@ -64,7 +64,7 @@
         }
       ],
       "DownstreamPathTemplate": "/api/1/CounterPart/{everything}",
-      "UpstreamPathTemplate": "/AuthService/api/1/CounterPart/{everything}",
+      "UpstreamPathTemplate": "/AuthServer/api/1/CounterPart/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
       "RateLimitOptions": {
         "ClientWhitelist": [],
@@ -91,7 +91,7 @@
         }
       ],
       "DownstreamPathTemplate": "/api/1/Player/{everything}",
-      "UpstreamPathTemplate": "/AuthService/api/1/Player/{everything}",
+      "UpstreamPathTemplate": "/AuthServer/api/1/Player/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
       "RateLimitOptions": {
         "ClientWhitelist": [],

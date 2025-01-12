@@ -14,7 +14,7 @@ using Shared.Common;
 
 namespace EventService.Controllers.v1;
 
-[Authorize(Roles = Constants.COUNTERPART)]
+[Authorize(Policy = Constants.COUNTERPART)]
 [ApiVersion("1.0")]
 [Route("api/{apiVersion:apiVersion}/[controller]")]
 public class CounterPartController : ControllerBase

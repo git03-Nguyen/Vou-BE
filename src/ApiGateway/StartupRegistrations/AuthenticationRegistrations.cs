@@ -5,7 +5,7 @@ namespace ApiGateway.StartupRegistrations;
 
 public static class AuthenticationRegistrations
 {
-    public static IServiceCollection ConfigureAuthentication(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection ConfigureAuthenticate(this IServiceCollection services, IConfiguration configuration)
     {
         var authOptions = configuration.GetSection(AuthenticationOptions.OptionName).Get<AuthenticationOptions>();
         var providerKey = authOptions?.ProviderKey;

@@ -18,7 +18,7 @@ public class Program
         
         // Add services to the container.
         builder.Services
-            .ConfigureAuthentication(builder.Configuration)
+            .ConfigureAuthenticate(builder.Configuration)
             .ConfigureOcelot(builder.Configuration)
             .ConfigureCors(builder.Configuration)
             .AddSignalR();

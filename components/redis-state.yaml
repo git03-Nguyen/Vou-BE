@@ -8,6 +8,6 @@ spec:
   version: v1
   metadata:
     - name: redisHost
-      value: "redis:6379" # Or Redis container
+      value: "redis:6379"
     - name: redisPassword
-      value: "" # Add your Redis password if necessary
+      value: ""

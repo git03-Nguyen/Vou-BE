@@ -91,7 +91,7 @@ public class UserLoginHandler : IRequestHandler<UserLoginCommand, BaseResponse<U
             var client = AuthConfig.Clients.First(c => c.AllowedGrantTypes.Contains(GrantType.ResourceOwnerPassword));
             var grantType = GrantType.ResourceOwnerPassword;
             var clientId = client.ClientId;
-            var clientSecret = "client_secret";
+            var clientSecret = "my_very_very_very_very_long_long_secret";
             var scope = string.Join(" ", client.AllowedScopes.Concat([IdentityServerConstants.StandardScopes.OfflineAccess]));
             var identityServerUrl = _authenticationOptions.Authority;
             var identityServerTokenEndpoint = _authenticationOptions.Authority + "/connect/token";

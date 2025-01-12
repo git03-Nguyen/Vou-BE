@@ -13,13 +13,17 @@ services:
         hard: -1
 
   kibana:
-    depends_on:
-      - elasticsearch
     image: docker.elastic.co/kibana/kibana:8.10.2
     restart: always
+    depends_on:
+      - elasticsearch
     
   redis:
     image: redis:7
+    restart: always
+    
+  zipkin:
+    image: openzipkin/zipkin
     restart: always
   
   #############################
@@ -70,6 +74,5 @@ volumes:
   db-data:
   redis-data:
   elasticsearch-data:
-    driver: local
   kibana-data:
-    driver: local
+  zipkin-data:
