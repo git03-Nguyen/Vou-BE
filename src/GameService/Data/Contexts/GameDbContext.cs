@@ -1,4 +1,5 @@
 using GameService.Data.Models;
+using GameService.Data.Models.SyncModels;
 using GameService.Data.Seeds;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -16,9 +17,13 @@ public class GameDbContext : DbContext
         AppContext.SetSwitch("Npgsql.DisableDateTimeInfinityConversions", true);
     }
     
-    public DbSet<Game> Games { get; set; }
-    public DbSet<GameSession> GameSessions { get; set; }
-    public DbSet<VoucherInGameSession> VoucherInGameSessions { get; set; }
+    public DbSet<PlayerQuizSession> PlayerQuizSessions { get; set; }
+    public DbSet<PlayerShakeSession> PlayerShakeSessions { get; set; }
+    
+    // Sync tables
+    public DbSet<Player> Players { get; set; }
+    public DbSet<QuizSession> QuizSessions { get; set; }
+    public DbSet<QuizSet> QuizSets { get; set; }
     
     protected override void OnConfiguring(DbContextOptionsBuilder builder)
     {
@@ -32,30 +37,55 @@ public class GameDbContext : DbContext
         builder.HasDefaultSchema(_databaseOptions.DefaultSchema);
         GameDbContextSeeds.Seed(builder);
         
-        builder.Entity<Game>(entity =>
+        // Player
+        builder.Entity<Player>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+        });
+            
+        // QuizSession - QuizSet: one - one
+        builder.Entity<QuizSession>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne<QuizSet>()
+                .WithOne()
+                .HasForeignKey<QuizSession>(e => e.QuizSetId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // QuizSet
+        builder.Entity<QuizSet>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+        });
+        
+        builder.Entity<PlayerQuizSession>(entity =>
         {
             entity.HasKey(e => e.Id);
             
-        });
-        
-        builder.Entity<GameSession>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.HasOne<Game>()
+            // PlayerQuizSession - Player: one - many
+            entity.HasOne<Player>()
                 .WithMany()
-                .HasForeignKey(e => e.GameId)
+                .HasForeignKey(e => e.PlayerId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            // PlayerQuizSession - QuizSession: one - many
+            entity.HasOne<QuizSession>()
+                .WithMany()
+                .HasForeignKey(e => e.QuizSessionId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
         
-        builder.Entity<VoucherInGameSession>(entity =>
+        builder.Entity<PlayerShakeSession>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.HasOne<GameSession>()
+            
+            // PlayerShakeSession - Player: one - many
+            entity.HasOne<Player>()
                 .WithMany()
-                .HasForeignKey(e => e.GameSessionId)
+                .HasForeignKey(e => e.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
-        
         
     }
 }

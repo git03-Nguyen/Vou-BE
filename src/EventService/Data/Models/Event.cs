@@ -10,8 +10,11 @@ public class Event : BaseEntity
     public string Description { get; set; }
     public string ImageUrl { get; set; }
     public DateTime StartDate { get; set; }
-    public DateTime EndDate { get; set; }
     public EventStatus Status { get; set; } = EventStatus.Pending;
     
-    public bool IsActive() => Status == EventStatus.InProgress;
+    // For Shake game
+    public string? ShakeVoucherId { get; set; }
+    public ulong? ShakePrice { get; set; } = 250;
+    public uint? ShakeWinRate { get; set; } = 80; // 80%
+    public uint? ShakeAverageDiamond { get; set; } = 50; // 50 diamonds
 }

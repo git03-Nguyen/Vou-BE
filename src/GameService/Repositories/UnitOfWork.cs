@@ -10,7 +10,9 @@ public class UnitOfWork : GenericUnitOfWork<GameDbContext>, IUnitOfWork
     {
     }
 
-    public IGameRepository Games { get; }
-    public IGameSessionRepository GameSessions { get; }
-    public IVoucherInGameSessionRepository VoucherInGameSessions { get; }
+    public IPlayerRepository Players { get; set; }
+    public IPlayerQuizSessionRepository PlayerQuizSessions { get; set; }
+    public IPlayerShakeSessionRepository PlayerShakeSessions { get; set; }
+    public IQuizSessionRepository QuizSessions { get; set; }
+    public IQuizSetRepository QuizSets { get; set; }
 }

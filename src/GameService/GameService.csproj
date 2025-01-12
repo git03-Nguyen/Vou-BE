@@ -39,9 +39,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Features\Commands\GameCommands\" />
-      <Folder Include="Features\Commands\GameSessionCommands\" />
-      <Folder Include="Features\Queries\GameSessionQueries\" />
+      <Folder Include="Features\Queries\" />
       <Folder Include="Options\" />
       <Folder Include="Services\" />
     </ItemGroup>
