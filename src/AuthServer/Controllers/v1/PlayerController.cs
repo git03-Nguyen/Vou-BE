@@ -69,8 +69,8 @@ public class PlayerController : ControllerBase
         var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
     }
-        
-    [HttpPatch("ActivateAccount")]
+    [AllowAnonymous]
+    [HttpPost("ActivateAccount")]
     public async Task<IActionResult> ActivateAccount([FromBody] ConfirmActivateOtpCommand request, CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(request, cancellationToken);
