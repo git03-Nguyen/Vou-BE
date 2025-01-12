@@ -6,7 +6,7 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "gameservice",
-          "Port": 5100
+          "Port": 5300
         }
       ],
       "DownstreamPathTemplate": "/",
@@ -27,17 +27,98 @@
         "AllowedScopes": []
       }
     },
-    // GameController
+    // AdminController
     {
       "SwaggerKey": "gameservice",
       "DownstreamHostAndPorts": [
         {
           "Host": "gameservice",
-          "Port": 5100
+          "Port": 5300
         }
       ],
-      "DownstreamPathTemplate": "/api/1/Game/{everything}",
-      "UpstreamPathTemplate": "/GameService/api/1/Game/{everything}",
+      "DownstreamPathTemplate": "/api/1/Admin/{everything}",
+      "UpstreamPathTemplate": "/GameService/api/1/Admin/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "15s",
+        "PeriodTimespan": 1,
+        "Limit": 100
+      },
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "IdentityApiKey",
+        "AllowedScopes": [ "service_scope" ]
+      }
+    },
+    // CounterPartController
+    {
+      "SwaggerKey": "gameservice",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "gameservice",
+          "Port": 5300
+        }
+      ],
+      "DownstreamPathTemplate": "/api/1/CounterPart/{everything}",
+      "UpstreamPathTemplate": "/GameService/api/1/CounterPart/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "15s",
+        "PeriodTimespan": 1,
+        "Limit": 100
+      },
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "IdentityApiKey",
+        "AllowedScopes": [ "service_scope" ]
+      }
+    },
+    // PlayerController
+    {
+      "SwaggerKey": "gameservice",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "gameservice",
+          "Port": 5300
+        }
+      ],
+      "DownstreamPathTemplate": "/api/1/Player/{everything}",
+      "UpstreamPathTemplate": "/GameService/api/1/Player/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "15s",
+        "PeriodTimespan": 1,
+        "Limit": 100
+      },
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "IdentityApiKey",
+        "AllowedScopes": [ "service_scope" ]
+      }
+    },
+    // WebSocket
+    {
+      "SwaggerKey": "gameservice",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "gameservice",
+          "Port": 5300
+        }
+      ],
+      "DownstreamPathTemplate": "/api/1/Player/{everything}",
+      "UpstreamPathTemplate": "/GameService/api/1/Player/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
       "RateLimitOptions": {
         "ClientWhitelist": [],
