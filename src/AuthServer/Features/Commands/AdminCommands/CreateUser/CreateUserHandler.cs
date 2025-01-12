@@ -52,7 +52,7 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, BaseResponse
                 .FirstOrDefaultAsync(cancellationToken); 
             if (existedUser is not null)
             {
-                response.ToBadRequestResponse("User already exists");
+                response.ToBadRequestResponse("Email or UserName or PhoneNumber is already existed");
                 return response;
             }
             
@@ -65,7 +65,8 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, BaseResponse
                 FullName = request.FullName,
                 PhoneNumber = request.PhoneNumber,
                 Role = request.Role,
-                EmailConfirmed = true
+                EmailConfirmed = true,
+                AvatarUrl = request.AvatarUrl
             };
             
             // 3. Add user
