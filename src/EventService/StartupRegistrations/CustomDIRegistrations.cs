@@ -10,7 +10,10 @@ public static class CustomDIRegistrations
     {
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IVoucherRepository, VoucherRepository>();
-        services.AddScoped<IVoucherInEventRepository, VoucherInEventRepository>();
+        services.AddScoped<IPlayerRepository, PlayerRepository>();
+        services.AddScoped<ICounterPartRepository, CounterPartRepository>();
+        services.AddScoped<IQuizSessionRepository, QuizSessionRepository>();
+        services.AddScoped<IQuizSetRepository, QuizSetRepository>();
         services.AddScoped<IVoucherToPlayerRepository, VoucherToPlayerRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         return services;

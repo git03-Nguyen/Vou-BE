@@ -11,9 +11,9 @@ namespace EventService.Features.Commands.AdminCommands.RefuseEvent;
 
 public class RefuseEventHandler : IRequestHandler<AcceptEventCommand, BaseResponse<EventStatusDto>>
 {
-    private readonly ILogger<GetAllEventHandler> _logger;
+    private readonly ILogger<GetAllEventsHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
-    public RefuseEventHandler(ILogger<GetAllEventHandler> logger, IUnitOfWork unitOfWork)
+    public RefuseEventHandler(ILogger<GetAllEventsHandler> logger, IUnitOfWork unitOfWork)
     {
         _logger = logger;
         _unitOfWork = unitOfWork;
@@ -21,7 +21,7 @@ public class RefuseEventHandler : IRequestHandler<AcceptEventCommand, BaseRespon
 
     public async Task<BaseResponse<EventStatusDto>> Handle(AcceptEventCommand request, CancellationToken cancellationToken)
     {
-        var methodName = $"{nameof(GetAllEventHandler)}.{nameof(Handle)} EventId: {request.EventId} =>";
+        var methodName = $"{nameof(GetAllEventsHandler)}.{nameof(Handle)} EventId: {request.EventId} =>";
         _logger.LogInformation(methodName);
         var response = new BaseResponse<EventStatusDto>();
 

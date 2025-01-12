@@ -5,7 +5,9 @@ namespace GameService.Repositories;
 
 public interface IUnitOfWork : IGenericUnitOfWork
 {
-    IGameRepository Games { get; }
-    IGameSessionRepository GameSessions { get; }
-    IVoucherInGameSessionRepository VoucherInGameSessions { get; }
+    IPlayerRepository Players { get; set; }
+    IPlayerQuizSessionRepository PlayerQuizSessions { get; set; }
+    IPlayerShakeSessionRepository PlayerShakeSessions { get; set; }
+    IQuizSessionRepository QuizSessions { get; set; }
+    IQuizSetRepository QuizSets { get; set; }
 }
