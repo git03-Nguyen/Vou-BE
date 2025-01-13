@@ -10,7 +10,7 @@ tye run
 ## Run by docker-compose
 1. Open a terminal
 ```
-docker-compose up -d
+docker-compose up -d --build
 ```
 ---
 ## List of service ports
