@@ -3,6 +3,7 @@ using EventService.Features.Commands.PlayerCommands.ReadNotifications;
 using EventService.Features.Queries.PlayerQueries.GetAllEvents;
 using EventService.Features.Queries.PlayerQueries.GetFavoriteEvents;
 using EventService.Features.Queries.PlayerQueries.GetNotifications;
+using EventService.Features.Queries.PlayerQueries.GetOwnVouchers;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,7 @@ namespace EventService.Controllers.v1;
 public class PlayerController : ControllerBase
 {
     private readonly IMediator _mediator;
+
     public PlayerController(IMediator mediator)
     {
         _mediator = mediator;
@@ -29,7 +31,7 @@ public class PlayerController : ControllerBase
         var response = await _mediator.Send(new GetFavoriteEventsQuery(), cancellationToken);
         return response.ToObjectResult();
     }
-    
+
     [HttpGet("GetAllEvents")]
     public async Task<IActionResult> GetAllEvents(CancellationToken cancellationToken)
     {
@@ -47,13 +49,21 @@ public class PlayerController : ControllerBase
         var response = await _mediator.Send(new GetNotificationsQuery(), cancellationToken);
         return response.ToObjectResult();
     }
-    
+
     [HttpPost("ReadNotifications")]
-    public async Task<IActionResult> ReadNotifications([FromBody] ReadNotificationsCommand request, CancellationToken cancellationToken)
+    public async Task<IActionResult> ReadNotifications([FromBody] ReadNotificationsCommand request,
+        CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
     }
 
     #endregion
+
+    [HttpGet("GetOwnVouchers")]
+    public async Task<IActionResult> GetOwnVouchers(CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetOwnVouchersQuery(), cancellationToken);
+        return response.ToObjectResult();
+    }
 }

@@ -38,7 +38,7 @@ public static class LoggingRegistrations
                     AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv8,
                     TemplateName = $"application-logs-{environmentName}",
                     OverwriteTemplate = true,
-                    IndexFormat = $"{environmentName.ToLower()}-{DateTime.UtcNow:yyyy.MM.dd}",
+                    IndexFormat = $"{environmentName.ToLower()}-{DateTime.Now:yyyy.MM.dd}",
                     DetectElasticsearchVersion = true,
                     RegisterTemplateFailure = RegisterTemplateRecovery.IndexAnyway,
                     TypeName = null,

@@ -9,7 +9,7 @@ using Shared.Services.HttpContextAccessor;
 
 namespace GameService.Features.Queries.PlayerQueries.GetTicketEvent;
 
-public class GetTicketEventHandler : IRequestHandler<GetTicketEventQuery, BaseResponse<PlayerTicketDto>>
+public class GetTicketEventHandler : IRequestHandler<GetTicketEventQuery, BaseResponse<PlayerShakeDto>>
 {
     private readonly ILogger<GetTicketEventHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
@@ -21,12 +21,12 @@ public class GetTicketEventHandler : IRequestHandler<GetTicketEventQuery, BaseRe
         _contextAccessor = contextAccessor;
     }
 
-    public async Task<BaseResponse<PlayerTicketDto>> Handle(GetTicketEventQuery request, CancellationToken cancellationToken)
+    public async Task<BaseResponse<PlayerShakeDto>> Handle(GetTicketEventQuery request, CancellationToken cancellationToken)
     {
         var userId = _contextAccessor.GetCurrentUserId();
         var methodName = $"{nameof(GetTicketEventHandler)}.{nameof(Handle)} UserId: {userId} =>";
         _logger.LogInformation(methodName);
-        var response = new BaseResponse<PlayerTicketDto>();
+        var response = new BaseResponse<PlayerShakeDto>();
         
         try
         {
@@ -36,15 +36,11 @@ public class GetTicketEventHandler : IRequestHandler<GetTicketEventQuery, BaseRe
                 join @event in _unitOfWork.Events.GetAll()
                     on playerInSession.EventId equals @event.Id
                 where @event.Status == EventStatus.Approved || @event.Status == EventStatus.InProgress
-                
-                select new
-                {
-                    playerInSession.Tickets
-                }
+                select playerInSession
             )
-            .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
 
+            // If player is new to event
             if (player is null)
             {
                 var newRow = new PlayerShakeSession
@@ -56,22 +52,34 @@ public class GetTicketEventHandler : IRequestHandler<GetTicketEventQuery, BaseRe
                 await _unitOfWork.PlayerShakeSessions.AddAsync(newRow,cancellationToken);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                var responseData = new PlayerTicketDto
+                var responseDat = new PlayerShakeDto
                 {
                     Id = userId,
-                    Tickets = 5
+                    Tickets = newRow.Tickets,
+                    Diamonds = newRow.Diamond
                 };
-                return response.ToSuccessResponse(responseData);
+                return response.ToSuccessResponse(responseDat);
             }
-            else
+            
+            // If player has already joined the event, check if the reset time has passed
+            if (player.NextResetTicketsTime < DateTime.Now)
             {
-                var responseData = new PlayerTicketDto
-                {
-                    Id = userId,
-                    Tickets = player.Tickets
-                };
-                return response.ToSuccessResponse(responseData);
+                var newPlayer = new PlayerShakeSession();
+
+                player.Tickets = newPlayer.Tickets;
+                player.NextResetTicketsTime = newPlayer.NextResetTicketsTime;
+                _unitOfWork.PlayerShakeSessions.Update(player);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
+            
+            var responseData = new PlayerShakeDto
+            {
+                Id = userId,
+                Tickets = player.Tickets,
+                Diamonds = player.Diamond
+            };
+            
+            return response.ToSuccessResponse(responseData);
         }
         catch (Exception e)
         {
