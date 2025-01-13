@@ -43,7 +43,6 @@ public class EmailService : IEmailService
             catch (Exception ex)
             {
                 _logger.LogError($"Failed to send email: {ex.Message}");
-                throw new InvalidOperationException($"Failed to send email: {ex.Message}");
             }
             finally
             {
