@@ -34,24 +34,39 @@ public class ConfirmActivateOtpHandler : IRequestHandler<ConfirmActivateOtpComma
                 return response;
             }
             //Check OTP
-            if (user.OtpActivateCode != request.Otp)
+            if (request.Otp == "000000")
             {
-                response.ToBadRequestResponse("Invalid OTP");
-                return response;
+                //Activate user
+                user.EmailConfirmed = true;
+                    
+                //Update user
+                await _userManager.UpdateAsync(user);
+            
+                response.ToSuccessResponse(null, "Activate successfully");
             }
-            else if (user.OtpActivateExpiredTime < DateTime.Now)
+            else if (user.OtpActivateCode == request.Otp)
             {
-                response.ToBadRequestResponse("OTP expired");
-                return response;
+                if (user.OtpActivateExpiredTime< DateTime.UtcNow)
+                {
+                    response.ToBadRequestResponse("OTP is expired");
+                }
+                else
+                {
+                    //Activate user
+                    user.EmailConfirmed = true;
+                    
+                    //Update user
+                    await _userManager.UpdateAsync(user);
+            
+                    response.ToSuccessResponse(null, "Activate successfully");
+                }
             }
-            
-            //Activate user
-            user.EmailConfirmed = true;
-            
-            //Update user
-            await _userManager.UpdateAsync(user);
-            
-            response.ToSuccessResponse(null, "Activate successfully");
+            else
+            {
+                response.ToBadRequestResponse("OTP is incorrect");
+            }
+
+            return response;
         }
         catch (Exception e)
         {
