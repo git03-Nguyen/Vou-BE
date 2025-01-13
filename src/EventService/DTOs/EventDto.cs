@@ -15,6 +15,4 @@ public class EventDto
     public DateTime? CreatedDate { get; set; }
 
     public CounterPartDto? CounterPart { get; set; }
-    public bool HasQuizGame { get; set; } = false;
-    public bool HasShakeGame { get; set; } = false;
 }

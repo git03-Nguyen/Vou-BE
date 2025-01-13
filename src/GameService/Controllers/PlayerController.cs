@@ -19,10 +19,14 @@ public class PlayerController : ControllerBase
         _mediator = mediator;
     }
     
+    #region Shake ticket
+    
     [HttpPost("SendTicket")]
     public async Task<IActionResult> SendTicket([FromBody] SendTicketCommand request, CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
     }
+    
+    #endregion
 }

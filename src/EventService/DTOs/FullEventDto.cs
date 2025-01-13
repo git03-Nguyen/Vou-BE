@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using EventService.Enums;
 
 namespace EventService.DTOs;
@@ -12,6 +13,9 @@ public class FullEventDto
     public DateTime EndDate { get; set; }
     public EventStatus Status { get; set; }
     public DateTime? CreatedDate { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public CounterPartDto? CounterPart { get; set; }
     public ShakeSessionDto? ShakeSession { get; set; }
     public List<QuizSessionDto>? QuizSessions { get; set; }
 }

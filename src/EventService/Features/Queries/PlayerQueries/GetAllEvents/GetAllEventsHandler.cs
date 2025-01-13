@@ -34,31 +34,94 @@ public class GetFavoriteEventsHandler : IRequestHandler<GetAllEventsQuery, BaseR
                 from e in _unitOfWork.Events.GetAll()
                 join ctp in _unitOfWork.CounterParts.GetAll() 
                     on e.CounterPartId equals ctp.Id
-                    where e.Status == EventStatus.Approved || e.Status == EventStatus.InProgress
-                        orderby e.StartDate descending
-                        select new EventDto
+                join v in _unitOfWork.Vouchers.GetAll()
+                    on e.ShakeVoucherId equals v.Id into vGroup
+                from v in vGroup.DefaultIfEmpty()
+                where !e.IsDeleted 
+                      && (e.Status == EventStatus.Approved 
+                          || e.Status == EventStatus.InProgress)
+                orderby e.StartDate descending
+                let hasShakeSession = e.ShakeVoucherId != null
+                select new FullEventDto
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                    Description = e.Description,
+                    ImageUrl = e.ImageUrl,
+                    StartDate = e.StartDate,
+                    EndDate = e.EndDate,
+                    Status = e.Status,
+                    CreatedDate = e.CreatedDate,
+                    CounterPart = new CounterPartDto
+                    {
+                        Id = ctp.Id,
+                        FullName = ctp.FullName,
+                        ImageUrl = ctp.ImageUrl,
+                        Address = ctp.Address,
+                        Field = ctp.Field,
+                    },
+                    ShakeSession = hasShakeSession ? new ShakeSessionDto
+                    {
+                        Price = e.ShakePrice ?? 0,
+                        AverageDiamond = e.ShakeAverageDiamond ?? 0,
+                        WinRate = e.ShakeWinRate ?? 0,
+                        Voucher = new VoucherDto
                         {
-                            Id = e.Id,
-                            Name = e.Name,
-                            Description = e.Description,
-                            ImageUrl = e.ImageUrl,
-                            StartDate = e.StartDate,
-                            EndDate = e.EndDate,
-                            Status = e.Status,
-                            CreatedDate = e.CreatedDate,
-                            CounterPart = new CounterPartDto
-                            {
-                                Id = ctp.Id,
-                                FullName = ctp.FullName,
-                                ImageUrl = ctp.ImageUrl,
-                                Address = ctp.Address,
-                                Field = ctp.Field
-                            }
+                            Id = v.Id,
+                            Title = v.Title,
+                            ImageUrl = v.ImageUrl,
+                            Value = v.Value
                         }
-                
+                    } : null,
+                    QuizSessions = null
+                }
             )
             .AsNoTracking()
             .ToListAsync(cancellationToken);
+            
+            // Get the list of eventId
+            var eventIds = events.Select(e => e.Id).ToList();
+            
+            // Get the list of quiz sessions
+            var quizSessions = await
+                (
+                    from qs in _unitOfWork.QuizSessions.GetAll()
+                    join v in _unitOfWork.Vouchers.GetAll()
+                        on qs.VoucherId equals v.Id
+                    join q in _unitOfWork.QuizSets.GetAll()
+                        on qs.QuizSetId equals q.Id
+                    where !qs.IsDeleted
+                          && eventIds.Contains(qs.EventId)
+                    select new QuizSessionDto
+                    {
+                        Id = qs.Id,
+                        EventId = qs.EventId,
+                        StartTime = qs.StartTime,
+                        TakeTop = qs.TakeTop,
+                        Voucher = new VoucherDto
+                        {
+                            Id = v.Id,
+                            Title = v.Title,
+                            ImageUrl = v.ImageUrl,
+                            Value = v.Value
+                        },
+                        QuizSet = new QuizSetDto
+                        {
+                            Id = q.Id,
+                            ImageUrl = q.ImageUrl,
+                            Title = q.Title,
+                            QuizesSerialized = q.QuizesSerialized
+                        }
+                    }
+                )
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+            
+            // Populate the quiz sessions to the events
+            foreach (var e in events)
+            {
+                e.QuizSessions = quizSessions.Where(qs => qs.EventId == e.Id).ToList();
+            }
 
             var responseData = new GetAllEventsReponse { Events = events };
             response.ToSuccessResponse(responseData);
