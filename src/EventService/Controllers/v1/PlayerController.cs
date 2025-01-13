@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using EventService.Features.Commands.PlayerCommands.ReadNotifications;
+using EventService.Features.Queries.AdminQueries.GetAllEvents;
 using EventService.Features.Queries.PlayerQueries.GetFavoriteEvents;
 using EventService.Features.Queries.PlayerQueries.GetNotifications;
 using MediatR;
@@ -26,6 +27,13 @@ public class PlayerController : ControllerBase
     public async Task<IActionResult> GetFavoriteEvents(CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new GetFavoriteEventsQuery(), cancellationToken);
+        return response.ToObjectResult();
+    }
+    
+    [HttpGet("GetAllEvents")]
+    public async Task<IActionResult> GetAllEvents(CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetAllEventsQuery(), cancellationToken);
         return response.ToObjectResult();
     }
 
