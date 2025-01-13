@@ -42,8 +42,7 @@ public class CreateEventHandler: IRequestHandler<CreateEventCommand, BaseRespons
                 .Where(x => 
                     !x.IsDeleted
                     && x.CounterPartId == userId
-                    && (x.Name == request.Name 
-                        || Math.Abs((x.StartDate - request.StartDate).TotalHours) > 1))
+                    && x.Name == request.Name)
                 .AsNoTracking()
                 .AnyAsync(cancellationToken);
 
