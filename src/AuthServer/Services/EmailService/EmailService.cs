@@ -34,10 +34,15 @@ public class EmailService : IEmailService
                 await smtp.ConnectAsync(_emailSettings.SmtpServer, _emailSettings.Port, MailKit.Security.SecureSocketOptions.StartTls);
                 await smtp.AuthenticateAsync(_emailSettings.UserName, _emailSettings.Password);
                 await smtp.SendAsync(email);
-                _logger.LogInformation($"Email sent to {toEmail}");
+                if (smtp.IsConnected)
+                {
+                    _logger.LogInformation($"Email sent to {toEmail}");
+                }
+              
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Failed to send email: {ex.Message}");
                 throw new InvalidOperationException($"Failed to send email: {ex.Message}");
             }
             finally

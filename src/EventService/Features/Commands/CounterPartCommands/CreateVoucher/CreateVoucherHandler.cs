@@ -24,6 +24,7 @@ public class CreateVoucherHandler: IRequestHandler<CreateVoucherCommand, BaseRes
     public async Task<BaseResponse<VoucherDto>> Handle(CreateVoucherCommand request, CancellationToken cancellationToken)
     {
         var userId = _contextAccessor.GetCurrentUserId();
+        _logger.LogInformation($"UserId: {userId}");
         var methodName = $"{nameof(CreateVoucherHandler)}.{nameof(Handle)} UserId = {userId}, Payload = {JsonSerializer.Serialize(request)} =>";
         _logger.LogInformation(methodName);
         var response = new BaseResponse<VoucherDto>();

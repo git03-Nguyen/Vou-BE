@@ -70,7 +70,8 @@ public class RegisterCounterPartHandler : IRequestHandler<RegisterCounterPartCom
                 PhoneNumber = request.PhoneNumber,
                 Role = Constants.COUNTERPART,
                 OtpActivateCode = otp,
-                OtpActivateExpiredTime = DateTime.Now.AddMinutes(5)
+                OtpActivateExpiredTime = DateTime.Now.AddMinutes(5),
+                EmailConfirmed = true
             };
             
             // 3. Add user
@@ -110,10 +111,11 @@ public class RegisterCounterPartHandler : IRequestHandler<RegisterCounterPartCom
             await _userManager.UpdateAsync(user);
             
             //5. Send OTP to activate account
-            await SendActivateOtp(user);
+           // await SendActivateOtp(user);
+           
             
             // 6. Publish message to PubSub
-            await PublishMessageAsync(responseData, cancellationToken);
+            // await PublishMessageAsync(responseData, cancellationToken);
             
             response.ToSuccessResponse(responseData, "User created successfully. Please check your email to activate your account.");
         }
