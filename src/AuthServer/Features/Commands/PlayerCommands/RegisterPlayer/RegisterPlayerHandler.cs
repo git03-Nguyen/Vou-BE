@@ -66,7 +66,7 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
                 Id = Guid.NewGuid().ToString(),
                 Email = request.Email,
                 UserName = request.UserName,
-                FullName = request.FullName,
+                FullName = request.FullName ?? request.UserName,
                 PhoneNumber = request.PhoneNumber,
                 AvatarUrl = request.AvatarUrl ?? Common.Constants.DefaultAvatarUrl,
                 Role = Constants.PLAYER,
