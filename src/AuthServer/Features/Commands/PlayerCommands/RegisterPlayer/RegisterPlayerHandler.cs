@@ -71,8 +71,7 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
                 AvatarUrl = request.AvatarUrl ?? Common.Constants.DefaultAvatarUrl,
                 Role = Constants.PLAYER,
                 OtpActivateCode = otp,
-                OtpActivateExpiredTime = DateTime.Now.AddMinutes(30),
-                EmailConfirmed = true
+                OtpActivateExpiredTime = DateTime.Now.AddMinutes(30)
             };
             
             // 3. Add user
@@ -112,7 +111,7 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
             await _userManager.UpdateAsync(user);
             
             // 5. Send email
-            // await SendActivateOtp(user);
+            await SendActivateOtp(user);
             
             // 6. Publish message
             await PublishMessageAsync(responseData, cancellationToken);
