@@ -10,5 +10,5 @@ public class GetAllEventsQuery : IRequest<BaseResponse<GetAllEventsReponse>>
 
 public class GetAllEventsReponse
 {
-    public List<EventDto> Events { get; set; }
+    public List<FullEventDto> Events { get; set; }
 }

@@ -1,6 +1,6 @@
 using Asp.Versioning;
 using EventService.Features.Commands.PlayerCommands.ReadNotifications;
-using EventService.Features.Queries.AdminQueries.GetAllEvents;
+using EventService.Features.Queries.PlayerQueries.GetAllEvents;
 using EventService.Features.Queries.PlayerQueries.GetFavoriteEvents;
 using EventService.Features.Queries.PlayerQueries.GetNotifications;
 using MediatR;
@@ -21,7 +21,7 @@ public class PlayerController : ControllerBase
         _mediator = mediator;
     }
 
-    #region Favorite events
+    #region Events
 
     [HttpGet("GetFavoriteEvents")]
     public async Task<IActionResult> GetFavoriteEvents(CancellationToken cancellationToken)

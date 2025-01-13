@@ -2,10 +2,11 @@ using GameService.Data.Models;
 using GameService.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Shared.Response;
 using Shared.Services.HttpContextAccessor;
 
-namespace GameService.Features.Commands.PlayerCommands;
+namespace GameService.Features.Commands.PlayerCommands.SendTicketToFriend;
 
 public class SendTicketHandler : IRequestHandler<SendTicketCommand, BaseResponse>
 {
@@ -41,20 +42,19 @@ public class SendTicketHandler : IRequestHandler<SendTicketCommand, BaseResponse
             }
             
             var friendShakeSession = await _unitOfWork.PlayerShakeSessions
-                .Where(x => x.PlayerId == friendId)
+                .Where(x => x.PlayerId == friendId && !x.IsDeleted)
                 .FirstOrDefaultAsync(cancellationToken);
-            
+
+            await _unitOfWork.OpenTransactionAsync(cancellationToken);
             if (friendShakeSession is null)
             {
                 var eventId = request.EventId;
-                
                 var newShakeSession = new PlayerShakeSession
                 {
                     PlayerId = friendId,
-                    EventId = eventId,
-                    Tickets = 1
+                    EventId = eventId
                 };
-                
+                newShakeSession.Tickets++;
                 await _unitOfWork.PlayerShakeSessions.AddAsync(newShakeSession, cancellationToken);
             }
             else
@@ -64,10 +64,12 @@ public class SendTicketHandler : IRequestHandler<SendTicketCommand, BaseResponse
             }
             
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
             response.ToSuccessResponse();
         }
         catch (Exception ex)
         {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             _logger.LogError(ex, methodName);
             response.ToInternalErrorResponse();
         }
