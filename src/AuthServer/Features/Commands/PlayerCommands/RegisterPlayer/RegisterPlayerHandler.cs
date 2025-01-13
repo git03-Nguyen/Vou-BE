@@ -3,11 +3,13 @@ using AuthServer.Data.Models;
 using AuthServer.DTOs;
 using AuthServer.Repositories;
 using AuthServer.Services.EmailService;
+using AuthServer.Services.PubSubService;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Shared.Common;
 using Shared.Contracts;
+using Shared.Contracts.EventMessages;
 using Shared.Response;
 
 namespace AuthServer.Features.Commands.PlayerCommands.RegisterPlayer;
@@ -18,12 +20,14 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
     private readonly UserManager<User> _userManager;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEmailService _emailService;
-    public RegisterPlayerHandler(ILogger<RegisterPlayerValidator> logger, UserManager<User> userManager, IUnitOfWork unitOfWork, IEmailService emailService)
+    private readonly IEventPublishService _eventPublishService;
+    public RegisterPlayerHandler(ILogger<RegisterPlayerValidator> logger, UserManager<User> userManager, IUnitOfWork unitOfWork, IEmailService emailService, IEventPublishService eventPublishService)
     {
         _logger = logger;
         _userManager = userManager;
         _unitOfWork = unitOfWork;
         _emailService = emailService;
+        _eventPublishService = eventPublishService;
     }
 
     public async Task<BaseResponse<UserFullProfileDto>> Handle(RegisterPlayerCommand request, CancellationToken cancellationToken)
@@ -105,8 +109,13 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
                 BirthDate = player.BirthDate
             };
             await _userManager.UpdateAsync(user);
+            
             // 5. Send email
             await SendActivateOtp(user);
+            
+            // 6. Publish message
+            await PublishMessageAsync(responseData, cancellationToken);
+            
             response.ToSuccessResponse(responseData, "Register successfully. Please check your email to activate account");
         }
         catch (Exception e)
@@ -140,11 +149,32 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return player;
     }
-    //send OTP to activate account
+    // Send OTP to activate account
     private async Task SendActivateOtp(User user)
     {
         if (user.OtpActivateCode != null)
             await _emailService.SendEmailAsync(user.Email, Common.Constants.ActivateSubjectEmail,
                 Common.Constants.GetOtpActivateAccountMessage(user.OtpActivateCode));
+    }
+    
+    // Publish message to PubSub
+    private async Task PublishMessageAsync(UserFullProfileDto user, CancellationToken cancellationToken)
+    {
+        var message = new UserUpdatedEvent 
+        {
+            UserId = user.Id,
+            Role = user.Role,
+            FullName = user.FullName,
+            UserName = user.UserName,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+            AvatarUrl = user.AvatarUrl,
+            FacebookUrl = user.FacebookUrl,
+            BirthDate = user.BirthDate,
+            Gender = user.Gender,
+            Addresses = user.Addresses,
+            Field = user.Field
+        };
+        await _eventPublishService.PublishUserUpdatedEventAsync(message, cancellationToken);
     }
 }

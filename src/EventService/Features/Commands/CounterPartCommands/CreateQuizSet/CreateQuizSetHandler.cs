@@ -52,6 +52,7 @@ public class CreateQuizSetHandler: IRequestHandler<CreateQuizSetCommand, BaseRes
                 Title = request.Title,
                 CounterPartId = userId,
                 ImageUrl = request.ImageUrl,
+                QuizesSerialized = JsonSerializer.Serialize(request.Quizes)
             };
             
             await _unitOfWork.QuizSets.AddAsync(newQuizSet, cancellationToken);
@@ -62,13 +63,13 @@ public class CreateQuizSetHandler: IRequestHandler<CreateQuizSetCommand, BaseRes
                 Id = newQuizSet.Id,
                 Title = newQuizSet.Title,
                 ImageUrl = newQuizSet.ImageUrl,
-                Quizes = newQuizSet.Quizes
+                QuizesSerialized = JsonSerializer.Serialize(request.Quizes)
             };
             response.ToSuccessResponse(responseData);
         }
         catch (Exception e)
         {
-            _logger.LogError($"{methodName} {e.Message}");
+            _logger.LogError($"{methodName} Has error: {e.Message}");
             response.ToInternalErrorResponse();
         }
 

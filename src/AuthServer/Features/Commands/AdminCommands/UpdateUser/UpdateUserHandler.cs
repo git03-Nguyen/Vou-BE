@@ -3,9 +3,11 @@ using AuthServer.Common;
 using AuthServer.Data.Models;
 using AuthServer.DTOs;
 using AuthServer.Repositories;
+using AuthServer.Services.PubSubService;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Shared.Contracts.EventMessages;
 using Shared.Response;
 using Shared.Services.HttpContextAccessor;
 using Constants = Shared.Common.Constants;
@@ -18,12 +20,14 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, BaseResponse
     private readonly UserManager<User> _userManager;
     private readonly ICustomHttpContextAccessor _httpContextAccessor;
     private readonly IUnitOfWork _unitOfWork;
-    public UpdateUserHandler(ILogger<UpdateUserHandler> logger, UserManager<User> userManager, ICustomHttpContextAccessor httpContextAccessor, IUnitOfWork unitOfWork)
+    private readonly IEventPublishService _eventPublishService;
+    public UpdateUserHandler(ILogger<UpdateUserHandler> logger, UserManager<User> userManager, ICustomHttpContextAccessor httpContextAccessor, IUnitOfWork unitOfWork, IEventPublishService eventPublishService)
     {
         _logger = logger;
         _userManager = userManager;
         _httpContextAccessor = httpContextAccessor;
         _unitOfWork = unitOfWork;
+        _eventPublishService = eventPublishService;
     }
 
     public async Task<BaseResponse<UserFullProfileDto>> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
@@ -124,7 +128,6 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, BaseResponse
                _unitOfWork.CounterParts.Update(counterpart);
              }
              await _unitOfWork.SaveChangesAsync(cancellationToken);
-            
 
             var responseData=new UserFullProfileDto
             {
@@ -148,6 +151,10 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, BaseResponse
                 Gender = player?.Gender,
                 FacebookUrl = player?.FacebookUrl 
             };
+            
+            // Publish event
+            await PublishMessageAsync(responseData, cancellationToken);
+            
             return response.ToSuccessResponse(responseData);
         }
         catch (Exception e)
@@ -157,5 +164,26 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, BaseResponse
         }
 
         return response;
+    }
+    
+    // Publish message to PubSub
+    private async Task PublishMessageAsync(UserFullProfileDto user, CancellationToken cancellationToken)
+    {
+        var message = new UserUpdatedEvent 
+        {
+            UserId = user.Id,
+            Role = user.Role,
+            FullName = user.FullName,
+            UserName = user.UserName,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+            AvatarUrl = user.AvatarUrl,
+            FacebookUrl = user.FacebookUrl,
+            BirthDate = user.BirthDate,
+            Gender = user.Gender,
+            Addresses = user.Addresses,
+            Field = user.Field
+        };
+        await _eventPublishService.PublishUserUpdatedEventAsync(message, cancellationToken);
     }
 }

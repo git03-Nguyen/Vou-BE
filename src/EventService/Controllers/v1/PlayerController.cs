@@ -10,7 +10,7 @@ namespace EventService.Controllers.v1;
 
 [Authorize(Policy = Constants.PLAYER)]
 [ApiVersion("1.0")]
-[Microsoft.AspNetCore.Components.Route("api/{apiVersion:apiVersion}/[controller]")]
+[Route("api/{apiVersion:apiVersion}/[controller]")]
 public class PlayerController : ControllerBase
 {
     private readonly IMediator _mediator;

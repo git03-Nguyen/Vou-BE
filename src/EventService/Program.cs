@@ -24,6 +24,7 @@ public class Program
             .ConfigureDbContext(builder.Configuration)
             .ConfigureAuthentication(builder.Configuration)
             .ConfigureApiVersioning()
+            .ConfigureDaprIntegration()
             .ConfigureControllers()
             .ConfigureCustomHttpContext()
             .ConfigureDIServices(builder.Configuration)
@@ -39,6 +40,7 @@ public class Program
             .UseRouting()
             .UseExceptionHandler()
             .UseAuthentication(builder.Configuration)
+            .UseDaprIntegration()
             .UseControllers();
 
         app.Run();
