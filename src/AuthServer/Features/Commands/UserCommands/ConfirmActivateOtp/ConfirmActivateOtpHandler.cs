@@ -46,7 +46,7 @@ public class ConfirmActivateOtpHandler : IRequestHandler<ConfirmActivateOtpComma
             }
             else if (user.OtpActivateCode == request.Otp)
             {
-                if (user.OtpActivateExpiredTime< DateTime.UtcNow)
+                if (user.OtpActivateExpiredTime< DateTime.Now)
                 {
                     response.ToBadRequestResponse("OTP is expired");
                 }

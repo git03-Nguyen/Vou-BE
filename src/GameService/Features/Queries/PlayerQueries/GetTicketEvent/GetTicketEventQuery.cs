@@ -4,7 +4,7 @@ using Shared.Response;
 
 namespace GameService.Features.Queries.PlayerQueries.GetTicketEvent;
 
-public class GetTicketEventQuery : IRequest<BaseResponse<PlayerTicketDto>>
+public class GetTicketEventQuery : IRequest<BaseResponse<PlayerShakeDto>>
 {
     public string EventId;
 

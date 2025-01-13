@@ -47,6 +47,7 @@ public class SendTicketHandler : IRequestHandler<SendTicketCommand, BaseResponse
                 .Where(x => x.PlayerId == friendId && !x.IsDeleted)
                 .FirstOrDefaultAsync(cancellationToken);
 
+            // If friend is new to the event, create a new shake session for him
             if (friendShakeSession is null)
             {
                 var eventId = request.EventId;
@@ -60,6 +61,14 @@ public class SendTicketHandler : IRequestHandler<SendTicketCommand, BaseResponse
             }
             else
             {
+                // Check if reset day is passed
+                if (friendShakeSession.NextResetTicketsTime < DateTime.Now)
+                {
+                    var newPlayerSession = new PlayerShakeSession();
+                    
+                    friendShakeSession.NextResetTicketsTime = newPlayerSession.NextResetTicketsTime;
+                    friendShakeSession.Tickets = newPlayerSession.Tickets;
+                }
                 friendShakeSession.Tickets++;
                 _unitOfWork.PlayerShakeSessions.Update(friendShakeSession);
             }
