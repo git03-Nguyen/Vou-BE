@@ -3,6 +3,7 @@ using EventService.Data.Models;
 using EventService.DTOs;
 using EventService.Features.Queries.CounterPartQueries.GetOwnEvent;
 using EventService.Repositories;
+using EventService.Services.PubSubService;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -17,12 +18,14 @@ public class CreateEventHandler: IRequestHandler<CreateEventCommand, BaseRespons
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICustomHttpContextAccessor _contextAccessor;
     private readonly IMediator _mediator;
-    public CreateEventHandler(ILogger<CreateEventHandler> logger, IUnitOfWork unitOfWork, ICustomHttpContextAccessor contextAccessor, IMediator mediator)
+    private readonly IEventPublishService _eventPublishService;
+    public CreateEventHandler(ILogger<CreateEventHandler> logger, IUnitOfWork unitOfWork, ICustomHttpContextAccessor contextAccessor, IMediator mediator, IEventPublishService eventPublishService)
     {
         _logger = logger;
         _unitOfWork = unitOfWork;
         _contextAccessor = contextAccessor;
         _mediator = mediator;
+        _eventPublishService = eventPublishService;
     }
 
     public async Task<BaseResponse<FullEventDto>> Handle(CreateEventCommand request, CancellationToken cancellationToken)
@@ -88,6 +91,9 @@ public class CreateEventHandler: IRequestHandler<CreateEventCommand, BaseRespons
 
             var query = new GetOwnEventQuery { EventId = newEvent.Id };
             var fullEvent = await _mediator.Send(query, cancellationToken);
+            var responseData = fullEvent.Data;
+            
+            await _eventPublishService.PublishEventUpdatedEventAsync(fullEvent.Data, cancellationToken);
             response.ToSuccessResponse(fullEvent.Data);
         }
         catch (Exception e)

@@ -1,9 +1,9 @@
 using EventService.DTOs;
-using EventService.Enums;
 using EventService.Features.Queries.AdminQueries.GetAllEvents;
 using EventService.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Shared.Enums;
 using Shared.Response;
 
 namespace EventService.Features.Commands.AdminCommands.AcceptEvent;

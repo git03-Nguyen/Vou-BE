@@ -14,6 +14,7 @@ public static class CustomDIRegistrations
         services.AddScoped<IQuizSessionRepository, QuizSessionRepository>();
         services.AddScoped<IQuizSetRepository, QuizSetRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IEventRepository, EventRepository>();
         return services;
     }
 }

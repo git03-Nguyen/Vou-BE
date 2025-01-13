@@ -10,4 +10,5 @@ public interface IUnitOfWork : IGenericUnitOfWork
     IPlayerShakeSessionRepository PlayerShakeSessions { get; set; }
     IQuizSessionRepository QuizSessions { get; set; }
     IQuizSetRepository QuizSets { get; set; }
+    IEventRepository Events { get; set; }
 }

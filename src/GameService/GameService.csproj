@@ -38,7 +38,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Features\Queries\" />
+      <Folder Include="Features\Queries\PlayerQueries\" />
       <Folder Include="Options\" />
       <Folder Include="Services\" />
     </ItemGroup>
