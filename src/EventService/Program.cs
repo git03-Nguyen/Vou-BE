@@ -25,7 +25,7 @@ public class Program
             .ConfigureAuthentication(builder.Configuration)
             .ConfigureSignalR()
             .ConfigureApiVersioning()
-            .ConfigureDaprIntegration()
+            .ConfigureDaprIntegration(builder.Configuration)
             .ConfigureControllers()
             .ConfigureCustomHttpContext()
             .ConfigureDIServices(builder.Configuration)

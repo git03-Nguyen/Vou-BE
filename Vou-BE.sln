@@ -37,7 +37,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "localhost", "localhost", "{
 	ProjectSection(SolutionItems) = preProject
 		components\localhost\redis-pubsub.yaml = components\localhost\redis-pubsub.yaml
 		components\localhost\redis-state.yaml = components\localhost\redis-state.yaml
-		components\localhost\tracing.yaml = components\localhost\tracing.yaml
 		components\localhost\zipkin.yaml = components\localhost\zipkin.yaml
 	EndProjectSection
 EndProject
@@ -45,7 +44,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{B8DB3C
 	ProjectSection(SolutionItems) = preProject
 		components\docker\redis-pubsub.yaml = components\docker\redis-pubsub.yaml
 		components\docker\redis-state.yaml = components\docker\redis-state.yaml
-		components\docker\tracing.yaml = components\docker\tracing.yaml
 		components\docker\zipkin.yaml = components\docker\zipkin.yaml
 	EndProjectSection
 EndProject

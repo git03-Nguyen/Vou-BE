@@ -31,11 +31,10 @@ services:
   #############################
   voudb:
     image: postgres
-    
+  
   #############################
   ######### SERVICES ##########
-  #############################  
-  
+  #############################
   apigateway:
     image: ${DOCKER_REGISTRY-}apigateway
     build:
@@ -65,6 +64,35 @@ services:
     build:
       context: .
       dockerfile: src/PaymentService/Dockerfile
+
+  #############################
+  ######### SIDECARS ##########
+  #############################
+  authserver-dapr:
+    image: "daprio/daprd:latest"
+    depends_on:
+      - authserver
+  
+  eventservice-dapr:
+    image: "daprio/daprd:latest"
+    depends_on:
+      - eventservice
+  
+  gameservice-dapr:
+    image: "daprio/daprd:latest"
+    depends_on:
+      - gameservice
+
+  #############################
+  ########### DAPR ############
+  #############################
+
+  placement:
+    image: "daprio/dapr:1.14.4"
+    
+  scheduler:
+    user: root
+    image: "daprio/dapr:1.14.4"
       
   #############################
   ######## BACKGROUND #########

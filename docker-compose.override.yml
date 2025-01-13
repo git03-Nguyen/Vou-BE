@@ -54,7 +54,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - db-data:/var/lib/postgresql/data1/
+      - db-data:/var/lib/postgresql/data/
     
   #############################
   ######### SERVICES ##########
@@ -70,10 +70,8 @@ services:
       - Logging__Elk__Uri=http://elasticsearch:9200
     depends_on:
       - voudb
-    command: [ "dapr", "run", "--app-id", "apigateway", "--app-port", "5000", "--dapr-http-port", "3500", "--components-path", "/components/docker", "--", "dotnet", "ApiGateway.dll" ]
     ports:
       - "5000:5000"
-      - "3500:3500"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ~/.aspnet/https:/https:ro
@@ -89,12 +87,12 @@ services:
       - Authentication__Secret=my_very_very_very_very_long_long_secret
       - Logging__Elk__Enabled=false
       - Logging__Elk__Uri=http://elasticsearch:9200
+      - Dapr__DaprHttpEndpoint=http://authserver-dapr:3501
     depends_on:
       - voudb
-    command: [ "dapr", "run", "--app-id", "authserver", "--app-port", "5100", "--dapr-http-port", "3501", "--components-path", "/components/docker", "--", "dotnet", "AuthServer.dll" ]
+      - placement
     ports:
       - "5100:5100"
-      - "3501:3501"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ~/.aspnet/https:/https:ro
@@ -110,12 +108,12 @@ services:
       - Authentication__Secret=my_very_very_very_very_long_long_secret
       - Logging__Elk__Enabled=false
       - Logging__Elk__Uri=http://elasticsearch:9200
+      - Dapr__DaprHttpEndpoint=http://authserver-dapr:3502
     depends_on:
       - voudb
-    command: [ "dapr", "run", "--app-id", "eventservice", "--app-port", "5200", "--dapr-http-port", "3502", "--components-path", "/components/docker", "--", "dotnet", "EventService.dll" ]
+      - placement
     ports:
       - "5200:5200"
-      - "3502:3502"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ~/.aspnet/https:/https:ro
@@ -131,12 +129,13 @@ services:
       - Authentication__Secret=my_very_very_very_very_long_long_secret
       - Logging__Elk__Enabled=false
       - Logging__Elk__Uri=http://elasticsearch:9200
+      - Dapr__DaprHttpEndpoint=http://authserver-dapr:3503
     depends_on:
       - voudb
-    command: [ "dapr", "run", "--app-id", "gameservice", "--app-port", "5300", "--dapr-http-port", "3503", "--components-path", "/components/docker", "--", "dotnet", "GameService.dll" ]
+      - placement
+      - scheduler
     ports:
       - "5300:5300"
-      - "3503:3503"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ~/.aspnet/https:/https:ro
@@ -154,10 +153,9 @@ services:
       - Logging__Elk__Uri=http://elasticsearch:9200
     depends_on:
       - voudb
-    command: [ "dapr", "run", "--app-id", "paymentservice", "--app-port", "5400", "--dapr-http-port", "3504", "--components-path", "/components/docker", "--", "dotnet", "PaymentService.dll" ]
+      - placement
     ports:
       - "5400:5400"
-      - "3504:3504"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ~/.aspnet/https:/https:ro
@@ -167,3 +165,63 @@ services:
   ######## BACKGROUND #########
   #############################
   
+  #############################
+  ######### SIDECARS ##########
+  #############################
+  authserver-dapr:
+    command: [
+      "./daprd",
+      "--app-id", "authserver",
+      "--app-port", "5100",
+      "--dapr-http-port", "3501",
+      "--placement-host-address", "placement:50006",
+      "--scheduler-host-address", "scheduler:50007",
+      "--resources-path", "/components"
+    ]
+    volumes:
+      - "./components/docker:/components"
+    depends_on:
+      - authserver
+    
+  eventservice-dapr:
+    command: [
+      "./daprd",
+      "--app-id", "eventservice",
+      "--app-port", "5200",
+      "--dapr-http-port", "3502",
+      "--placement-host-address", "placement:50006",
+      "--scheduler-host-address", "scheduler:50007",
+      "--resources-path", "/components"
+    ]
+    volumes:
+      - "./components/docker:/components"
+    depends_on:
+      - eventservice
+
+  gameservice-dapr:
+    command: [
+      "./daprd",
+      "--app-id", "gameservice",
+      "--app-port", "5300",
+      "--dapr-http-port", "3503",
+      "--placement-host-address", "placement:50006",
+      "--scheduler-host-address", "scheduler:50007",
+      "--resources-path", "/components"
+    ]
+    volumes:
+      - "./components/docker:/components"
+    depends_on:
+      - gameservice
+  
+  #############################
+  ########### DAPR ############
+  #############################
+  placement:
+    command: [ "./placement", "--port", "50006" ]
+    ports:
+      - "50006:50006"
+  
+  scheduler:
+    command: [ "./scheduler", "--port", "50007" ]
+    ports:
+      - "50007:50007"
