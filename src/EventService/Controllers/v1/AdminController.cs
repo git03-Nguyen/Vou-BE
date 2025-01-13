@@ -2,6 +2,7 @@ using Asp.Versioning;
 using EventService.Features.Commands.AdminCommands.AcceptEvent;
 using EventService.Features.Commands.AdminCommands.RefuseEvent;
 using EventService.Features.Queries.AdminQueries.GetAllEvents;
+using EventService.Features.Queries.StatisticsQueries.EventStatistics;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -40,6 +41,14 @@ public class AdminController : ControllerBase
     public async Task<IActionResult> RefuseEvent(string eventId, CancellationToken cancellationToken)
     {
         var request = new RefuseEventCommand(eventId);
+        var response = await _mediator.Send(request, cancellationToken);
+        return response.ToObjectResult();
+    }
+    
+    [HttpGet("EventStatistics")]
+    public async Task<IActionResult> GetEventStatistics(CancellationToken cancellationToken)
+    {
+        var request = new EventStatisticsQuery();
         var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
     }
