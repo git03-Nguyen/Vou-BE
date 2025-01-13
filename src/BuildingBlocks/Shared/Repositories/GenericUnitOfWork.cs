@@ -25,12 +25,18 @@ public abstract class GenericUnitOfWork<TDbContext> : IGenericUnitOfWork, IAsync
 
     public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
     {
-        await Transaction.CommitAsync(cancellationToken);
+        if (Transaction is not null)
+        {
+            await Transaction.CommitAsync(cancellationToken);
+        }
     }
 
     public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
     {
-        await Transaction.RollbackAsync(cancellationToken);
+        if (Transaction is not null)
+        {
+            await Transaction.RollbackAsync(cancellationToken);
+        }
     }
 
     public async ValueTask DisposeAsync()
