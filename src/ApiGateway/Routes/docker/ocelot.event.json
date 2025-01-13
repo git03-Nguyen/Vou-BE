@@ -107,6 +107,27 @@
         "AuthenticationProviderKey": "IdentityApiKey",
         "AllowedScopes": [ "service_scope" ]
       }
+    },
+    // WebSocket
+    {
+      "SwaggerKey": "eventservice",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "eventservice",
+          "Port": 5200
+        }
+      ],
+      "DownstreamPathTemplate": "/ws/{everything}",
+      "UpstreamPathTemplate": "/EventService/ws/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
+      "DownstreamScheme": "ws",
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "IdentityApiKey",
+        "AllowedScopes": [ "service_scope" ]
+      }
     }
   ]
 }

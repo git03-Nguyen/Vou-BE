@@ -118,7 +118,7 @@
         }
       ],
       "DownstreamPathTemplate": "/ws/{everything}",
-      "UpstreamPathTemplate": "/ws/{everything}",
+      "UpstreamPathTemplate": "/ws/GameService/{everything}",
       "DownstreamScheme": "ws",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
       "LoadBalancerOptions": {

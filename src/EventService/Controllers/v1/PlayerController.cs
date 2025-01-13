@@ -1,5 +1,7 @@
 using Asp.Versioning;
+using EventService.Features.Commands.PlayerCommands.ReadNotifications;
 using EventService.Features.Queries.PlayerQueries.GetFavoriteEvents;
+using EventService.Features.Queries.PlayerQueries.GetNotifications;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,11 +19,33 @@ public class PlayerController : ControllerBase
     {
         _mediator = mediator;
     }
-    
+
+    #region Favorite events
+
     [HttpGet("GetFavoriteEvents")]
     public async Task<IActionResult> GetFavoriteEvents(CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new GetFavoriteEventsQuery(), cancellationToken);
         return response.ToObjectResult();
     }
+
+    #endregion
+
+    #region Notifications
+
+    [HttpGet("GetNotifications")]
+    public async Task<IActionResult> GetNotifications(CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetNotificationsQuery(), cancellationToken);
+        return response.ToObjectResult();
+    }
+    
+    [HttpPost("ReadNotifications")]
+    public async Task<IActionResult> ReadNotifications([FromBody] ReadNotificationsCommand request, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(request, cancellationToken);
+        return response.ToObjectResult();
+    }
+
+    #endregion
 }
