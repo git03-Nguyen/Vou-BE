@@ -88,7 +88,6 @@ public class CreateUserValidator : AbstractValidator<CreateUserCommand>
             RuleFor(x => x.BirthDate)
                 .Cascade(CascadeMode.Stop)
                 .NotNull()
-                .NotEmpty()
                 .WithMessage("BirthDate is required")
                 .Must(x => x <= DateTime.Now)
                 .WithMessage("BirthDate is invalid");

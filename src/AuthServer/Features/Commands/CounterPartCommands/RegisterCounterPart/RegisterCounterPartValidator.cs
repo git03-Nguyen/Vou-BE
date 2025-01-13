@@ -66,10 +66,6 @@ public class RegisterCounterPartValidator : AbstractValidator<RegisterCounterPar
             .NotNull()
             .NotEmpty()
             .WithMessage("Addresses is required");
-            
-        RuleFor(x => x.Address)
-            .NotEmpty()
-            .Matches(Regexes.VALID_ADDRESS_TEXT)
-            .WithMessage("AddressText is invalid");
+        
     }
 }

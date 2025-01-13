@@ -4,18 +4,21 @@ using System.Collections.Generic;
 using EventService.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Shared.Contracts;
 
 #nullable disable
 
-namespace EventService.Data.Contexts.Migrations
+namespace EventService.Migrations
 {
     [DbContext(typeof(EventDbContext))]
-    partial class EventDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250113015905_Add event end date")]
+    partial class Addeventenddate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
