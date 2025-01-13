@@ -5,7 +5,7 @@ namespace GameService.Features.Commands.PlayerCommands.SendTicketToFriend;
 
 public class SendTicketCommand : IRequest<BaseResponse>
 {
-    public string PlayerId { get; set; }
+    public string UserNameOrEmail { get; set; }
     public string EventId { get; set; }
 }
 

@@ -1,8 +1,8 @@
+using System.Text.Json;
 using GameService.Data.Models;
 using GameService.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using Shared.Response;
 using Shared.Services.HttpContextAccessor;
 
@@ -23,14 +23,16 @@ public class SendTicketHandler : IRequestHandler<SendTicketCommand, BaseResponse
     public async Task<BaseResponse> Handle(SendTicketCommand request, CancellationToken cancellationToken)
     {
         var userId = _contextAccessor.GetCurrentUserId();
-        var methodName = $"{nameof(SendTicketHandler)}.{nameof(Handle)} UserId: {userId}, PlayerId {request.PlayerId} =>";
+        var methodName = $"{nameof(SendTicketHandler)}.{nameof(Handle)} UserId = {userId}, Payload = {JsonSerializer.Serialize(request)} =>";
         _logger.LogInformation(methodName);
         var response = new BaseResponse();
 
         try
         {
             var friendId = await _unitOfWork.Players
-                .Where(x => x.Id == request.PlayerId)
+                .Where(x => 
+                    x.Email == request.UserNameOrEmail 
+                    || x.UserName == request.UserNameOrEmail)
                 .Select(x => x.Id)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(cancellationToken);
@@ -45,7 +47,6 @@ public class SendTicketHandler : IRequestHandler<SendTicketCommand, BaseResponse
                 .Where(x => x.PlayerId == friendId && !x.IsDeleted)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            await _unitOfWork.OpenTransactionAsync(cancellationToken);
             if (friendShakeSession is null)
             {
                 var eventId = request.EventId;
@@ -64,13 +65,11 @@ public class SendTicketHandler : IRequestHandler<SendTicketCommand, BaseResponse
             }
             
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
             response.ToSuccessResponse();
         }
         catch (Exception ex)
         {
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-            _logger.LogError(ex, methodName);
+            _logger.LogError(ex, $"{methodName} Has error: {ex.Message}");
             response.ToInternalErrorResponse();
         }
 
