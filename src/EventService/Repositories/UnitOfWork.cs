@@ -14,8 +14,9 @@ public class UnitOfWork : GenericUnitOfWork<EventDbContext>, IUnitOfWork
         IFavoriteEventRepository favoriteEventRepository,
         IPlayerRepository playerRepository,
         ICounterPartRepository counterPartRepository,
-        IEventRepository eventRepository) 
-        : base(dbContext)
+        IEventRepository eventRepository,
+        INotificationRepository notificationRepository
+    ) : base(dbContext)
     {
         Vouchers = voucherRepository;
         QuizSessions = quizSessionRepository;
@@ -25,6 +26,7 @@ public class UnitOfWork : GenericUnitOfWork<EventDbContext>, IUnitOfWork
         Players = playerRepository;
         CounterParts = counterPartRepository;
         Events = eventRepository;
+        Notifications = notificationRepository;
     }
 
     public IVoucherRepository Vouchers { get; set; }
@@ -34,5 +36,6 @@ public class UnitOfWork : GenericUnitOfWork<EventDbContext>, IUnitOfWork
     public IFavoriteEventRepository FavoriteEvents { get; set; }
     public IPlayerRepository Players { get; set; }
     public ICounterPartRepository CounterParts { get; set; }
+    public INotificationRepository Notifications { get; set; }
     public IEventRepository Events { get; set; }
 }

@@ -22,6 +22,7 @@ public class EventDbContext : DbContext
     public DbSet<VoucherToPlayer> VoucherToPlayers { get; set; }
     public DbSet<QuizSession> QuizSessions { get; set; }
     public DbSet<QuizSet> QuizSets { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
     
     // Sync tables
     public DbSet<CounterPart> CounterParts { get; set; }
@@ -122,6 +123,16 @@ public class EventDbContext : DbContext
             entity.HasOne<CounterPart>()
                 .WithMany()
                 .HasForeignKey(qs => qs.CounterPartId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        
+        // Player - Notification: one - many
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(n => n.Id);
+            entity.HasOne<Player>()
+                .WithMany()
+                .HasForeignKey(n => n.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
     }

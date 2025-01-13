@@ -1,6 +1,4 @@
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
-using Shared.Contracts;
 using Shared.Domain;
 
 namespace EventService.Data.Models;

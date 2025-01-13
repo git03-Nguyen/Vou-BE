@@ -13,4 +13,5 @@ public interface IUnitOfWork : IGenericUnitOfWork
     IFavoriteEventRepository FavoriteEvents { get; set; }
     IPlayerRepository Players { get; set; }
     ICounterPartRepository CounterParts { get; set; }
+    INotificationRepository Notifications { get; set; }
 }
