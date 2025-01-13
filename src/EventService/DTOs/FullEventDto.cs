@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-using EventService.Enums;
+using Shared.Enums;
 
 namespace EventService.DTOs;
 
