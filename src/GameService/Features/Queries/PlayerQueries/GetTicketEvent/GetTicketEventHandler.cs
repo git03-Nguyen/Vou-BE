@@ -1,6 +1,10 @@
 using GameService.Data.Models;
 using GameService.Repositories;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Shared.Contracts.EventMessages;
+using Shared.Enums;
 using Shared.Response;
 using Shared.Services.HttpContextAccessor;
 
@@ -27,14 +31,40 @@ public class GetTicketEventHandler : IRequestHandler<GetTicketEventQuery, BaseRe
         
         try
         {
-            // var tickets = await 
-            // (
-            //     from playerInSession in _unitOfWork.PlayerShakeSessions.GetAll()
-            //     join @event in _unitOfWork.
-            //         on playerInSession.EventId equals @event.Id
-            //     where 
-            // )
+            var player = await
+            (
+                from playerInSession in _unitOfWork.PlayerShakeSessions.GetAll()
+                join @event in _unitOfWork.Events.GetAll()
+                    on playerInSession.EventId equals @event.Id
+                where @event.Status == EventStatus.Approved || @event.Status == EventStatus.InProgress
+                
+                select new
+                {
+                    playerInSession.Tickets
+                }
+            )
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+
+            if (player is null)
+            {
+                var newRow = new PlayerShakeSession
+                {
+                    EventId = request.EventId,
+                    PlayerId = userId
+                };
+
+                await _unitOfWork.PlayerShakeSessions.AddAsync(newRow,cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                return response.ToSuccessResponse(5);
+            }
+            else
+            {
+                return response.ToSuccessResponse(player.Tickets);
+            }
             
+
             // var events = await
             //         (
             //             from player in _unitOfWork.Players.GetAll()

@@ -9,7 +9,7 @@ namespace GameService.Controllers;
 [Authorize(Policy = Constants.ADMIN)]
 [ApiController]
 [ApiVersion("1.0")]
-[Route("api/{apiVersion:apiVersion}/{controller}")]
+[Route("api/{apiVersion:apiVersion}/[controller]")]
 public class AdminController : ControllerBase
 {
     private readonly IMediator _mediator;

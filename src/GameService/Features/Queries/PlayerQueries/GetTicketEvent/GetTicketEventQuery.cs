@@ -6,5 +6,10 @@ namespace GameService.Features.Queries.PlayerQueries.GetTicketEvent;
 public class GetTicketEventQuery : IRequest<BaseResponse<object>>
 {
     public string EventId;
+
+    public GetTicketEventQuery(string eventId)
+    {
+        EventId = eventId;
+    }
 }
 
