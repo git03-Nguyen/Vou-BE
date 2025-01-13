@@ -18,5 +18,7 @@ public static class Constants
     public const string DefaultAvatar = "https://storageaccwct.blob.core.windows.net/wct-blobstorage/UserDefaultAvatar.png";
     public const string DefaultGameImageUrl = "https://storageaccwct.blob.core.windows.net/wct-blobstorage/UserDefaultAvatar.png";
     
+    public const string PubSubName = "pubsub";
+    
     
 }

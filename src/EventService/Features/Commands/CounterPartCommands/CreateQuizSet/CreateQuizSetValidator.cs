@@ -36,7 +36,7 @@ public class CreateQuizSetValidator : AbstractValidator<CreateQuizSetCommand>
                 x.AnswerC.Length is > 0 and <= 50 &&
                 x.AnswerD.Length is > 0 and <= 50)
             .WithMessage("Answers are required and must not exceed 50 characters")
-            .Must(x => x.Answer is > 0 and <= 3)
+            .Must(x => x.Answer is >= 0 and <= 3)
             .WithMessage("Answer is required and must be between 0 and 3");
     }
 }

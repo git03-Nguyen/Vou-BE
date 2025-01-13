@@ -1,7 +1,9 @@
+using System.Text.Json;
 using EventService.DTOs;
 using EventService.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Shared.Contracts;
 using Shared.Response;
 using Shared.Services.HttpContextAccessor;
 
@@ -37,7 +39,7 @@ public class GetOwnQuizSetsHandler : IRequestHandler<GetOwnQuizSetsQuery, BaseRe
                     Id = quizSet.Id,
                     Title = quizSet.Title,
                     ImageUrl = quizSet.ImageUrl,
-                    Quizes = quizSet.Quizes
+                    QuizesSerialized = quizSet.QuizesSerialized
                 }
             )
             .AsNoTracking()

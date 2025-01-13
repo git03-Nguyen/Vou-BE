@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 using Shared.Contracts;
 using Shared.Domain;
 
@@ -10,6 +11,6 @@ public class QuizSet : BaseEntity
     public string? ImageUrl { get; set; }
     public string Title { get; set; }
     
-    [Column(TypeName = "jsonb")]
-    public List<Quiz> Quizes { get; set; }
+    [Column(TypeName = "json")]
+    public string QuizesSerialized { get; set; }
 }

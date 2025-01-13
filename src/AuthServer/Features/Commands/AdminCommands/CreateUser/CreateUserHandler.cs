@@ -2,11 +2,13 @@ using System.Text.Json;
 using AuthServer.Data.Models;
 using AuthServer.DTOs;
 using AuthServer.Repositories;
+using AuthServer.Services.PubSubService;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Shared.Common;
 using Shared.Contracts;
+using Shared.Contracts.EventMessages;
 using Shared.Response;
 using Shared.Services.HttpContextAccessor;
 
@@ -18,12 +20,14 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, BaseResponse
     private readonly UserManager<User> _userManager;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICustomHttpContextAccessor _httpContextAccessor;
-    public CreateUserHandler(ILogger<CreateUserValidator> logger, UserManager<User> userManager, IUnitOfWork unitOfWork, ICustomHttpContextAccessor httpContextAccessor)
+    private readonly IEventPublishService _eventPublishService;
+    public CreateUserHandler(ILogger<CreateUserValidator> logger, UserManager<User> userManager, IUnitOfWork unitOfWork, ICustomHttpContextAccessor httpContextAccessor, IEventPublishService eventPublishService)
     {
         _logger = logger;
         _userManager = userManager;
         _unitOfWork = unitOfWork;
         _httpContextAccessor = httpContextAccessor;
+        _eventPublishService = eventPublishService;
     }
 
     public async Task<BaseResponse<UserFullProfileDto>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
@@ -132,6 +136,10 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, BaseResponse
                 Gender = player?.Gender,
                 FacebookUrl = player?.FacebookUrl
             };
+            
+            // 5. Publish message
+            await PublishMessageAsync(responseData, cancellationToken);
+            
             response.ToSuccessResponse(responseData);
         }
         catch (Exception e)
@@ -179,5 +187,26 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, BaseResponse
         await _unitOfWork.Players.AddAsync(player, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return player;
+    }
+    
+    // Publish message to PubSub
+    private async Task PublishMessageAsync(UserFullProfileDto user, CancellationToken cancellationToken)
+    {
+        var message = new UserUpdatedEvent 
+        {
+            UserId = user.Id,
+            Role = user.Role,
+            FullName = user.FullName,
+            UserName = user.UserName,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+            AvatarUrl = user.AvatarUrl,
+            FacebookUrl = user.FacebookUrl,
+            BirthDate = user.BirthDate,
+            Gender = user.Gender,
+            Addresses = user.Addresses,
+            Field = user.Field
+        };
+        await _eventPublishService.PublishUserUpdatedEventAsync(message, cancellationToken);
     }
 }

@@ -3,10 +3,12 @@ using AuthServer.Data.Models;
 using AuthServer.DTOs;
 using AuthServer.Repositories;
 using AuthServer.Services.EmailService;
+using AuthServer.Services.PubSubService;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Shared.Common;
+using Shared.Contracts.EventMessages;
 using Shared.Response;
 
 namespace AuthServer.Features.Commands.CounterPartCommands.RegisterCounterPart;
@@ -17,12 +19,14 @@ public class RegisterCounterPartHandler : IRequestHandler<RegisterCounterPartCom
     private readonly UserManager<User> _userManager;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEmailService _emailService;
-    public RegisterCounterPartHandler(ILogger<RegisterCounterPartValidator> logger, UserManager<User> userManager, IUnitOfWork unitOfWork, IEmailService emailService)
+    private readonly IEventPublishService _eventPublishService;
+    public RegisterCounterPartHandler(ILogger<RegisterCounterPartValidator> logger, UserManager<User> userManager, IUnitOfWork unitOfWork, IEmailService emailService, IEventPublishService eventPublishService)
     {
         _logger = logger;
         _userManager = userManager;
         _unitOfWork = unitOfWork;
         _emailService = emailService;
+        _eventPublishService = eventPublishService;
     }
 
     public async Task<BaseResponse<UserFullProfileDto>> Handle(RegisterCounterPartCommand request, CancellationToken cancellationToken)
@@ -108,6 +112,9 @@ public class RegisterCounterPartHandler : IRequestHandler<RegisterCounterPartCom
             //5. Send OTP to activate account
             await SendActivateOtp(user);
             
+            // 6. Publish message to PubSub
+            await PublishMessageAsync(responseData, cancellationToken);
+            
             response.ToSuccessResponse(responseData, "User created successfully. Please check your email to activate your account.");
         }
         catch (Exception e)
@@ -147,5 +154,26 @@ public class RegisterCounterPartHandler : IRequestHandler<RegisterCounterPartCom
         if (user.OtpActivateCode != null)
             await _emailService.SendEmailAsync(user.Email, Common.Constants.ActivateSubjectEmail,
                 Common.Constants.GetOtpActivateAccountMessage(user.OtpActivateCode));
+    }
+    
+    // Publish message to PubSub
+    private async Task PublishMessageAsync(UserFullProfileDto user, CancellationToken cancellationToken)
+    {
+        var message = new UserUpdatedEvent 
+        {
+            UserId = user.Id,
+            Role = user.Role,
+            FullName = user.FullName,
+            UserName = user.UserName,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+            AvatarUrl = user.AvatarUrl,
+            FacebookUrl = user.FacebookUrl,
+            BirthDate = user.BirthDate,
+            Gender = user.Gender,
+            Addresses = user.Addresses,
+            Field = user.Field
+        };
+        await _eventPublishService.PublishUserUpdatedEventAsync(message, cancellationToken);
     }
 }

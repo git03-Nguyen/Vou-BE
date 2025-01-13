@@ -2,11 +2,13 @@ using System.Text.Json;
 using AuthServer.Data.Models;
 using AuthServer.DTOs;
 using AuthServer.Repositories;
+using AuthServer.Services.PubSubService;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Shared.Common;
 using Shared.Contracts;
+using Shared.Contracts.EventMessages;
 using Shared.Response;
 using Shared.Services.HttpContextAccessor;
 
@@ -18,12 +20,14 @@ public class UpdateOwnUserProfileHandler : IRequestHandler<UpdateOwnUserProfileC
     private readonly UserManager<User> _userManager;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICustomHttpContextAccessor _httpContextAccessor;
-    public UpdateOwnUserProfileHandler(ILogger<UpdateOwnUserProfileValidator> logger, UserManager<User> userManager, IUnitOfWork unitOfWork, ICustomHttpContextAccessor httpContextAccessor)
+    private readonly IEventPublishService _eventPublishService;
+    public UpdateOwnUserProfileHandler(ILogger<UpdateOwnUserProfileValidator> logger, UserManager<User> userManager, IUnitOfWork unitOfWork, ICustomHttpContextAccessor httpContextAccessor, IEventPublishService eventPublishService)
     {
         _logger = logger;
         _userManager = userManager;
         _unitOfWork = unitOfWork;
         _httpContextAccessor = httpContextAccessor;
+        _eventPublishService = eventPublishService;
     }
 
     public async Task<BaseResponse<UserFullProfileDto>> Handle(UpdateOwnUserProfileCommand request, CancellationToken cancellationToken)
@@ -71,80 +75,82 @@ public class UpdateOwnUserProfileHandler : IRequestHandler<UpdateOwnUserProfileC
                                       Gender = isPlayer ? player.Gender : null,
                                       FacebookUrl = isPlayer ? player.FacebookUrl : null
                                   }
-        )
-        .AsNoTracking()
-        .FirstOrDefaultAsync(cancellationToken);
+            )
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
 
-        if (currentUser is null)
-        {
-            response.ToNotFoundResponse();
-            return response;
-        }
-
-        // 2. Update user fields based on role
-        if (userRole == Constants.PLAYER)
-        {
-            var player = await _unitOfWork.Players
-                .Where(p => p.Id == userId && !p.IsDeleted)
-                .FirstOrDefaultAsync(cancellationToken);
-
-            if (player is null)
+            if (currentUser is null)
             {
-                response.ToBadRequestResponse("Player not found");
-                return response;
-            }
-            await UpdatePlayerProfile(player, request);
-        }
-        else if (userRole == Constants.COUNTERPART)
-        {
-            var counterPart = await _unitOfWork.CounterParts
-                .Where(c => c.Id == userId && !c.IsDeleted)
-                .FirstOrDefaultAsync(cancellationToken);
-
-            if (counterPart is null)
-            {
-                response.ToBadRequestResponse("Counterpart not found");
+                response.ToNotFoundResponse();
                 return response;
             }
 
-            await UpdateCounterPartProfile(counterPart, request);
-        }
+            // 2. Update user fields based on role
+            if (userRole == Constants.PLAYER)
+            {
+                var player = await _unitOfWork.Players
+                    .Where(p => p.Id == userId && !p.IsDeleted)
+                    .FirstOrDefaultAsync(cancellationToken);
 
-        //General info update
-        if (request.FullName is not null)
-        {
-            currentUser.FullName = request.FullName;
-        }
+                if (player is null)
+                {
+                    response.ToBadRequestResponse("Player not found");
+                    return response;
+                }
+                await UpdatePlayerProfile(player, request);
+            }
+            else if (userRole == Constants.COUNTERPART)
+            {
+                var counterPart = await _unitOfWork.CounterParts
+                    .Where(c => c.Id == userId && !c.IsDeleted)
+                    .FirstOrDefaultAsync(cancellationToken);
 
-        if (request.AvatarUrl is not null)
-        {
-            currentUser.AvatarUrl = request.AvatarUrl;
-        }
+                if (counterPart is null)
+                {
+                    response.ToBadRequestResponse("Counterpart not found");
+                    return response;
+                }
 
-        var updatedUser = new User
-        {
-            Id = currentUser.Id,
-            FullName = currentUser.FullName,
-            AvatarUrl = currentUser.AvatarUrl,
-        };
-        // Save changes
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-        await _userManager.UpdateAsync(updatedUser);
+                await UpdateCounterPartProfile(counterPart, request);
+            }
 
-        // 3. Prepare response data
-        var responseData = new UserFullProfileDto
-        {
-            Id = userId,
-            FullName = currentUser.FullName,
-            AvatarUrl = currentUser.AvatarUrl,
-            BirthDate = userRole == Constants.PLAYER ? currentUser.BirthDate : null,
-            Gender = userRole == Constants.PLAYER ? currentUser.Gender : null,
-            FacebookUrl = userRole == Constants.PLAYER ? currentUser.FacebookUrl : null,
-            Field = userRole == Constants.COUNTERPART ? currentUser.Field : null,
-            Addresses = userRole == Constants.COUNTERPART ? currentUser.Addresses : null
-        };
+            //General info update
+            if (request.FullName is not null)
+            {
+                currentUser.FullName = request.FullName;
+            }
 
-        response.ToSuccessResponse(responseData);
+            if (request.AvatarUrl is not null)
+            {
+                currentUser.AvatarUrl = request.AvatarUrl;
+            }
+
+            var updatedUser = new User
+            {
+                Id = currentUser.Id,
+                FullName = currentUser.FullName,
+                AvatarUrl = currentUser.AvatarUrl,
+            };
+            // Save changes
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _userManager.UpdateAsync(updatedUser);
+
+            // 3. Prepare response data
+            var responseData = new UserFullProfileDto
+            {
+                Id = userId,
+                FullName = currentUser.FullName,
+                AvatarUrl = currentUser.AvatarUrl,
+                BirthDate = userRole == Constants.PLAYER ? currentUser.BirthDate : null,
+                Gender = userRole == Constants.PLAYER ? currentUser.Gender : null,
+                FacebookUrl = userRole == Constants.PLAYER ? currentUser.FacebookUrl : null,
+                Field = userRole == Constants.COUNTERPART ? currentUser.Field : null,
+                Addresses = userRole == Constants.COUNTERPART ? currentUser.Addresses : null
+            };
+            
+            await PublishMessageAsync(responseData, cancellationToken);
+
+            response.ToSuccessResponse(responseData);
         }
         catch (Exception e)
         {
@@ -200,5 +206,26 @@ public class UpdateOwnUserProfileHandler : IRequestHandler<UpdateOwnUserProfileC
 
         _unitOfWork.CounterParts.Update(counterPart);
         return Task.CompletedTask;
+    }
+    
+    // Publish message to PubSub
+    private async Task PublishMessageAsync(UserFullProfileDto user, CancellationToken cancellationToken)
+    {
+        var message = new UserUpdatedEvent 
+        {
+            UserId = user.Id,
+            Role = user.Role,
+            FullName = user.FullName,
+            UserName = user.UserName,
+            Email = user.Email,
+            PhoneNumber = user.PhoneNumber,
+            AvatarUrl = user.AvatarUrl,
+            FacebookUrl = user.FacebookUrl,
+            BirthDate = user.BirthDate,
+            Gender = user.Gender,
+            Addresses = user.Addresses,
+            Field = user.Field
+        };
+        await _eventPublishService.PublishUserUpdatedEventAsync(message, cancellationToken);
     }
 }

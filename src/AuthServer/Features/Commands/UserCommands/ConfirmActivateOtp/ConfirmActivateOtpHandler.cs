@@ -3,7 +3,6 @@ using AuthServer.Data.Models;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Shared.Response;
-using Shared.Services.HttpContextAccessor;
 
 namespace AuthServer.Features.Commands.UserCommands.ConfirmActivateOtp;
 

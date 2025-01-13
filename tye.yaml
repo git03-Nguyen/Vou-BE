@@ -5,40 +5,11 @@
 #    https://aka.ms/AA7q20u
 #
 name: vou-be
+
 extensions:
   - name: dapr
-    version: "v1"
-    configuration:
-      - name: tracing
-        spec:
-          samplingRate: "1"
-      - name: zipkin
-        spec:
-          type: "tracing.zipkin"
-          version: "v1"
-          metadata:
-            - name: "enabled"
-              value: "true"
-            - name: "exporterAddress"
-              value: "http://localhost:9411/api/v2/spans"
-      - name: statestore
-        spec:
-          type: "state.redis"
-          version: "v1"
-          metadata:
-            - name: "redisHost"
-              value: "redis:6379"
-            - name: "redisPassword"
-              value: ""
-      - name: pubsub
-        spec:
-          type: "pubsub.redis"
-          version: "v1"
-          metadata:
-            - name: "redisHost"
-              value: "redis:6379"
-            - name: "redisPassword"
-              value: ""
+    log-level: debug
+    components-path: "./components/localhost/"
           
 services:
   - name: apigateway
@@ -47,7 +18,7 @@ services:
       - ./tye-env
     bindings:
       - port: 5000
-        protocol: https
+        protocol: http
 
   - name: authserver
     project: ./src/AuthServer/AuthServer.csproj

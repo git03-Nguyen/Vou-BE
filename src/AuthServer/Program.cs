@@ -24,6 +24,7 @@ public class Program
             .ConfigureDbContext(builder.Configuration)
             .ConfigureIdentityServer(builder.Configuration)
             .ConfigureAuthenticate(builder.Configuration)
+            .ConfigureDaprIntegration()
             .ConfigureApiVersioning()
             .ConfigureControllers()
             .ConfigureCustomHttpContext()

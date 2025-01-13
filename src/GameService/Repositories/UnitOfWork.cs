@@ -6,8 +6,21 @@ namespace GameService.Repositories;
 
 public class UnitOfWork : GenericUnitOfWork<GameDbContext>, IUnitOfWork
 {
-    public UnitOfWork(GameDbContext dbContext) : base(dbContext)
+    public UnitOfWork
+    (
+        GameDbContext dbContext,
+        IPlayerRepository playerRepository,
+        IPlayerQuizSessionRepository playerQuizSessionRepository,
+        IPlayerShakeSessionRepository playerShakeSessionRepository,
+        IQuizSessionRepository quizSessionRepository,
+        IQuizSetRepository quizSetRepository
+    ) : base(dbContext)
     {
+        Players = playerRepository;
+        PlayerQuizSessions = playerQuizSessionRepository;
+        PlayerShakeSessions = playerShakeSessionRepository;
+        QuizSessions = quizSessionRepository;
+        QuizSets = quizSetRepository;
     }
 
     public IPlayerRepository Players { get; set; }
