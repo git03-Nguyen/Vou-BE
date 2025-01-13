@@ -1,4 +1,4 @@
-namespace EventService.Enums;
+namespace Shared.Enums;
 
 public enum EventStatus
 {

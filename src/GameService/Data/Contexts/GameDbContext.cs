@@ -24,6 +24,7 @@ public class GameDbContext : DbContext
     public DbSet<Player> Players { get; set; }
     public DbSet<QuizSession> QuizSessions { get; set; }
     public DbSet<QuizSet> QuizSets { get; set; }
+    public DbSet<Event> Events { get; set; }
     
     protected override void OnConfiguring(DbContextOptionsBuilder builder)
     {
@@ -50,6 +51,11 @@ public class GameDbContext : DbContext
             entity.HasOne<QuizSet>()
                 .WithOne()
                 .HasForeignKey<QuizSession>(e => e.QuizSetId)
+                .OnDelete(DeleteBehavior.Cascade);
+            // Event - QuizSession: one - many
+            entity.HasOne<Event>()
+                .WithMany()
+                .HasForeignKey(e => e.EventId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
         
@@ -87,5 +93,9 @@ public class GameDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
         
+        builder.Entity<Event>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+        });
     }
 }

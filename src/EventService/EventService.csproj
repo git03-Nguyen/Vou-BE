@@ -39,6 +39,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Enums\" />
       <Folder Include="Options\" />
     </ItemGroup>
 

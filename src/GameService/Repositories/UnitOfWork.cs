@@ -13,7 +13,8 @@ public class UnitOfWork : GenericUnitOfWork<GameDbContext>, IUnitOfWork
         IPlayerQuizSessionRepository playerQuizSessionRepository,
         IPlayerShakeSessionRepository playerShakeSessionRepository,
         IQuizSessionRepository quizSessionRepository,
-        IQuizSetRepository quizSetRepository
+        IQuizSetRepository quizSetRepository,
+        IEventRepository eventRepository
     ) : base(dbContext)
     {
         Players = playerRepository;
@@ -21,6 +22,7 @@ public class UnitOfWork : GenericUnitOfWork<GameDbContext>, IUnitOfWork
         PlayerShakeSessions = playerShakeSessionRepository;
         QuizSessions = quizSessionRepository;
         QuizSets = quizSetRepository;
+        Events = eventRepository;
     }
 
     public IPlayerRepository Players { get; set; }
@@ -28,4 +30,5 @@ public class UnitOfWork : GenericUnitOfWork<GameDbContext>, IUnitOfWork
     public IPlayerShakeSessionRepository PlayerShakeSessions { get; set; }
     public IQuizSessionRepository QuizSessions { get; set; }
     public IQuizSetRepository QuizSets { get; set; }
+    public IEventRepository Events { get; set; }
 }

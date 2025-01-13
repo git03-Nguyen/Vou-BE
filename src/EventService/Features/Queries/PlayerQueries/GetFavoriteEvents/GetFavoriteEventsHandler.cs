@@ -1,8 +1,8 @@
 using EventService.DTOs;
-using EventService.Enums;
 using EventService.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Shared.Enums;
 using Shared.Response;
 using Shared.Services.HttpContextAccessor;
 

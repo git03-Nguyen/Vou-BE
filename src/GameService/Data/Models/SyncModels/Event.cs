@@ -1,17 +1,15 @@
-using Shared.Domain;
 using Shared.Enums;
 
-namespace EventService.Data.Models;
+namespace GameService.Data.Models.SyncModels;
 
-public class Event : BaseEntity
+public class Event
 {
+    public string Id { get; set; }
     public string Name { get; set; }
     public string CounterPartId { get; set; }
     public string Description { get; set; }
     public string ImageUrl { get; set; }
-    public DateTime StartDate { get; set; }
-    public DateTime EndDate { get; set; }
-    public EventStatus Status { get; set; } = EventStatus.Pending;
+    public EventStatus Status { get; set; }
     
     // For Shake game
     public string? ShakeVoucherId { get; set; }

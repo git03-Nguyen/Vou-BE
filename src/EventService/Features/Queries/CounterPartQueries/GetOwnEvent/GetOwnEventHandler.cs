@@ -61,7 +61,11 @@ public class GetOwnEventHandler : IRequestHandler<GetOwnEventQuery, BaseResponse
                             ImageUrl = eventVoucher.ImageUrl,
                             Value = eventVoucher.Value,
                         }
-                    } : null
+                    } : null,
+                    CounterPart = new CounterPartDto
+                    {
+                        Id = _event.CounterPartId
+                    }
                 }
             )
             .AsNoTracking()
