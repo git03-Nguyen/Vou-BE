@@ -105,13 +105,7 @@ public class GetFavoriteEventsHandler : IRequestHandler<GetAllEventsQuery, BaseR
                             ImageUrl = v.ImageUrl,
                             Value = v.Value
                         },
-                        QuizSet = new QuizSetDto
-                        {
-                            Id = q.Id,
-                            ImageUrl = q.ImageUrl,
-                            Title = q.Title,
-                            QuizesSerialized = q.QuizesSerialized
-                        }
+                        QuizSet = null
                     }
                 )
                 .AsNoTracking()
