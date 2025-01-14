@@ -46,6 +46,7 @@ public class GetOwnEventsHandler : IRequestHandler<GetOwnEventsQuery, BaseRespon
                     Description = @event.Description,
                     ImageUrl = @event.ImageUrl,
                     StartDate = @event.StartDate,
+                    EndDate = @event.EndDate,
                     Status = @event.Status,
                     CreatedDate = @event.CreatedDate,
                     ShakeSession = hasShakeSession ? new ShakeSessionDto
