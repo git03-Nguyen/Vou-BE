@@ -23,6 +23,17 @@ public class PlayerController : ControllerBase
         _mediator = mediator;
     }
 
+    #region CounterParts
+
+    [HttpGet("GetCounterParts")]
+    public async Task<IActionResult> GetCounterParts(CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetCounterPartsQuery(), cancellationToken);
+        return response.ToObjectResult();
+    }
+
+    #endregion
+
     #region Events
 
     [HttpGet("GetFavoriteEvents")]
@@ -32,7 +43,7 @@ public class PlayerController : ControllerBase
         return response.ToObjectResult();
     }
 
-    [HttpGet("GetAllEvents")]
+    [HttpGet("GetEvents")]
     public async Task<IActionResult> GetAllEvents(CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new GetAllEventsQuery(), cancellationToken);
