@@ -60,6 +60,7 @@ public class CreateEventHandler: IRequestHandler<CreateEventCommand, BaseRespons
                 Description = request.Description,
                 ImageUrl = request.ImageUrl,
                 StartDate = request.StartDate,
+                EndDate = request.EndDate,
                 CreatedBy = userId,
                 ShakePrice = request.ShakeSession?.Price ?? null,
                 ShakeVoucherId = request.ShakeSession?.VoucherId ?? null,
@@ -92,8 +93,8 @@ public class CreateEventHandler: IRequestHandler<CreateEventCommand, BaseRespons
             var fullEvent = await _mediator.Send(query, cancellationToken);
             var responseData = fullEvent.Data;
             
-            await _eventPublishService.PublishEventUpdatedEventAsync(fullEvent.Data, cancellationToken);
-            response.ToSuccessResponse(fullEvent.Data);
+            await _eventPublishService.PublishEventUpdatedEventAsync(responseData, cancellationToken);
+            response.ToSuccessResponse(responseData);
         }
         catch (Exception e)
         {
