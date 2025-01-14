@@ -35,6 +35,13 @@ public class CreateEventValidator : AbstractValidator<CreateEventCommand>
             .GreaterThan(DateTime.Now + TimeSpan.FromMinutes(1))
             .WithMessage("StartDate is required and must be greater than the current time");
         
+        RuleFor(x => x.EndDate)
+            .Cascade(CascadeMode.Stop)
+            .NotNull()
+            .NotEmpty()
+            .GreaterThan(DateTime.Now + TimeSpan.FromMinutes(1))
+            .WithMessage("EndDate is required and must be greater than the current time");
+        
         When(x => x.ShakeSession != null, () =>
         {
             RuleFor(x => x.ShakeSession!.VoucherId)

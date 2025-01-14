@@ -37,6 +37,7 @@ public class GetAllEventsHandler : IRequestHandler<GetAllEventsQuery, BaseRespon
                     Description = event_.Description,
                     ImageUrl = event_.ImageUrl,
                     StartDate = event_.StartDate,
+                    EndDate = event_.EndDate,
                     Status = event_.Status,
                     CreatedDate = event_.CreatedDate,
                     CounterPart = new CounterPartDto

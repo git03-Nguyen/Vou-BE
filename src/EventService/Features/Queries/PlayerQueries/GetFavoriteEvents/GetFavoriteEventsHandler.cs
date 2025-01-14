@@ -50,6 +50,7 @@ public class GetFavoriteEventsHandler : IRequestHandler<GetFavoriteEventsQuery, 
                     Description = @event.Description,
                     ImageUrl = @event.ImageUrl,
                     StartDate = @event.StartDate,
+                    EndDate = @event.EndDate,
                     Status = @event.Status,
                     CreatedDate = @event.CreatedDate,
                     CounterPart = new CounterPartDto

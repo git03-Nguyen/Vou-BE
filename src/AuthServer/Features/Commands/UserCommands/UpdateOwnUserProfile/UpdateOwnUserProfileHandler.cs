@@ -30,136 +30,143 @@ public class UpdateOwnUserProfileHandler : IRequestHandler<UpdateOwnUserProfileC
         _eventPublishService = eventPublishService;
     }
 
-    public async Task<BaseResponse<UserFullProfileDto>> Handle(UpdateOwnUserProfileCommand request, CancellationToken cancellationToken)
+  public async Task<BaseResponse<UserFullProfileDto>> Handle(UpdateOwnUserProfileCommand request, CancellationToken cancellationToken)
+{
+    var response = new BaseResponse<UserFullProfileDto>();
+    User? backupUser = null;
+    var methodName = $"{nameof(UpdateOwnUserProfileHandler)}.{nameof(Handle)} Request = {JsonSerializer.Serialize(request)} =>";
+    _logger.LogInformation(methodName);
+
+    var userId = _httpContextAccessor.GetCurrentUserId();
+    var userRole = _httpContextAccessor.GetCurrentRole();
+
+    try
     {
-        var response = new BaseResponse<UserFullProfileDto>();
-        User? backupUser = null;
-        var methodName = $"{nameof(UpdateOwnUserProfileHandler)}.{nameof(Handle)} Request = {JsonSerializer.Serialize(request)} =>";
-        _logger.LogInformation(methodName);
+        // 1. Check if the user exists
+        var currentUser = await (from user in _userManager.Users
+                                 where !user.IsDeleted && !user.IsBlocked && user.Role == userRole && user.Id == userId
+                                 join counterPart in _unitOfWork.CounterParts.GetAll()
+                                     on user.Id equals counterPart.Id into counterPartJoin
+                                 from counterPart in counterPartJoin.DefaultIfEmpty()
+                                 join player in _unitOfWork.Players.GetAll()
+                                     on user.Id equals player.Id into playerJoin
+                                 from player in playerJoin.DefaultIfEmpty()
+                                 let isCounterPart = user.Role == Constants.COUNTERPART
+                                 let isPlayer = user.Role == Constants.PLAYER
+                                 select new UserFullProfileDto
+                                 {
+                                     Id = user.Id,
+                                     Email = user.Email ?? string.Empty,
+                                     UserName = user.UserName ?? string.Empty,
+                                     FullName = user.FullName,
+                                     PhoneNumber = user.PhoneNumber ?? string.Empty,
+                                     AvatarUrl = user.AvatarUrl ?? Common.Constants.DefaultAvatarUrl,
+                                     Role = user.Role,
+                                     CreatedDate = user.CreatedDate,
+                                     ModifiedDate = user.ModifiedDate,
+                                     ProfileLinked = user.ProfileLinked,
+                                     IsBlocked = user.IsBlocked,
+                                     BlockedDate = user.BlockedDate,
+                                     // For counterpart
+                                     Field = isCounterPart ? counterPart.Field : null,
+                                     Addresses = isCounterPart ? counterPart.Addresses : null,
+                                     // For player
+                                     BirthDate = isPlayer ? player.BirthDate : null,
+                                     Gender = isPlayer ? player.Gender : null,
+                                     FacebookUrl = isPlayer ? player.FacebookUrl : null
+                                 }
+        )
+        .AsNoTracking()
+        .FirstOrDefaultAsync(cancellationToken);
 
-        var userId = _httpContextAccessor.GetCurrentUserId();
-        var userRole = _httpContextAccessor.GetCurrentRole();
-
-        try
+        if (currentUser is null)
         {
-            // 1. Check if the user exists
-            var currentUser = await (from user in _userManager.Users
-                                  where !user.IsDeleted && !user.IsBlocked && user.Role == userRole && user.Id == userId
-                                  join counterPart in _unitOfWork.CounterParts.GetAll()
-                                      on user.Id equals counterPart.Id into counterPartJoin
-                                  from counterPart in counterPartJoin.DefaultIfEmpty()
-                                  join player in _unitOfWork.Players.GetAll()
-                                      on user.Id equals player.Id into playerJoin
-                                  from player in playerJoin.DefaultIfEmpty()
-                                  let isCounterPart = user.Role == Constants.COUNTERPART
-                                  let isPlayer = user.Role == Constants.PLAYER
-                                  select new UserFullProfileDto
-                                  {
-                                      Id = user.Id,
-                                      Email = user.Email ?? string.Empty,
-                                      UserName = user.UserName ?? string.Empty,
-                                      FullName = user.FullName,
-                                      PhoneNumber = user.PhoneNumber ?? string.Empty,
-                                      AvatarUrl = user.AvatarUrl ?? Common.Constants.DefaultAvatarUrl,
-                                      Role = user.Role,
-                                      CreatedDate = user.CreatedDate,
-                                      ModifiedDate = user.ModifiedDate,
-                                      ProfileLinked = user.ProfileLinked,
-                                      IsBlocked = user.IsBlocked,
-                                      BlockedDate = user.BlockedDate,
-                                      // For counterpart
-                                      Field = isCounterPart ? counterPart.Field : null,
-                                      Addresses = isCounterPart ? counterPart.Addresses : null,
-                                      // For player
-                                      BirthDate = isPlayer ? player.BirthDate : null,
-                                      Gender = isPlayer ? player.Gender : null,
-                                      FacebookUrl = isPlayer ? player.FacebookUrl : null
-                                  }
-            )
-            .AsNoTracking()
-            .FirstOrDefaultAsync(cancellationToken);
+            response.ToNotFoundResponse();
+            return response;
+        }
 
-            if (currentUser is null)
+        // 2. Update user fields based on role
+        if (userRole == Constants.PLAYER)
+        {
+            var player = await _unitOfWork.Players
+                .Where(p => p.Id == userId && !p.IsDeleted)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (player is null)
             {
-                response.ToNotFoundResponse();
+                response.ToBadRequestResponse("Player not found");
+                return response;
+            }
+            await UpdatePlayerProfile(player, request);
+        }
+        else if (userRole == Constants.COUNTERPART)
+        {
+            var counterPart = await _unitOfWork.CounterParts
+                .Where(c => c.Id == userId && !c.IsDeleted)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (counterPart is null)
+            {
+                response.ToBadRequestResponse("Counterpart not found");
                 return response;
             }
 
-            // 2. Update user fields based on role
-            if (userRole == Constants.PLAYER)
-            {
-                var player = await _unitOfWork.Players
-                    .Where(p => p.Id == userId && !p.IsDeleted)
-                    .FirstOrDefaultAsync(cancellationToken);
-
-                if (player is null)
-                {
-                    response.ToBadRequestResponse("Player not found");
-                    return response;
-                }
-                await UpdatePlayerProfile(player, request);
-            }
-            else if (userRole == Constants.COUNTERPART)
-            {
-                var counterPart = await _unitOfWork.CounterParts
-                    .Where(c => c.Id == userId && !c.IsDeleted)
-                    .FirstOrDefaultAsync(cancellationToken);
-
-                if (counterPart is null)
-                {
-                    response.ToBadRequestResponse("Counterpart not found");
-                    return response;
-                }
-
-                await UpdateCounterPartProfile(counterPart, request);
-            }
-
-            //General info update
-            if (request.FullName is not null)
-            {
-                currentUser.FullName = request.FullName;
-            }
-
-            if (request.AvatarUrl is not null)
-            {
-                currentUser.AvatarUrl = request.AvatarUrl;
-            }
-
-            var updatedUser = new User
-            {
-                Id = currentUser.Id,
-                FullName = currentUser.FullName,
-                AvatarUrl = currentUser.AvatarUrl,
-            };
-            // Save changes
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-            await _userManager.UpdateAsync(updatedUser);
-
-            // 3. Prepare response data
-            var responseData = new UserFullProfileDto
-            {
-                Id = userId,
-                FullName = currentUser.FullName,
-                AvatarUrl = currentUser.AvatarUrl,
-                BirthDate = userRole == Constants.PLAYER ? currentUser.BirthDate : null,
-                Gender = userRole == Constants.PLAYER ? currentUser.Gender : null,
-                FacebookUrl = userRole == Constants.PLAYER ? currentUser.FacebookUrl : null,
-                Field = userRole == Constants.COUNTERPART ? currentUser.Field : null,
-                Addresses = userRole == Constants.COUNTERPART ? currentUser.Addresses : null
-            };
-            
-            await PublishMessageAsync(responseData, cancellationToken);
-
-            response.ToSuccessResponse(responseData);
+            await UpdateCounterPartProfile(counterPart, request);
         }
-        catch (Exception e)
+
+        // General info update
+        var userData = await _userManager.FindByIdAsync(userId);
+        if (userData is null)
         {
-            _logger.LogError(e, $"{methodName} Has error: {e.Message}");
-            response.ToInternalErrorResponse();
-            await RollbackUserCreation(backupUser);
+            response.ToNotFoundResponse();
+            return response;
         }
 
-        return response;
+        userData.FullName = request.FullName ?? userData.FullName;
+        userData.AvatarUrl = request.AvatarUrl ?? userData.AvatarUrl;
+
+        // Save changes
+        var result = await _userManager.UpdateAsync(userData);
+        if (!result.Succeeded)
+        {
+            response.ToInternalErrorResponse("Failed to update user");
+            return response;
+        }
+
+        // Update currentUser manually
+        currentUser.FullName = userData.FullName;
+        currentUser.AvatarUrl = userData.AvatarUrl;
+        currentUser.Addresses = request.Addresses??currentUser.Addresses;
+        currentUser.BirthDate = request.BirthDate??currentUser.BirthDate;
+        currentUser.FacebookUrl = request.FacebookUrl??currentUser.FacebookUrl;
+        currentUser.Field = request.Field??currentUser.Field;
+        currentUser.Gender = request.Gender ?? currentUser.Gender;
+        
+        // 3. Prepare response data
+        var responseData = new UserFullProfileDto
+        {
+            Id = userId,
+            FullName = currentUser.FullName,
+            AvatarUrl = currentUser.AvatarUrl,
+            BirthDate = userRole == Constants.PLAYER ? currentUser.BirthDate : null,
+            Gender = userRole == Constants.PLAYER ? currentUser.Gender : null,
+            FacebookUrl = userRole == Constants.PLAYER ? currentUser.FacebookUrl : null,
+            Field = userRole == Constants.COUNTERPART ? currentUser.Field : null,
+            Addresses = userRole == Constants.COUNTERPART ? currentUser.Addresses : null
+        };
+
+        await PublishMessageAsync(responseData, cancellationToken);
+
+        response.ToSuccessResponse(responseData);
+    }
+    catch (Exception e)
+    {
+        _logger.LogError(e, $"{methodName} Has error: {e.Message}");
+        response.ToInternalErrorResponse();
+        await RollbackUserCreation(backupUser);
+    }
+
+    return response;
 }
     
     private async Task RollbackUserCreation(User? user)
@@ -205,6 +212,7 @@ public class UpdateOwnUserProfileHandler : IRequestHandler<UpdateOwnUserProfileC
         }
 
         _unitOfWork.CounterParts.Update(counterPart);
+        
         return Task.CompletedTask;
     }
     

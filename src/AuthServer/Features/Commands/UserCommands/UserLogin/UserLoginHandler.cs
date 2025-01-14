@@ -65,7 +65,7 @@ public class UserLoginHandler : IRequestHandler<UserLoginCommand, BaseResponse<U
                 var isConfirmedEmail = await _userManager.IsEmailConfirmedAsync(user);
                 if (!isConfirmedEmail)
                 {
-                    response.ToUnauthorizedResponse("User has not confirmed email yet");
+                    response.ToUnConfirmedEmailResponse("User has not confirmed email yet");
                     return response;
                 }
             

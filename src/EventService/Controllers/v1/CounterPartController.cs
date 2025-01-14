@@ -3,6 +3,7 @@ using EventService.Features.Commands.CounterPartCommands.AddQuizSession;
 using EventService.Features.Commands.CounterPartCommands.CreateEvent;
 using EventService.Features.Commands.CounterPartCommands.CreateQuizSet;
 using EventService.Features.Commands.CounterPartCommands.CreateVoucher;
+using EventService.Features.Commands.CounterPartCommands.EditVoucher;
 using EventService.Features.Queries.CounterPartQueries.GetOwnEvent;
 using EventService.Features.Queries.CounterPartQueries.GetOwnEvents;
 using EventService.Features.Queries.CounterPartQueries.GetOwnQuizSets;
@@ -62,6 +63,13 @@ public class CounterPartController : ControllerBase
     
     [HttpPost("CreateVoucher")]
     public async Task<IActionResult> CreateVoucher([FromBody] CreateVoucherCommand request, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(request, cancellationToken);
+        return response.ToObjectResult();
+    }
+    
+    [HttpPatch("EditVoucher/{voucherId}")]
+    public async Task<IActionResult> CreateVoucher([FromBody] EditVoucherCommand request, CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();

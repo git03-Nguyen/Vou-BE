@@ -1,5 +1,4 @@
 using EventService.DTOs;
-using EventService.Features.Commands.AdminCommands.AcceptEvent;
 using EventService.Features.Queries.AdminQueries.GetAllEvents;
 using EventService.Repositories;
 using MediatR;
@@ -9,7 +8,7 @@ using Shared.Response;
 
 namespace EventService.Features.Commands.AdminCommands.RefuseEvent;
 
-public class RefuseEventHandler : IRequestHandler<AcceptEventCommand, BaseResponse<EventStatusDto>>
+public class RefuseEventHandler : IRequestHandler<RefuseEventCommand, BaseResponse<EventStatusDto>>
 {
     private readonly ILogger<GetAllEventsHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
@@ -19,7 +18,7 @@ public class RefuseEventHandler : IRequestHandler<AcceptEventCommand, BaseRespon
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<BaseResponse<EventStatusDto>> Handle(AcceptEventCommand request, CancellationToken cancellationToken)
+    public async Task<BaseResponse<EventStatusDto>> Handle(RefuseEventCommand request, CancellationToken cancellationToken)
     {
         var methodName = $"{nameof(GetAllEventsHandler)}.{nameof(Handle)} EventId: {request.EventId} =>";
         _logger.LogInformation(methodName);
