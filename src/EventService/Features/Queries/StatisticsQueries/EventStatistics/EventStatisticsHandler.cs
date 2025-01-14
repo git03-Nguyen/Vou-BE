@@ -58,7 +58,8 @@ public class EventStatisticsHandler : IRequestHandler<EventStatisticsQuery, Base
             {
                 TotalPlayers = players.Count,
                 TotalActiveEvents = events.Count,
-                TotalVouchers = vouchers.Count
+                TotalVouchers = vouchers.Count,
+                TotalCounterParts = counterParts.Count
             };
 
             response.ToSuccessResponse(eventStatistics);

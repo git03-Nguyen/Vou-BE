@@ -6,6 +6,7 @@ using EventService.Features.Commands.CounterPartCommands.CreateVoucher;
 using EventService.Features.Commands.CounterPartCommands.EditVoucher;
 using EventService.Features.Queries.CounterPartQueries.GetOwnEvent;
 using EventService.Features.Queries.CounterPartQueries.GetOwnEvents;
+using EventService.Features.Queries.CounterPartQueries.GetOwnEventStatistics;
 using EventService.Features.Queries.CounterPartQueries.GetOwnQuizSets;
 using EventService.Features.Queries.CounterPartQueries.GetOwnVouchers;
 using MediatR;
@@ -49,7 +50,14 @@ public class CounterPartController : ControllerBase
         var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
     }
-
+    
+    [HttpGet("GetOwnEventsStatistics")]
+    public async Task<IActionResult> GetOwnEventsStatistics(CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetOwnEventStatisticsQuery(), cancellationToken);
+        return response.ToObjectResult();
+    }
+    
     #endregion
 
     #region Voucher
