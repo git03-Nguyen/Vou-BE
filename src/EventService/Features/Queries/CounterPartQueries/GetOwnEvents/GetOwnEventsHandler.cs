@@ -38,7 +38,7 @@ public class GetOwnEventsHandler : IRequestHandler<GetOwnEventsQuery, BaseRespon
                     on @event.ShakeVoucherId equals voucher.Id into eventVouchers
                 from eventVoucher in eventVouchers.DefaultIfEmpty()
                 where !@event.IsDeleted && @event.CounterPartId == userId
-                let hasShakeSession = @event.ShakeVoucherId != null
+                let hasShakeSession = eventVoucher != null
                 select new FullEventDto
                 {
                     Id = @event.Id,
@@ -79,8 +79,6 @@ public class GetOwnEventsHandler : IRequestHandler<GetOwnEventsQuery, BaseRespon
             var quizSessions = await 
             (
                 from quizSession in _unitOfWork.QuizSessions.GetAll()
-                join event_ in _unitOfWork.Events.GetAll()
-                    on quizSession.EventId equals event_.Id
                 join voucher in _unitOfWork.Vouchers.GetAll()
                     on quizSession.VoucherId equals voucher.Id
                 join quizSet in _unitOfWork.QuizSets.GetAll()
@@ -91,6 +89,7 @@ public class GetOwnEventsHandler : IRequestHandler<GetOwnEventsQuery, BaseRespon
                     Id = quizSession.Id,
                     TakeTop = quizSession.TakeTop,
                     StartTime = quizSession.StartTime,
+                    EventId = quizSession.EventId,
                     Voucher = new VoucherDto
                     {
                         Id = quizSession.VoucherId,
