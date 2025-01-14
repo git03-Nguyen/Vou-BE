@@ -82,7 +82,7 @@ public class GetOwnEventsHandler : IRequestHandler<GetOwnEventsQuery, BaseRespon
                 join event_ in _unitOfWork.Events.GetAll()
                     on quizSession.EventId equals event_.Id
                 join voucher in _unitOfWork.Vouchers.GetAll()
-                    on event_.ShakeVoucherId equals voucher.Id
+                    on quizSession.VoucherId equals voucher.Id
                 join quizSet in _unitOfWork.QuizSets.GetAll()
                     on quizSession.QuizSetId equals quizSet.Id
                 where eventIds.Contains(quizSession.EventId)
