@@ -53,10 +53,10 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
                 .FirstOrDefaultAsync(cancellationToken); 
             if (existedUser is not null)
             {
-                response.ToBadRequestResponse("User already exists");
+                response.ToBadRequestResponse("User with email, username or phone already exists");
                 return response;
             }
-            //Generate OTP activate code
+            // Generate OTP activate code
             var random = new Random();
             var otp =  random.Next(100000, 999999).ToString();
             
@@ -141,9 +141,9 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
         var player = new Player
         {
             Id = user.Id,
-            BirthDate = request.BirthDate,
+            BirthDate = request.BirthDate ?? null,
             Gender = request.Gender ?? Gender.Other,
-            FacebookUrl = request.FacebookUrl
+            FacebookUrl = request.FacebookUrl ?? null
         };
         await _unitOfWork.Players.AddAsync(player, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

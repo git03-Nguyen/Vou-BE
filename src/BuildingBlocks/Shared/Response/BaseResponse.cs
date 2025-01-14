@@ -37,6 +37,13 @@ public class BaseResponse
         return this;
     }
     
+    public BaseResponse ToUnConfirmedEmailResponse(string message = "Email is not confirmed")
+    {
+        Status = 450;
+        Message = message;
+        return this;
+    }
+    
     public BaseResponse ToForbiddenResponse(string message = "Forbidden")
     {
         Status = HttpStatusCode.Forbidden.ToInt();

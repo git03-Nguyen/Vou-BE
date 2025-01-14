@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using EventService.Features.Commands.PlayerCommands.ReadNotifications;
+using EventService.Features.Queries.CounterPartQueries.GetAllCounterParts;
 using EventService.Features.Queries.PlayerQueries.GetAllEvents;
 using EventService.Features.Queries.PlayerQueries.GetFavoriteEvents;
 using EventService.Features.Queries.PlayerQueries.GetNotifications;
@@ -23,6 +24,17 @@ public class PlayerController : ControllerBase
         _mediator = mediator;
     }
 
+    #region CounterParts
+
+    [HttpGet("GetCounterParts")]
+    public async Task<IActionResult> GetCounterParts(CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetAllCounterPartsQuery(), cancellationToken);
+        return response.ToObjectResult();
+    }
+
+    #endregion
+
     #region Events
 
     [HttpGet("GetFavoriteEvents")]
@@ -32,7 +44,7 @@ public class PlayerController : ControllerBase
         return response.ToObjectResult();
     }
 
-    [HttpGet("GetAllEvents")]
+    [HttpGet("GetEvents")]
     public async Task<IActionResult> GetAllEvents(CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new GetAllEventsQuery(), cancellationToken);

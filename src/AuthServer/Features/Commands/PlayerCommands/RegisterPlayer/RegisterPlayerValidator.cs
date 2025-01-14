@@ -42,8 +42,7 @@ public class RegisterPlayerValidator : AbstractValidator<RegisterPlayerCommand>
         
         RuleFor(x => x.FullName)
             .Cascade(CascadeMode.Stop)
-            .NotEmpty()
-            .WithMessage("FullName is required")
+            .MinimumLength(1)
             .Matches(Regexes.VALID_FULLNAME)
             .WithMessage("FullName is invalid");
 
@@ -54,14 +53,11 @@ public class RegisterPlayerValidator : AbstractValidator<RegisterPlayerCommand>
         
         RuleFor(x => x.BirthDate)
             .Cascade(CascadeMode.Stop)
-            .NotEmpty()
-            .WithMessage("BirthDate is required")
-            .Must(x => x <= DateTime.Now)
+            .Must(x => x is null || x <= DateTime.Now)
             .WithMessage("BirthDate is invalid");
 
         RuleFor(x => x.Gender)
             .Cascade(CascadeMode.Stop)
-            .NotEmpty()
             .IsInEnum()
             .WithMessage("BirthDate is required");
             
