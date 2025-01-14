@@ -34,7 +34,7 @@ public class AcceptEventHandler : IRequestHandler<AcceptEventCommand, BaseRespon
             
             if (thisEvent is null)
             {
-                response.ToNotFoundResponse();
+                response.ToBadRequestResponse("Not found or already approved");
                 return response;
             }
 
