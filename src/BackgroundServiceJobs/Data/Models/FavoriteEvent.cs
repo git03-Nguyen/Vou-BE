@@ -1,6 +1,6 @@
 using Shared.Domain;
 
-namespace PaymentService.Data.Models;
+namespace BackgroundServiceJobs.Data.Models;
 
 public class FavoriteEvent : BaseEntity
 {

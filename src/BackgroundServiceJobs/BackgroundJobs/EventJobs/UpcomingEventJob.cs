@@ -1,13 +1,12 @@
+using BackgroundServiceJobs.Data.Models;
+using BackgroundServiceJobs.Options;
+using BackgroundServiceJobs.Repositories;
+using BackgroundServiceJobs.Services.EventPublishService;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using PaymentService.Data.Models;
-using PaymentService.Options;
-using PaymentService.Repositories;
-using PaymentService.Services.EventPublishService;
 using Shared.Contracts;
-using Shared.Enums;
 
-namespace PaymentService.BackgroundJobs.EventJobs;
+namespace BackgroundServiceJobs.BackgroundJobs.EventJobs;
 
 public class UpcomingEventJob
 {

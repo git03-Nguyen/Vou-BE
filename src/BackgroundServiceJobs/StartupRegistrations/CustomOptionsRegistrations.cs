@@ -1,7 +1,7 @@
-using PaymentService.Options;
+using BackgroundServiceJobs.Options;
 using Shared.Options;
 
-namespace PaymentService.StartupRegistrations;
+namespace BackgroundServiceJobs.StartupRegistrations;
 
 public static class CustomOptionsRegistrations
 {

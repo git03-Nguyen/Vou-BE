@@ -1,6 +1,6 @@
-using PaymentService.Data.Contexts;
+using BackgroundServiceJobs.Data.Contexts;
 
-namespace PaymentService.StartupRegistrations;
+namespace BackgroundServiceJobs.StartupRegistrations;
 
 public static class DatabaseRegistrations
 {

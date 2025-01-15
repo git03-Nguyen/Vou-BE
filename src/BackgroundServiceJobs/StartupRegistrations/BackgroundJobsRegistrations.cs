@@ -1,9 +1,8 @@
+using BackgroundServiceJobs.Options;
 using Hangfire;
 using Hangfire.PostgreSql;
-using PaymentService.BackgroundJobs.EventJobs;
-using PaymentService.Options;
 
-namespace PaymentService.StartupRegistrations;
+namespace BackgroundServiceJobs.StartupRegistrations;
 
 public static class BackgroundJobsRegistrations
 {

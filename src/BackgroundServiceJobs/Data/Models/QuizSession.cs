@@ -1,7 +1,7 @@
 using Shared.Domain;
 using Shared.Enums;
 
-namespace PaymentService.Data.Models;
+namespace BackgroundServiceJobs.Data.Models;
 
 public class QuizSession : BaseEntity
 {

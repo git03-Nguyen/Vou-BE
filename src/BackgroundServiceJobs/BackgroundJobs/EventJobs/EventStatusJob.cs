@@ -1,9 +1,8 @@
+using BackgroundServiceJobs.Repositories;
 using Microsoft.EntityFrameworkCore;
-using PaymentService.Data.Models;
-using PaymentService.Repositories;
 using Shared.Enums;
 
-namespace PaymentService.BackgroundJobs.EventJobs;
+namespace BackgroundServiceJobs.BackgroundJobs.EventJobs;
 
 public class EventStatusJob
 {

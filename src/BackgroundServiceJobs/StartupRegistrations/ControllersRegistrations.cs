@@ -4,7 +4,7 @@ using Asp.Versioning;
 using Shared.Extensions;
 using Shared.Validation;
 
-namespace PaymentService.StartupRegistrations;
+namespace BackgroundServiceJobs.StartupRegistrations;
 
 public static class ControllersRegistrations
 {

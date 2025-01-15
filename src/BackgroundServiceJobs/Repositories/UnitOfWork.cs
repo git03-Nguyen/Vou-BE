@@ -1,8 +1,8 @@
-using PaymentService.Data.Contexts;
-using PaymentService.Repositories.Interfaces;
+using BackgroundServiceJobs.Data.Contexts;
+using BackgroundServiceJobs.Repositories.Interfaces;
 using Shared.Repositories;
 
-namespace PaymentService.Repositories;
+namespace BackgroundServiceJobs.Repositories;
 
 public class UnitOfWork : GenericUnitOfWork<EventDbContext>, IUnitOfWork
 {

@@ -1,7 +1,7 @@
-using PaymentService.StartupRegistrations;
+using BackgroundServiceJobs.StartupRegistrations;
 using Shared.StartupRegistrations;
 
-namespace PaymentService;
+namespace BackgroundServiceJobs;
 
 public class Program
 {

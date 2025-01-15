@@ -1,6 +1,6 @@
 using Shared.Contracts;
 
-namespace PaymentService.Services.EventPublishService;
+namespace BackgroundServiceJobs.Services.EventPublishService;
 
 public interface IEventPublishService
 {

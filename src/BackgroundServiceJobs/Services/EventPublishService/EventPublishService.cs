@@ -3,7 +3,7 @@ using Shared.Common;
 using Shared.Contracts;
 using Shared.Contracts.EventMessages;
 
-namespace PaymentService.Services.EventPublishService;
+namespace BackgroundServiceJobs.Services.EventPublishService;
 
 public class EventPublishService : IEventPublishService
 {

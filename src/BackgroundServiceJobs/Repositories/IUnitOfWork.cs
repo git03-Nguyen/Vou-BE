@@ -1,7 +1,7 @@
-using PaymentService.Repositories.Interfaces;
+using BackgroundServiceJobs.Repositories.Interfaces;
 using Shared.Repositories;
 
-namespace PaymentService.Repositories;
+namespace BackgroundServiceJobs.Repositories;
 
 public interface IUnitOfWork : IGenericUnitOfWork
 {

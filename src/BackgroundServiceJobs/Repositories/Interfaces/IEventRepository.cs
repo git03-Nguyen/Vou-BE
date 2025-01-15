@@ -1,7 +1,7 @@
-using PaymentService.Data.Models;
+using BackgroundServiceJobs.Data.Models;
 using Shared.Repositories;
 
-namespace PaymentService.Repositories.Interfaces;
+namespace BackgroundServiceJobs.Repositories.Interfaces;
 
 public interface IEventRepository : IGenericRepository<Event>
 {

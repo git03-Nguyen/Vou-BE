@@ -1,9 +1,9 @@
-using PaymentService.Data.Contexts;
-using PaymentService.Data.Models;
-using PaymentService.Repositories.Interfaces;
+using BackgroundServiceJobs.Data.Contexts;
+using BackgroundServiceJobs.Data.Models;
+using BackgroundServiceJobs.Repositories.Interfaces;
 using Shared.Repositories;
 
-namespace PaymentService.Repositories.Implements;
+namespace BackgroundServiceJobs.Repositories.Implements;
 
 public class FavoriteEventRepository : GenericRepository<EventDbContext, FavoriteEvent>, IFavoriteEventRepository
 {

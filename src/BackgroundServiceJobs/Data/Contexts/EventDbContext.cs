@@ -1,9 +1,9 @@
+using BackgroundServiceJobs.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using PaymentService.Data.Models;
 using Shared.Options;
 
-namespace PaymentService.Data.Contexts;
+namespace BackgroundServiceJobs.Data.Contexts;
 
 public class EventDbContext : DbContext
 {

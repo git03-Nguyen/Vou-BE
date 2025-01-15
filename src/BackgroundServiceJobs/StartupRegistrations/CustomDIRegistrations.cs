@@ -1,9 +1,9 @@
-using PaymentService.Repositories;
-using PaymentService.Repositories.Implements;
-using PaymentService.Repositories.Interfaces;
-using PaymentService.Services.EventPublishService;
+using BackgroundServiceJobs.Repositories;
+using BackgroundServiceJobs.Repositories.Implements;
+using BackgroundServiceJobs.Repositories.Interfaces;
+using BackgroundServiceJobs.Services.EventPublishService;
 
-namespace PaymentService.StartupRegistrations;
+namespace BackgroundServiceJobs.StartupRegistrations;
 
 public static class CustomDIRegistrations
 {

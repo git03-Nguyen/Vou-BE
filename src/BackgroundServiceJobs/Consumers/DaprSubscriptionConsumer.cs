@@ -1,16 +1,16 @@
 using System.Text.Json;
+using BackgroundServiceJobs.BackgroundJobs.EventJobs;
+using BackgroundServiceJobs.Options;
+using BackgroundServiceJobs.Repositories;
 using Dapr;
 using Dapr.AspNetCore;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using PaymentService.BackgroundJobs.EventJobs;
-using PaymentService.Options;
-using PaymentService.Repositories;
 using Shared.Common;
 using Shared.Contracts.EventMessages;
 
-namespace PaymentService.Consumers;
+namespace BackgroundServiceJobs.Consumers;
 
 [ApiController]
 [Route("dapr/[controller]")]

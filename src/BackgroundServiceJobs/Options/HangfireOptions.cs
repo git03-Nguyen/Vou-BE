@@ -1,4 +1,4 @@
-namespace PaymentService.Options;
+namespace BackgroundServiceJobs.Options;
 
 public class HangfireOptions
 {
