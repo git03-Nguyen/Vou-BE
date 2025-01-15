@@ -2,6 +2,7 @@ using Asp.Versioning;
 using EventService.Features.Commands.PlayerCommands.BuyVoucher;
 using EventService.Features.Commands.PlayerCommands.LikeEvent;
 using EventService.Features.Commands.PlayerCommands.ReadNotifications;
+using EventService.Features.Commands.PlayerCommands.UseVoucher;
 using EventService.Features.Queries.CounterPartQueries.GetAllCounterParts;
 using EventService.Features.Queries.PlayerQueries.GetAllEvents;
 using EventService.Features.Queries.PlayerQueries.GetFavoriteEvents;
@@ -39,18 +40,26 @@ public class PlayerController : ControllerBase
 
     #region Events
 
+    [HttpGet("GetEvents")]
+    public async Task<IActionResult> GetAllEvents(CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetAllEventsQuery(), cancellationToken);
+        return response.ToObjectResult();
+    }
+    
     [HttpGet("GetFavoriteEvents")]
     public async Task<IActionResult> GetFavoriteEvents(CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new GetFavoriteEventsQuery(), cancellationToken);
         return response.ToObjectResult();
     }
-
-    [HttpGet("GetEvents")]
-    public async Task<IActionResult> GetAllEvents(CancellationToken cancellationToken)
+    
+    [HttpPost("LikeEvent")]
+    public async Task<IActionResult> LikeEvent([FromBody] LikeEventCommand request,CancellationToken cancellationToken)
     {
-        var response = await _mediator.Send(new GetAllEventsQuery(), cancellationToken);
+        var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
+        
     }
 
     #endregion
@@ -74,6 +83,8 @@ public class PlayerController : ControllerBase
 
     #endregion
 
+    #region Vouchers
+
     [HttpGet("GetOwnVouchers")]
     public async Task<IActionResult> GetOwnVouchers(CancellationToken cancellationToken)
     {
@@ -88,11 +99,13 @@ public class PlayerController : ControllerBase
         return response.ToObjectResult();
     }
     
-    [HttpPost("LikeEvent")]
-    public async Task<IActionResult> LikeEvent([FromBody] LikeEventCommand request,CancellationToken cancellationToken)
+    [HttpPost("UseVoucher/{voucherToPlayerId}")]
+    public async Task<IActionResult> UseVoucher([FromRoute] string voucherToPlayerId, CancellationToken cancellationToken)
     {
+        var request = new UseVoucherCommand { VoucherToPlayerId = voucherToPlayerId };
         var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
-        
     }
+
+    #endregion
 }

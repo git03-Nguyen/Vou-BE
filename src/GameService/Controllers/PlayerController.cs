@@ -35,7 +35,7 @@ public class PlayerController : ControllerBase
     [HttpGet("GetOwnTickets/{eventId}")]
     public async Task<IActionResult> GetTickets([FromRoute] string eventId, CancellationToken cancellationToken)
     {
-        GetTicketEventQuery request = new GetTicketEventQuery(eventId);
+        var request = new GetTicketEventQuery(eventId);
         var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
     }

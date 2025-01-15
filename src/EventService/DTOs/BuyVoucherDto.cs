@@ -5,4 +5,5 @@ public class BuyVoucherDto
   public VoucherDto Voucher { get; set; }
   
   public int Diamonds { get; set; }
+  public string Id { get; set; }
 }

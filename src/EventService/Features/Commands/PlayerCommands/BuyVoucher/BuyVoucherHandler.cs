@@ -99,23 +99,22 @@ public class BuyVoucherHandler : IRequestHandler<BuyVoucherCommand, BaseResponse
                 response.ToBadRequestResponse("Insufficient diamonds");
                 return response;
             }
-            else
-            {
-                shakeData -= eventEntity.ShakeAverageDiamond;
-                var toPlayer = new VoucherToPlayer
-                {
-                    EventId = eventEntity.Id,
-                    PlayerId = userId,
-                    Description =existedVoucher.Title,
-                    VoucherId = existedVoucher.Id
-                };
 
-                await _unitOfWork.VoucherToPlayers.AddAsync(toPlayer, cancellationToken);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-            }
+            shakeData -= eventEntity.ShakeAverageDiamond;
+            var toPlayer = new VoucherToPlayer
+            {
+                EventId = eventEntity.Id,
+                PlayerId = userId,
+                Description = existedVoucher.Title,
+                VoucherId = existedVoucher.Id
+            };
+
+            await _unitOfWork.VoucherToPlayers.AddAsync(toPlayer, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             response.ToSuccessResponse(new BuyVoucherDto
             {
+                Id = toPlayer.Id,
                 Diamonds = shakeData.Value,
                 Voucher = new VoucherDto
                 {

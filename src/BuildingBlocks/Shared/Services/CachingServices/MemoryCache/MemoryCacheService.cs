@@ -10,13 +10,13 @@ public class MemoryCacheService : IMemoryCacheService
         _memoryCache = memoryCache;
     }
     
-    public async Task<T?> GetAsync<T>(string key)
+    public async Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken)
     {
         _memoryCache.TryGetValue(key, out T? value);
         return value;
     }
 
-    public async Task SetAsync<T>(string key, T value, TimeSpan? ttl = null)
+    public async Task SetAsync<T>(string key, T value, CancellationToken cancellationToken, TimeSpan? ttl = null)
     {
         var options = new MemoryCacheEntryOptions
         {
@@ -25,7 +25,7 @@ public class MemoryCacheService : IMemoryCacheService
         _memoryCache.Set(key, value, options);
     }
 
-    public async Task RemoveAsync(string key)
+    public async Task RemoveAsync(string key, CancellationToken cancellationToken)
     {
         _memoryCache.Remove(key);
     }

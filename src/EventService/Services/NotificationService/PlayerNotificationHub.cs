@@ -14,17 +14,23 @@ public class PlayerNotificationHub : Hub<IPlayerNotificationClient>
         _logger = logger;
     }
 
-    public override Task OnConnectedAsync()
+    public override async Task OnConnectedAsync()
     {
         var userId = Context.UserIdentifier;
         _logger.LogInformation($"{HubName} User connected: {userId}");
-        return base.OnConnectedAsync();
+        await Groups.AddToGroupAsync(Context.ConnectionId, userId ?? string.Empty, Context.ConnectionAborted);
+        await base.OnConnectedAsync();
     }
     
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
+        if (exception != null)
+        {
+            _logger.LogError(exception, $"{HubName} Has error: {exception.Message}");
+        }
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, Context.UserIdentifier ?? string.Empty, Context.ConnectionAborted);
         var userId = Context.UserIdentifier;
         _logger.LogInformation($"{HubName} User disconnected: {userId}");
-        return base.OnDisconnectedAsync(exception);
+        await base.OnDisconnectedAsync(exception);
     }
 }

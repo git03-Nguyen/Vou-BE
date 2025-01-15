@@ -133,7 +133,6 @@ services:
     depends_on:
       - voudb
       - placement
-      - scheduler
     ports:
       - "5300:5300"
     volumes:
