@@ -10,6 +10,9 @@ extensions:
   - name: dapr
     log-level: debug
     components-path: "./components/localhost/"
+    services:
+      gameservice:
+        app-id: gameservice
           
 services:
   - name: apigateway

@@ -4,6 +4,6 @@ public class BuyVoucherDto
 {
   public VoucherDto Voucher { get; set; }
   
-  public int Diamonds { get; set; }
-  public string Id { get; set; }
+  public long Diamonds { get; set; }
+  public string VoucherToPlayerId { get; set; }
 }

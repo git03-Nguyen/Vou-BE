@@ -50,8 +50,8 @@ public class CompleteShakeHandler : IRequestHandler<CompleteShakeCommand, BaseRe
             
             var @event = await _unitOfWork.Events
                 .Where(x => 
-                    x.Id == request.EventId
-                    && x.Status == EventStatus.InProgress)
+                    x.Id == request.EventId)
+                    // && x.Status == EventStatus.InProgress)
                 .Select(x => new
                 {
                     x.ShakeAverageDiamond,
@@ -98,7 +98,7 @@ public class CompleteShakeHandler : IRequestHandler<CompleteShakeCommand, BaseRe
             return 0;
         }
 
-        var minDiamond = Math.Min((int)(averageDiamond * 0.8), 0); // 80% of average diamond
+        var minDiamond = Math.Max((int)(averageDiamond * 0.8), 0); // 80% of average diamond
         var maxDiamond = (int)(averageDiamond * 1.2); // 120% of average diamond
         return random.Next(minDiamond, maxDiamond);
     }

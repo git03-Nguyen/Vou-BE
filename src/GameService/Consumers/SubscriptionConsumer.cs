@@ -96,7 +96,7 @@ public class SubscriptionConsumer : ControllerBase
                     Name = message.Name,
                     Description = message.Description,
                     ImageUrl = message.ImageUrl,
-                    Status = message.Status ?? EventStatus.Canceled,
+                    // Status = message.Status ?? EventStatus.Canceled,
                     ShakePrice = message.ShakePrice,
                     CounterPartId = message.CounterPartId ?? string.Empty,
                     ShakeAverageDiamond = message.ShakeAverageDiamond,

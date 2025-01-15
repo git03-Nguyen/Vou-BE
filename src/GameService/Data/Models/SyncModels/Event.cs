@@ -9,7 +9,7 @@ public class Event
     public string CounterPartId { get; set; }
     public string Description { get; set; }
     public string ImageUrl { get; set; }
-    public EventStatus Status { get; set; }
+    public EventStatus Status { get; set; } = EventStatus.InProgress; // Default is InProgress
     
     // For Shake game
     public string? ShakeVoucherId { get; set; }

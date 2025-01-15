@@ -1,11 +1,13 @@
 using System.Text.Json;
 using BackgroundServiceJobs.BackgroundJobs.EventJobs;
+using BackgroundServiceJobs.BackgroundJobs.QuizSessionJobs;
 using BackgroundServiceJobs.Options;
 using BackgroundServiceJobs.Repositories;
 using Dapr;
 using Dapr.AspNetCore;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Shared.Common;
 using Shared.Contracts.EventMessages;
@@ -48,11 +50,29 @@ public class DaprSubscriptionConsumer : ControllerBase
                     _logger.LogCritical($"{methodName} StartDate is null");
                     return BadRequest();
                 }
+                
+                // Schedule jobs to update event status
                 BackgroundJob.Schedule<EventStatusJob>(x => x.UpdateEventToInProgress(message.EventId), message.StartDate.Value);
                 BackgroundJob.Schedule<EventStatusJob>(x => x.UpdateEventToFinished(message.EventId), message.EndDate.Value);
                 
+                // Schedule jobs to notify player like event
                 var timeToNotifyPlayer = message.StartDate.Value.AddSeconds(-_hangfireOptions.SecondsBeforeToNotifyEvent);
                 BackgroundJob.Schedule<UpcomingEventJob>(x => x.NotifyUpcomingEvent(message.EventId), timeToNotifyPlayer);
+                
+                // Schedule jobs to start quizsession
+                var quizSessions = await _unitOfWork.QuizSessions
+                    .Where(x => x.EventId == message.EventId)
+                    .Select(x => new
+                    {
+                        x.Id,
+                        x.StartTime
+                    })
+                    .AsNoTracking()
+                    .ToListAsync(cancellationToken);
+                foreach (var quizSession in quizSessions)
+                {
+                    BackgroundJob.Schedule<QuizSessionJob>(x => x.StartQuizSession(quizSession.Id), quizSession.StartTime);
+                }
             }
             catch (Exception e)
             {

@@ -31,8 +31,9 @@ public class GetTicketEventHandler : IRequestHandler<GetTicketEventQuery, BaseRe
         try
         {
             var _event = await _unitOfWork.Events
-                .Where(x => x.Id == request.EventId && (x.Status == EventStatus.Approved || x.Status == EventStatus.InProgress))
-                .Select(x => new { x.Id, x.Status })
+                .Where(x => x.Id == request.EventId)
+                            // && (x.Status == EventStatus.Approved || x.Status == EventStatus.InProgress))
+                .Select(x => new { x.Id })
                 .AsNoTracking()
                 .FirstOrDefaultAsync(cancellationToken);
             if (_event is null)

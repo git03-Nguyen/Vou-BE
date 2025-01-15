@@ -4,9 +4,12 @@ using EventService.DTOs;
 using EventService.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Shared.Contracts;
+using Shared.Contracts.ServiceInvocations;
 using Shared.Enums;
 using Shared.Response;
 using Shared.Services.HttpContextAccessor;
+using Shared.Services.ServiceInvocation;
 
 namespace EventService.Features.Commands.PlayerCommands.BuyVoucher;
 
@@ -15,11 +18,13 @@ public class BuyVoucherHandler : IRequestHandler<BuyVoucherCommand, BaseResponse
     private readonly ILogger<BuyVoucherHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICustomHttpContextAccessor _contextAccessor;
-    public BuyVoucherHandler(ILogger<BuyVoucherHandler> logger, IUnitOfWork unitOfWork, ICustomHttpContextAccessor contextAccessor)
+    private readonly IServiceInvocationService _serviceInvocationService;
+    public BuyVoucherHandler(ILogger<BuyVoucherHandler> logger, IUnitOfWork unitOfWork, ICustomHttpContextAccessor contextAccessor, IServiceInvocationService serviceInvocationService)
     {
         _logger = logger;
         _unitOfWork = unitOfWork;
         _contextAccessor = contextAccessor;
+        _serviceInvocationService = serviceInvocationService;
     }
 
     public async Task<BaseResponse<BuyVoucherDto>> Handle(BuyVoucherCommand request, CancellationToken cancellationToken)
@@ -31,91 +36,106 @@ public class BuyVoucherHandler : IRequestHandler<BuyVoucherCommand, BaseResponse
 
         try
         {
-            // Fetch event entity
-            var eventEntity = await _unitOfWork.Events
-                .Where(e => e.Id == request.EventId && e.Status == EventStatus.InProgress && e.ShakeVoucherId != null)
-                .FirstOrDefaultAsync(cancellationToken);
+            var @event = await
+                (
+                    from e in _unitOfWork.Events.GetAll()
+                    join v in _unitOfWork.Vouchers.GetAll()
+                        on e.ShakeVoucherId equals v.Id
+                    where
+                        e.Id == request.EventId
+                        && e.Status == EventStatus.InProgress
+                        && e.ShakeVoucherId != null
+                    select new
+                    {
+                        e.Id,
+                        e.ShakePrice,
+                        e.ShakeVoucherId
+                    }
 
-            if (eventEntity == null)
+                )
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cancellationToken);
+                
+
+            if (@event is null)
             {
-                response.ToBadRequestResponse("Event not found or not in progress or no voucher available");
+                response.ToBadRequestResponse("Event not found or not in progress or has no shake game");
                 return response;
             }
 
             // Fetch voucher entity
             var existedVoucher = await _unitOfWork.Vouchers
-                .Where(v => v.Id == eventEntity.ShakeVoucherId)
+                .Where(v => v.Id == @event.ShakeVoucherId)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Title,
+                    x.ImageUrl,
+                    x.Value
+                })
+                .AsNoTracking()
                 .FirstOrDefaultAsync(cancellationToken);
 
-            if (existedVoucher == null)
+            if (existedVoucher is null)
             {
                 response.ToBadRequestResponse("Voucher not found");
                 return response;
             }
-
-            // Use HttpClient to fetch ticket event data
-            var ticketEventApiUrl = $"http://localhost:5000/GameService/api/1/Player/GetOwnTickets/{eventEntity.Id}"; // Replace with actual API URL
-            var httpClient = new HttpClient();
-
-            HttpResponseMessage httpResponse;
-            try
+            
+            // Go to GameService to get own ticket
+            const string appId = "gameservice";
+            var diamondRequest = new PlayerTicketDiamondRequest
             {
-                // Add Authorization header with token
-                var token = _contextAccessor.GetCurrentJwtToken(); 
-                if (!string.IsNullOrEmpty(token))
-                {
-                    httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
-                }
+                PlayerId = userId,
+                EventId = @event.Id
+            };
+            const string diamondRequestMethod = "Internal/Player/GetPlayerTicketDiamond";
+            var diamondResponse = await 
+                _serviceInvocationService.InvokeServiceAsync<PlayerTicketDiamondRequest, PlayerTicketDiamondResponse>
+                (HttpMethod.Post, appId, diamondRequestMethod, diamondRequest, cancellationToken);
 
-                httpResponse = await httpClient.GetAsync(ticketEventApiUrl, cancellationToken);
-            }
-            catch (Exception ex)
+            if (diamondResponse is null || !diamondResponse.IsSuccess)
             {
-                _logger.LogError($"{methodName} Error calling ticket event API: {ex.Message}");
-                response.ToInternalErrorResponse();
+                response.ToInternalErrorResponse("Failed to get ticket data");
                 return response;
             }
 
-            if (!httpResponse.IsSuccessStatusCode)
-            {
-                _logger.LogWarning($"{methodName} Failed to fetch ticket event data. Status Code: {httpResponse.StatusCode}");
-                response.ToBadRequestResponse("Failed to fetch ticket event data");
-                return response;
-            }
-
-            var ticketEventJson = await httpResponse.Content.ReadAsStringAsync(cancellationToken);
-            var ticketEvent = JsonSerializer.Deserialize<PlayerShakeDto>(ticketEventJson);
-
-            var shakeData = ticketEvent?.Diamonds;
-
-            if (shakeData == null)
-            {
-                response.ToBadRequestResponse("No shake data found");
-                return response;
-            }
-
-            if (shakeData < eventEntity.ShakeAverageDiamond)
+            var totalDiamonds = diamondResponse.Diamonds;
+            if (totalDiamonds < @event.ShakePrice)
             {
                 response.ToBadRequestResponse("Insufficient diamonds");
                 return response;
             }
 
-            shakeData -= eventEntity.ShakeAverageDiamond;
+            totalDiamonds -= @event.ShakePrice.Value;
             var toPlayer = new VoucherToPlayer
             {
-                EventId = eventEntity.Id,
+                EventId = @event.Id,
                 PlayerId = userId,
                 Description = existedVoucher.Title,
                 VoucherId = existedVoucher.Id
             };
-
+            
+            // Deduct diamonds
             await _unitOfWork.VoucherToPlayers.AddAsync(toPlayer, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+            
+            // Update player diamonds on GameService
+            var updateDiamondRequest = new UpdatePlayerDiamondRequest
+            {
+                PlayerId = userId,
+                EventId = request.EventId,
+                Diamonds = totalDiamonds
+            };
+            const string updateDiamondRequestMethod = "Internal/Player/UpdatePlayerDiamond";
+            var updateDiamondResponse = await 
+                _serviceInvocationService.InvokeServiceAsync<UpdatePlayerDiamondRequest, BaseResponse>
+                (HttpMethod.Post, appId, updateDiamondRequestMethod, updateDiamondRequest, cancellationToken);
 
             response.ToSuccessResponse(new BuyVoucherDto
             {
-                Id = toPlayer.Id,
-                Diamonds = shakeData.Value,
+                VoucherToPlayerId = toPlayer.Id,
+                Diamonds = totalDiamonds,
                 Voucher = new VoucherDto
                 {
                     Id = existedVoucher.Id,
@@ -125,11 +145,12 @@ public class BuyVoucherHandler : IRequestHandler<BuyVoucherCommand, BaseResponse
                 }
                
             });
+            
             return response;
         }
         catch (Exception ex)
         {
-            _logger.LogError($"{methodName} {ex.Message}");
+            _logger.LogError($"{methodName} Has error {ex.Message}");
             response.ToInternalErrorResponse();
             return response;
         }

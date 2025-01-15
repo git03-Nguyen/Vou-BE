@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Shared.Options;
 using Shared.Services.CachingServices.DistributedCache;
+using Shared.Services.ServiceInvocation;
 
 namespace Shared.StartupRegistrations;
 
@@ -12,6 +13,7 @@ public static class DaprIntegrationRegistrations
     {
         services.AddDaprClient();
         services.AddScoped<IDaprStateStoreService, DaprStateStoreService>();
+        services.AddScoped<IServiceInvocationService, ServiceInvocationService>();
         return services;
     }
     
