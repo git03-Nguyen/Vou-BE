@@ -73,8 +73,10 @@ public class CompleteShakeHandler : IRequestHandler<CompleteShakeCommand, BaseRe
 
             var shakeResult = new ShakeResultDto
             {
-                Tickets = shakeSession.Tickets,
-                Diamonds = shakeSession.Diamond
+                PlayerId = userId,
+                TotalTickets = shakeSession.Tickets,
+                ReceivedDiamonds = diamondsReceived,
+                TotalDiamonds = shakeSession.Diamond
             };
             response.ToSuccessResponse(shakeResult);
             return response;
