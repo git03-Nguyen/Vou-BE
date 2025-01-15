@@ -9,7 +9,7 @@ using Shared.Services.HttpContextAccessor;
 
 namespace GameService.SignalRHubs.QuizGame;
 
-[Authorize(Roles = Constants.PLAYER)]
+[Authorize(Policy = Constants.PLAYER)]
 public class QuizGameHub : Hub<IQuizClient>
 {
     private readonly ILogger<QuizGameHub> _logger;

@@ -24,6 +24,7 @@ public class EventDbContext : DbContext
     {
         base.OnConfiguring(optionsBuilder);
         optionsBuilder.UseNpgsql(_databaseOptions.ConnectionString);
+        optionsBuilder.EnableSensitiveDataLogging(false);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -24,6 +24,7 @@ public class AuthDbContext : IdentityDbContext<User>
     {
         base.OnConfiguring(builder);
         builder.UseNpgsql(_databaseOptions.ConnectionString);
+        builder.EnableSensitiveDataLogging(false);
     }
 
     protected override void OnModelCreating(ModelBuilder builder)

@@ -25,6 +25,14 @@ services:
   zipkin:
     image: openzipkin/zipkin
     restart: always
+    
+  prometheus:
+    image: prom/prometheus
+    
+  grafana:
+    image: grafana/grafana
+    depends_on:
+      - prometheus
   
   #############################
   ######### DATABASE ##########

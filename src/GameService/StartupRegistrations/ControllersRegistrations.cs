@@ -47,6 +47,7 @@ public static class ControllersRegistrations
     
     public static IApplicationBuilder UseControllers(this IApplicationBuilder app)
     {
+        
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapControllers();

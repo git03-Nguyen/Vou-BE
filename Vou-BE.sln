@@ -36,6 +36,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "localhost", "localhost", "{
 		components\localhost\redis-pubsub.yaml = components\localhost\redis-pubsub.yaml
 		components\localhost\redis-state.yaml = components\localhost\redis-state.yaml
 		components\localhost\zipkin.yaml = components\localhost\zipkin.yaml
+		components\localhost\metrics.yaml = components\localhost\metrics.yaml
+		components\localhost\prometheus.yml = components\localhost\prometheus.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker", "docker", "{B8DB3CE1-91D6-4ACA-A29A-0F2C7BE17F82}"

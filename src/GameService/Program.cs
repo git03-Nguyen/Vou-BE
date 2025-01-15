@@ -23,6 +23,7 @@ public class Program
             .ConfigureCustomOptions(builder.Configuration)
             .ConfigureDbContext(builder.Configuration)
             .ConfigureAuthentication(builder.Configuration)
+            .ConfigureSignalR()
             .ConfigureApiVersioning()
             .ConfigureDaprIntegration(builder.Configuration)
             .ConfigureControllers()
@@ -39,8 +40,9 @@ public class Program
             .UseHttpsRedirection()
             .UseRouting()
             .UseExceptionHandler()
-            .UseAuthentication(builder.Configuration)
-            .UseDaprIntegration()
+            .UseAuthentication(builder.Configuration);
+        app.MapSignalRHubs();    
+        app.UseDaprIntegration()
             .UseControllers();
 
         app.Run();

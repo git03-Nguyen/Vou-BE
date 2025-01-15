@@ -41,6 +41,24 @@ services:
     volumes:
       - zipkin-data:/zipkin
   
+  prometheus:
+    container_name: prometheus
+    volumes:
+      - ./components/localhost/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "8080:8080"  # Prometheus UI
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.enable-lifecycle"
+      - "--web.listen-address=:8080"
+  
+  grafana:
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin  # Set default Grafana admin password
+    ports:
+      - "3000:3000"  # Grafana UI
+  
   #############################
   ######### DATABASE ##########
   #############################

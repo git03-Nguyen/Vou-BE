@@ -1,14 +1,14 @@
-using EventService.Services.NotificationService;
+using GameService.SignalRHubs.QuizGame;
 using MessagePack;
 using Microsoft.AspNetCore.Http.Connections;
 
-namespace EventService.StartupRegistrations;
+namespace GameService.StartupRegistrations;
 
 public static class SignalRRegistrations
 {
     public static IServiceCollection ConfigureSignalR(this IServiceCollection services)
     {
-        services.AddSignalR().AddHubOptions<PlayerNotificationHub>(options =>
+        services.AddSignalR().AddHubOptions<QuizGameHub>(options =>
         {
             options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
             options.KeepAliveInterval = TimeSpan.FromSeconds(15);
@@ -30,7 +30,7 @@ public static class SignalRRegistrations
     
     public static void MapSignalRHubs(this IEndpointRouteBuilder app)
     {
-        app.MapHub<PlayerNotificationHub>("/ws/PlayerNotification", options =>
+        app.MapHub<QuizGameHub>("/ws/QuizSession", options =>
         {
             options.Transports = HttpTransportType.WebSockets;
             options.CloseOnAuthenticationExpiration = true;

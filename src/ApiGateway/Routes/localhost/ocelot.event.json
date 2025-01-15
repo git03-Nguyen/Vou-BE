@@ -110,7 +110,7 @@
     },
     // WebSocket
     {
-      "SwaggerKey": "localhost",
+      "SwaggerKey": "eventservice",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",

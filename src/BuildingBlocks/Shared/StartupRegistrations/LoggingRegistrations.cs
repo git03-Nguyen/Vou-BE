@@ -23,6 +23,16 @@ public static class LoggingRegistrations
                 .Enrich.WithProperty("ServiceName", serviceName)
                 .Enrich.WithProperty("Environment", environmentName);
             
+            // Filter to exclude SQL logs from EF Core
+            loggerConfiguration.Filter
+                .ByExcluding(logEvent => logEvent.Properties.TryGetValue("SourceContext", out var sourceContext)
+                                         && sourceContext.ToString().Contains("Microsoft.EntityFrameworkCore.Database.Command"));
+            
+            // Filter to exclude HTTP logs from Serilog.AspNetCore
+            loggerConfiguration.Filter
+                .ByExcluding(logEvent => logEvent.Properties.TryGetValue("SourceContext", out var sourceContext)
+                                         && sourceContext.ToString().Contains("Serilog.AspNetCore.RequestLoggingMiddleware"));
+            
             // Console logging
             if (loggingOptions!.ConsoleEnabled)
             {
@@ -38,7 +48,7 @@ public static class LoggingRegistrations
                     AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv8,
                     TemplateName = $"application-logs-{environmentName}",
                     OverwriteTemplate = true,
-                    IndexFormat = $"{environmentName.ToLower()}-{DateTime.Now:yyyy.MM.dd}",
+                    IndexFormat = $"logs-{serviceName.ToLower()}-{environmentName.ToLower()}-{DateTime.UtcNow:yyyy.MM}",
                     DetectElasticsearchVersion = true,
                     RegisterTemplateFailure = RegisterTemplateRecovery.IndexAnyway,
                     TypeName = null,
