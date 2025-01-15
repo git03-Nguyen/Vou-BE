@@ -3,6 +3,7 @@ using EventService.Features.Commands.CounterPartCommands.AddQuizSession;
 using EventService.Features.Commands.CounterPartCommands.CreateEvent;
 using EventService.Features.Commands.CounterPartCommands.CreateQuizSet;
 using EventService.Features.Commands.CounterPartCommands.CreateVoucher;
+using EventService.Features.Commands.CounterPartCommands.DeleteQuizSet;
 using EventService.Features.Commands.CounterPartCommands.EditVoucher;
 using EventService.Features.Queries.CounterPartQueries.GetOwnEvent;
 using EventService.Features.Queries.CounterPartQueries.GetOwnEvents;
@@ -100,7 +101,13 @@ public class CounterPartController : ControllerBase
         var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
     }
-
+    
+    [HttpDelete("DeleteQuizSet")]
+    public async Task<IActionResult> DeleteQuizSet([FromBody] DeleteQuizSetCommand request, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(request, cancellationToken);
+        return response.ToObjectResult();
+    }
     #endregion
 
     #region Game
