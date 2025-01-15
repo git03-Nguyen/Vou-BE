@@ -22,8 +22,6 @@ public static class BackgroundJobsRegistrations
     public static IApplicationBuilder UseBackgroundJobs(this IApplicationBuilder app)
     {
         app.UseHangfireDashboard();
-        RecurringJob.AddOrUpdate<EventStatusJob>(nameof(EventStatusJob),x => x.UpdateEventStatuses(), Cron.Minutely);
-        RecurringJob.AddOrUpdate<UpcomingEventJob>(nameof(UpcomingEventJob),x => x.NotifyUpcomingEvents(), Cron.Minutely);
         return app;
     }
 }

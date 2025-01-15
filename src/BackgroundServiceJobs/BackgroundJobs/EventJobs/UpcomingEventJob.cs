@@ -23,47 +23,44 @@ public class UpcomingEventJob
         _hangfireOptions = hangfireOptions.Value;
     }
     
-    public async Task NotifyUpcomingEvents()
+    public async Task NotifyUpcomingEvent(string eventId)
     {
-        var currentTime = DateTime.Now;
-        var methodName = $"{nameof(UpcomingEventJob)}.{nameof(NotifyUpcomingEvents)} CurrentTime: {currentTime} =>";
+        var methodName = $"{nameof(UpcomingEventJob)}.{nameof(NotifyUpcomingEvent)} EventId = {eventId} =>";
         _logger.LogInformation(methodName);
 
         try
         {
+            // Check event exists or deleted
+            var currentEvent = await _unitOfWork.Events
+                .Where(e => !e.IsDeleted && e.Id == eventId)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(CancellationToken.None);
+            if (currentEvent == null)
+            {
+                _logger.LogInformation($"{methodName} Event not found");
+                return;
+            }
+            
             // Get favorite events
-            var events = await
+            var notifications = await
             (
                 from @event in _unitOfWork.Events.GetAll()
                 join favEvent in _unitOfWork.FavoriteEvents.GetAll()
                     on @event.Id equals favEvent.EventId
-                where !@event.IsDeleted
-                      && @event.Status == EventStatus.Approved
-                      && currentTime >= @event.StartDate.AddMinutes(-_hangfireOptions.MinutesBeforeToNotify)
-                      && !favEvent.HasNotified
-                select new
+                where !favEvent.HasNotified && favEvent.EventId == eventId
+                select new Notification
                 {
                     PlayerId = favEvent.PlayerId,
-                    EventId = @event.Id,
-                    Name = @event.Name,
-                    StartDate = @event.StartDate,
-                    EndDate = @event.EndDate,
-                    ImageUrl = @event.ImageUrl
+                    Title = $"Upcoming event: {@event.Name}",
+                    Content = $"Big news!!! The event {@event.Name} will start at {@event.StartDate} and end at {@event.EndDate}"
                 }
             )
             .AsNoTracking()
             .ToListAsync(CancellationToken.None);
-
-            var notifications = events.Select(e => new Notification
-            {
-                PlayerId = e.PlayerId,
-                Title = $"Upcoming event: {e.Name}",
-                Content = $"Big news!!! The event {e.Name} will start at {e.StartDate} and end at {e.EndDate}"
-            }).ToList();
-
+            
             if (notifications.Count == 0)
             {
-                _logger.LogInformation($"{methodName} No upcoming events");
+                _logger.LogInformation($"{methodName} No notification to send");
                 return;
             }
             
@@ -77,15 +74,14 @@ public class UpcomingEventJob
                 Title = n.Title,
                 PlayerId = n.PlayerId,
                 Id = n.Id,
-                CreatedDate = n.CreatedDate ?? currentTime,
+                CreatedDate = n.CreatedDate ?? DateTime.Now,
                 IsRead = n.IsRead
             });
             await _eventPublishService.PublishNotificationsAsync(batch, CancellationToken.None);
             
             // Has notified
-            var favEventIds = events.Select(e => e.EventId).ToList();
             var favEvents = await _unitOfWork.FavoriteEvents
-                .Where(f => favEventIds.Contains(f.EventId))
+                .Where(f => f.EventId == eventId)
                 .ToListAsync(CancellationToken.None);
             favEvents.ForEach(f => f.HasNotified = true);
             _unitOfWork.FavoriteEvents.UpdateRange(favEvents);

@@ -38,6 +38,14 @@ public class EventPublishService : IEventPublishService
                 ShakeWinRate = fullEventDto.ShakeSession?.WinRate,
             };
             await _daprClient.PublishEventAsync(Constants.PubSubName, nameof(EventUpdatedEvent), eventUpdatedEvent, cancellationToken);
+            
+            var eventCreatedEvent = new EventCreatedNotifier
+            {
+                EventId = fullEventDto.Id,
+                StartDate = fullEventDto.StartDate,
+                EndDate = fullEventDto.EndDate,
+            };
+            await _daprClient.PublishEventAsync(Constants.PubSubName, nameof(EventCreatedNotifier), eventCreatedEvent, cancellationToken);
         }
         catch (Exception e)
         {
