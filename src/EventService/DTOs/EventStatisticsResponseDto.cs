@@ -6,6 +6,5 @@ public class EventStatisticsResponseDto
     public int TotalVouchers { get; set; }
     public int TotalPlayers { get; set; }
     
-    public int TotalCounterParts { get; set; }
 
 }

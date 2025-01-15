@@ -29,17 +29,11 @@ public class EventStatisticsHandler : IRequestHandler<EventStatisticsQuery, Base
         {
             var events =await (
                 from @event in _unitOfWork.Events.GetAll()
-                where !@event.IsDeleted && @event.Status==EventStatus.Approved|| @event.Status==EventStatus.InProgress
+                where !@event.IsDeleted 
                     select @event
             )
                 .ToListAsync(cancellationToken);
             
-            var counterParts=await (
-                from @counterPart in _unitOfWork.CounterParts.GetAll()
-                where !@counterPart.IsBlocked==false
-                    select @counterPart
-            )
-                .ToListAsync(cancellationToken);
             
             var players=await (
                 from player in _unitOfWork.Players.GetAll()
@@ -58,8 +52,7 @@ public class EventStatisticsHandler : IRequestHandler<EventStatisticsQuery, Base
             {
                 TotalPlayers = players.Count,
                 TotalActiveEvents = events.Count,
-                TotalVouchers = vouchers.Count,
-                TotalCounterParts = counterParts.Count
+                TotalVouchers = vouchers.Count
             };
 
             response.ToSuccessResponse(eventStatistics);
