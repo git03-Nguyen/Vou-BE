@@ -34,7 +34,6 @@ public class CreateEventHandler: IRequestHandler<CreateEventCommand, BaseRespons
         var methodName = $"{nameof(CreateEventHandler)}.{nameof(Handle)} UserId = {userId}, Payload = {JsonSerializer.Serialize(request)} =>";
         _logger.LogInformation(methodName);
         var response = new BaseResponse<FullEventDto>();
-        var transaction = default(IDbContextTransaction);
 
         try
         {
@@ -67,9 +66,9 @@ public class CreateEventHandler: IRequestHandler<CreateEventCommand, BaseRespons
                 ShakeWinRate = request.ShakeSession?.WinRate ?? null,
                 ShakeAverageDiamond = request.ShakeSession?.AverageDiamond ?? null
             };
-            
-            transaction = await _unitOfWork.OpenTransactionAsync(cancellationToken);
+
             await _unitOfWork.Events.AddAsync(newEvent, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             
             var quizSessions = request.QuizSessions?
                 .Select(x => new QuizSession
@@ -83,7 +82,10 @@ public class CreateEventHandler: IRequestHandler<CreateEventCommand, BaseRespons
             if (quizSessions is not null)
             {
                 await _unitOfWork.QuizSessions.AddRangeAsync(quizSessions, cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
+            
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
             
             FullEventDto? responseData;
             var tryCount = 0;
@@ -96,7 +98,7 @@ public class CreateEventHandler: IRequestHandler<CreateEventCommand, BaseRespons
                 if (responseData is not null)
                 {
                     await _eventPublishService.PublishEventUpdatedEventAsync(responseData, cancellationToken);
-                    response.ToSuccessResponse(responseData);
+                    return response.ToSuccessResponse(responseData);
                 }
                 await Task.Delay(1000, cancellationToken);
                 
@@ -107,9 +109,6 @@ public class CreateEventHandler: IRequestHandler<CreateEventCommand, BaseRespons
                 _logger.LogWarning($"{methodName} Event not found");
                 response.ToNotFoundResponse("Event not found");
             }
-            
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
         }
         catch (Exception e)
         {
