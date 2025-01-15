@@ -3,7 +3,9 @@ using Dapr;
 using Dapr.AspNetCore;
 using EventService.Data.Models.SyncModels;
 using EventService.Repositories;
+using EventService.Services.NotificationService;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Shared.Common;
 using Shared.Contracts.EventMessages;
 
@@ -15,14 +17,16 @@ public class DaprSubscriptionConsumer : ControllerBase
 {
     private readonly ILogger<DaprSubscriptionConsumer> _logger;
     private readonly IUnitOfWork _unitOfWork;
-    public DaprSubscriptionConsumer(ILogger<DaprSubscriptionConsumer> logger, IUnitOfWork unitOfWork)
+    private readonly IHubContext<PlayerNotificationHub, IPlayerNotificationClient> _playerNotificationHub;
+    public DaprSubscriptionConsumer(ILogger<DaprSubscriptionConsumer> logger, IUnitOfWork unitOfWork, IHubContext<PlayerNotificationHub, IPlayerNotificationClient> playerNotificationHub)
     {
         _logger = logger;
         _unitOfWork = unitOfWork;
+        _playerNotificationHub = playerNotificationHub;
     }
 
     [HttpPost($"{nameof(UserUpdatedEvent)}_Route")]
-    [Topic(Constants.PubSubName, nameof(UserUpdatedEvent), "UserUpdatedEvent_DeadLetter", false)]
+    [Topic(Constants.PubSubName, nameof(UserUpdatedEvent), $"{nameof(UserUpdatedEvent)}_DeadLetter", false)]
     [BulkSubscribe(nameof(UserUpdatedEvent), 500, 2000)]
     public async Task<IActionResult> HandleUserUpdatedAsync
     (
@@ -89,6 +93,37 @@ public class DaprSubscriptionConsumer : ControllerBase
             {
                 _logger.LogError($"{methodName} Has error: {e.Message}");
                 return BadRequest();
+            }
+        }
+        
+        return Ok();
+    }
+    
+    [HttpPost($"{nameof(NotificationsSentEvent)}_Route")]
+    [Topic(Constants.PubSubName, nameof(NotificationsSentEvent), $"{nameof(NotificationsSentEvent)}_DeadLetter", false)]
+    [BulkSubscribe(nameof(NotificationsSentEvent), 500, 2000)]
+    public async Task<IActionResult> HandleNotificationsSentAsync
+    (
+        [FromBody] BulkSubscribeMessage<BulkMessageModel<NotificationsSentEvent>> bulkMessage,
+        CancellationToken cancellationToken
+    )
+    {
+        foreach (var entry in bulkMessage.Entries)
+        {
+            var message = entry.Event.Data;
+            var methodName = $"{nameof(DaprSubscriptionConsumer)}.{nameof(HandleNotificationsSentAsync)} Source = {entry.Event.Source}, Message = {JsonSerializer.Serialize(message)} =>";
+            _logger.LogInformation(methodName);
+
+            foreach (var notif in message.Notifications)
+            {
+                try
+                {
+                    await _playerNotificationHub.Clients.Group(notif.PlayerId).NewNotification(notif);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError($"{methodName} PlayerId = {notif.PlayerId}, Has error: {e.Message}");
+                }
             }
         }
         

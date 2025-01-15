@@ -16,4 +16,5 @@ Logging__MinimumLevel__Override__Microsoft="Warning"
 Logging__MinimumLevel__Override__System="Warning"
 Logging__MinimumLevel__Override__Microsoft.Hosting.Lifetime="Error"
 Logging__MinimumLevel__Override__Microsoft.EntityFrameworkCore.Database.Command="Error"
+Hangfire__MinutesBeforeToNotify=100000000
 

@@ -24,6 +24,7 @@ public class Program
             .ConfigureDbContext(builder.Configuration)
             .ConfigureAuthentication(builder.Configuration)
             .ConfigureApiVersioning()
+            .ConfigureDaprIntegration(builder.Configuration)
             .ConfigureBackgroundJobs(builder.Configuration)
             .ConfigureControllers()
             .ConfigureCustomHttpContext()
@@ -38,10 +39,11 @@ public class Program
         app.UseSwaggerService(app.Environment)
             .UseHttpsRedirection()
             .UseRouting()
-            .UseBackgroundJobs()
             .UseExceptionHandler()
             .UseAuthentication(builder.Configuration)
-            .UseControllers();
+            .UseDaprIntegration()
+            .UseControllers()
+            .UseBackgroundJobs();
 
         app.Run();
     }

@@ -18,44 +18,53 @@ public class EventStatusJob
     public async Task UpdateEventStatuses()
     {
         var currentTime = DateTime.Now;
+        var methodName = $"{nameof(EventStatusJob)}.{nameof(UpdateEventStatuses)} CurrentTime: {currentTime} =>";
+        _logger.LogInformation(methodName);
 
-        // Update events from Approved to InProgress
-        var approvedEvents = await _unitOfWork.Events
-            .Where(x => !x.IsDeleted && x.Status == EventStatus.Approved)
-            .ToListAsync(CancellationToken.None);
-
-        var updatedEvents = new List<Event>();
-        foreach (var e in approvedEvents)
+        try
         {
-            if (e.StartDate <= currentTime)
+            // Update events from Approved to InProgress
+            var approvedEvents = await _unitOfWork.Events
+                .Where(x => !x.IsDeleted && x.Status == EventStatus.Approved)
+                .ToListAsync(CancellationToken.None);
+
+            var updatedEvents = new List<Event>();
+            foreach (var e in approvedEvents)
             {
-                e.Status = EventStatus.InProgress;
-                updatedEvents.Add(e);
+                if (e.StartDate <= currentTime)
+                {
+                    e.Status = EventStatus.InProgress;
+                    updatedEvents.Add(e);
+                }
             }
-        }
-        if (updatedEvents.Count != 0)
-        {
-            _unitOfWork.Events.UpdateRange(updatedEvents);
-            await _unitOfWork.SaveChangesAsync(CancellationToken.None);
-        }
+            if (updatedEvents.Count != 0)
+            {
+                _unitOfWork.Events.UpdateRange(updatedEvents);
+                await _unitOfWork.SaveChangesAsync(CancellationToken.None);
+            }
         
-        // Update events from InProgress to Finished
-        updatedEvents.Clear();
-        var inProgressEvents = await _unitOfWork.Events
-            .Where(x => !x.IsDeleted && x.Status == EventStatus.InProgress)
-            .ToListAsync(CancellationToken.None);
-        foreach (var e in inProgressEvents)
-        {
-            if (e.EndDate <= currentTime)
+            // Update events from InProgress to Finished
+            updatedEvents.Clear();
+            var inProgressEvents = await _unitOfWork.Events
+                .Where(x => !x.IsDeleted && x.Status == EventStatus.InProgress)
+                .ToListAsync(CancellationToken.None);
+            foreach (var e in inProgressEvents)
             {
-                e.Status = EventStatus.Finished;
-                updatedEvents.Add(e);
+                if (e.EndDate <= currentTime)
+                {
+                    e.Status = EventStatus.Finished;
+                    updatedEvents.Add(e);
+                }
+            }
+            if (updatedEvents.Count != 0)
+            {
+                _unitOfWork.Events.UpdateRange(updatedEvents);
+                await _unitOfWork.SaveChangesAsync(CancellationToken.None);
             }
         }
-        if (updatedEvents.Count != 0)
+        catch (Exception e)
         {
-            _unitOfWork.Events.UpdateRange(updatedEvents);
-            await _unitOfWork.SaveChangesAsync(CancellationToken.None);
+            _logger.LogCritical($"{methodName} Has error: {e.Message}");
         }
     }
 }

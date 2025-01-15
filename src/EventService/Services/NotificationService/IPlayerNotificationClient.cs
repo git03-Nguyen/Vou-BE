@@ -1,4 +1,4 @@
-using EventService.DTOs;
+using Shared.Contracts;
 
 namespace EventService.Services.NotificationService;
 

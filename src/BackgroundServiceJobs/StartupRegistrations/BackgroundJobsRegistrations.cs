@@ -14,10 +14,7 @@ public static class BackgroundJobsRegistrations
             config.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
-                .UsePostgreSqlStorage(options =>
-                {
-                    options.UseNpgsqlConnection(configuration.GetConnectionString(hangfireOptions.ConnectionString));
-                }));
+                .UsePostgreSqlStorage(hangfireOptions.ConnectionString));
         services.AddHangfireServer();
         return services;
     }
@@ -26,6 +23,7 @@ public static class BackgroundJobsRegistrations
     {
         app.UseHangfireDashboard();
         RecurringJob.AddOrUpdate<EventStatusJob>(nameof(EventStatusJob),x => x.UpdateEventStatuses(), Cron.Minutely);
+        RecurringJob.AddOrUpdate<UpcomingEventJob>(nameof(UpcomingEventJob),x => x.NotifyUpcomingEvents(), Cron.Minutely);
         return app;
     }
 }

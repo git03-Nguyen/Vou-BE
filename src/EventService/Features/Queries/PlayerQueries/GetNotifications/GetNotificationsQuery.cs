@@ -1,5 +1,6 @@
 using EventService.DTOs;
 using MediatR;
+using Shared.Contracts;
 using Shared.Response;
 
 namespace EventService.Features.Queries.PlayerQueries.GetNotifications;
