@@ -24,6 +24,7 @@ public class Program
             .ConfigureDbContext(builder.Configuration)
             .ConfigureAuthentication(builder.Configuration)
             .ConfigureApiVersioning()
+            .ConfigureBackgroundJobs(builder.Configuration)
             .ConfigureControllers()
             .ConfigureCustomHttpContext()
             .ConfigureDIServices(builder.Configuration)
@@ -37,6 +38,7 @@ public class Program
         app.UseSwaggerService(app.Environment)
             .UseHttpsRedirection()
             .UseRouting()
+            .UseBackgroundJobs()
             .UseExceptionHandler()
             .UseAuthentication(builder.Configuration)
             .UseControllers();

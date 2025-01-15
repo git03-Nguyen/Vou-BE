@@ -32,16 +32,16 @@ public class GetFavoriteEventsHandler : IRequestHandler<GetAllEventsQuery, BaseR
             var events = await
             (
                 from e in _unitOfWork.Events.GetAll()
-                join ctp in _unitOfWork.CounterParts.GetAll() 
+                join ctp in _unitOfWork.CounterParts.GetAll()
                     on e.CounterPartId equals ctp.Id
                 join v in _unitOfWork.Vouchers.GetAll()
-                    on e.ShakeVoucherId equals v.Id into vGroup
-                from v in vGroup.DefaultIfEmpty()
-                where !e.IsDeleted 
+                    on e.ShakeVoucherId equals v.Id into groupVou
+                from v in groupVou.DefaultIfEmpty()
+                where !e.IsDeleted
                       && (e.Status == EventStatus.Approved 
                           || e.Status == EventStatus.InProgress)
                 orderby e.StartDate descending
-                let hasShakeSession = e.ShakeVoucherId != null
+                let hasShakeSession = v != null
                 select new FullEventDto
                 {
                     Id = e.Id,

@@ -59,7 +59,6 @@ public class ShareSocialHandler : IRequestHandler<ShareSocialCommand, BaseRespon
                 Tickets = player.Tickets,
                 Diamonds = player.Diamond
             };
-
             response.ToSuccessResponse(responseData);
         }
         catch (Exception e)

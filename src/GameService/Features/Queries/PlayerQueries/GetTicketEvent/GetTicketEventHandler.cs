@@ -30,12 +30,23 @@ public class GetTicketEventHandler : IRequestHandler<GetTicketEventQuery, BaseRe
         
         try
         {
+            var _event = await _unitOfWork.Events
+                .Where(x => x.Id == request.EventId && (x.Status == EventStatus.Approved || x.Status == EventStatus.InProgress))
+                .Select(x => new { x.Id, x.Status })
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cancellationToken);
+            if (_event is null)
+            {
+                response.ToBadRequestResponse("Event not found or not accepted");
+                return response;
+            }
+            
             var player = await
             (
                 from playerInSession in _unitOfWork.PlayerShakeSessions.GetAll()
-                join @event in _unitOfWork.Events.GetAll()
-                    on playerInSession.EventId equals @event.Id
-                where @event.Status == EventStatus.Approved || @event.Status == EventStatus.InProgress
+                where playerInSession.PlayerId == userId
+                && playerInSession.EventId == request.EventId
+                && !playerInSession.IsDeleted
                 select playerInSession
             )
             .FirstOrDefaultAsync(cancellationToken);
@@ -65,7 +76,6 @@ public class GetTicketEventHandler : IRequestHandler<GetTicketEventQuery, BaseRe
             if (player.NextResetTicketsTime < DateTime.Now)
             {
                 var newPlayer = new PlayerShakeSession();
-
                 player.Tickets = newPlayer.Tickets;
                 player.NextResetTicketsTime = newPlayer.NextResetTicketsTime;
                 _unitOfWork.PlayerShakeSessions.Update(player);

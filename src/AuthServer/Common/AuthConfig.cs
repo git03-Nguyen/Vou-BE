@@ -35,12 +35,12 @@ public static class AuthConfig
             ClientName = "Password-Flow Client",
             AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
             ClientSecrets = { new Secret("my_very_very_very_very_long_long_secret".Sha256()) },
-            AccessTokenLifetime = 86400, // 1 days
+            AccessTokenLifetime = 604800, // 7 days
             AccessTokenType = AccessTokenType.Jwt,
             AllowOfflineAccess = true,
             RefreshTokenUsage = TokenUsage.OneTimeOnly,
             RefreshTokenExpiration = TokenExpiration.Absolute,
-            AbsoluteRefreshTokenLifetime = 604800, // 7 days
+            AbsoluteRefreshTokenLifetime = 1209600, // 14 days
             AllowedScopes =
             {
                 "service_scope"

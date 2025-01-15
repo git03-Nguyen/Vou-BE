@@ -9,7 +9,7 @@ public class ServicesOptions
     public ApiGatewayOptions ApiGateway { get; set; } = new();
     public EventServiceOptions EventService { get; set; } = new();
     public GameServiceOptions GameService { get; set; } = new();
-    public PaymentServiceOptions PaymentService { get; set; } = new();
+    public BackgroundServiceJobsOptions BackgroundServiceJobs { get; set; } = new();
 }
 
 public class AuthServerOptions
@@ -32,8 +32,8 @@ public class GameServiceOptions
     public string Name { get; set; } = "GameService";
 }
 
-public class PaymentServiceOptions
+public class BackgroundServiceJobsOptions
 {
-    public string Name { get; set; } = "PaymentService";
+    public string Name { get; set; } = "BackgroundServiceJobs";
 }
 

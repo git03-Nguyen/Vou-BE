@@ -88,7 +88,9 @@ public class CreateEventHandler: IRequestHandler<CreateEventCommand, BaseRespons
             
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
-
+            
+            // sleep 1s
+            await Task.Delay(1000, cancellationToken);
             var query = new GetOwnEventQuery { EventId = newEvent.Id };
             var fullEvent = await _mediator.Send(query, cancellationToken);
             var responseData = fullEvent.Data;
