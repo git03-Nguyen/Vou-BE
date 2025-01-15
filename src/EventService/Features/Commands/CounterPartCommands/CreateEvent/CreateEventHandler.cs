@@ -68,6 +68,9 @@ public class CreateEventHandler: IRequestHandler<CreateEventCommand, BaseRespons
                 ShakeAverageDiamond = request.ShakeSession?.AverageDiamond ?? null
             };
             
+            transaction = await _unitOfWork.OpenTransactionAsync(cancellationToken);
+            await _unitOfWork.Events.AddAsync(newEvent, cancellationToken);
+            
             var quizSessions = request.QuizSessions?
                 .Select(x => new QuizSession
                 {
@@ -77,34 +80,41 @@ public class CreateEventHandler: IRequestHandler<CreateEventCommand, BaseRespons
                     TakeTop = x.TakeTop,
                     QuizSetId = x.QuizSetId
                 }).ToList();
-
-            transaction = await _unitOfWork.OpenTransactionAsync(cancellationToken);
-            
-            await _unitOfWork.Events.AddAsync(newEvent, cancellationToken);
             if (quizSessions is not null)
             {
                 await _unitOfWork.QuizSessions.AddRangeAsync(quizSessions, cancellationToken);
             }
             
+            FullEventDto? responseData;
+            var tryCount = 0;
+            const int MAX_TRY = 5;
+            do
+            {
+                var query = new GetOwnEventQuery { EventId = newEvent.Id };
+                var fullEvent = await _mediator.Send(query, cancellationToken);
+                responseData = fullEvent.Data;
+                if (responseData is not null)
+                {
+                    await _eventPublishService.PublishEventUpdatedEventAsync(responseData, cancellationToken);
+                    response.ToSuccessResponse(responseData);
+                }
+                await Task.Delay(1000, cancellationToken);
+                
+            } while (tryCount++ < MAX_TRY);
+            
+            if (responseData is null)
+            {
+                _logger.LogWarning($"{methodName} Event not found");
+                response.ToNotFoundResponse("Event not found");
+            }
+            
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
-            
-            // sleep 1s
-            await Task.Delay(1000, cancellationToken);
-            var query = new GetOwnEventQuery { EventId = newEvent.Id };
-            var fullEvent = await _mediator.Send(query, cancellationToken);
-            var responseData = fullEvent.Data;
-            
-            await _eventPublishService.PublishEventUpdatedEventAsync(responseData, cancellationToken);
-            response.ToSuccessResponse(responseData);
         }
         catch (Exception e)
         {
             _logger.LogError($"{methodName} {e.Message}");
-            if (transaction != null)
-            {
-                await transaction.RollbackAsync(cancellationToken);
-            }
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             response.ToInternalErrorResponse();
         }
 
