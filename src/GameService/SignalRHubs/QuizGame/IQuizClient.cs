@@ -8,10 +8,7 @@ public interface IQuizClient
     // On any player join or leave
     Task WaitingPlayers(IEnumerable<WaitingPlayerDto> players);
     
-    // On game start
-    Task GameStart();
-    
-    // On new question
+    // On new question, 10s
     Task NewQuestion(string id, string content, string[] answers);
     
     // On question result

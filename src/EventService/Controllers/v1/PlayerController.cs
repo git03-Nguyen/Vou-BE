@@ -8,10 +8,13 @@ using EventService.Features.Queries.PlayerQueries.GetAllEvents;
 using EventService.Features.Queries.PlayerQueries.GetFavoriteEvents;
 using EventService.Features.Queries.PlayerQueries.GetNotifications;
 using EventService.Features.Queries.PlayerQueries.GetOwnVouchers;
+using EventService.Services.NotificationService;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Shared.Common;
+using Shared.Contracts;
 
 namespace EventService.Controllers.v1;
 
@@ -105,6 +108,23 @@ public class PlayerController : ControllerBase
         var request = new UseVoucherCommand { VoucherToPlayerId = voucherToPlayerId };
         var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
+    }
+
+    #endregion
+
+    #region Test
+
+    [HttpGet("TestNotif")]
+    public async Task<IActionResult> TestNotif([FromServices] IHubContext<PlayerNotificationHub, IPlayerNotificationClient> hubContext, CancellationToken cancellationToken)
+    {
+        var notification = new NotificationDto
+        {
+            Title = "Test Title",
+            Content = "Test Content",
+            CreatedDate = DateTime.Now,
+        };
+        await hubContext.Clients.All.NewNotification(notification);
+        return Ok();
     }
 
     #endregion
