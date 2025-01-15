@@ -37,7 +37,7 @@ public class GetTicketEventHandler : IRequestHandler<GetTicketEventQuery, BaseRe
                 .FirstOrDefaultAsync(cancellationToken);
             if (_event is null)
             {
-                response.ToBadRequestResponse("Event not found");
+                response.ToBadRequestResponse("Event not found or not accepted");
                 return response;
             }
             
