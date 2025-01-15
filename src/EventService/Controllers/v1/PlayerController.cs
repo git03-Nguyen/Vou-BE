@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using EventService.Features.Commands.PlayerCommands.BuyVoucher;
 using EventService.Features.Commands.PlayerCommands.ReadNotifications;
 using EventService.Features.Queries.CounterPartQueries.GetAllCounterParts;
 using EventService.Features.Queries.PlayerQueries.GetAllEvents;
@@ -76,6 +77,13 @@ public class PlayerController : ControllerBase
     public async Task<IActionResult> GetOwnVouchers(CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new GetOwnVouchersQuery(), cancellationToken);
+        return response.ToObjectResult();
+    }
+    
+    [HttpPost("BuyVoucher")]
+    public async Task<IActionResult> BuyVoucher([FromBody] BuyVoucherCommand request, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
     }
 }
