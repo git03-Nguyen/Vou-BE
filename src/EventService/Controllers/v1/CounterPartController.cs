@@ -59,6 +59,7 @@ public class CounterPartController : ControllerBase
         return response.ToObjectResult();
     }
     
+    
     #endregion
 
     #region Voucher
