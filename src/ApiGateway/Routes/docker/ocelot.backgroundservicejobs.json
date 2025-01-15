@@ -1,0 +1,58 @@
+{
+  "Routes": [
+    // HealthCheck - public
+    {
+      "SwaggerKey": "backgroundservicejobs",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "backgroundservicejobs",
+          "Port": 5400
+        }
+      ],
+      "DownstreamPathTemplate": "/",
+      "UpstreamPathTemplate": "/BackgroundServiceJobs",
+      "UpstreamHttpMethod": [ "GET" ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "15s",
+        "PeriodTimespan": 1,
+        "Limit": 100
+      },
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": null,
+        "AllowedScopes": []
+      }
+    },
+    // Hangfire dashboard - admin
+    {
+      "SwaggerKey": "backgroundservicejobs",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "backgroundservicejobs",
+          "Port": 5400
+        }
+      ],
+      "DownstreamPathTemplate": "/hangfire",
+      "UpstreamPathTemplate": "/BackgroundServiceJobs/hangfire",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS" ],
+      "RateLimitOptions": {
+        "ClientWhitelist": [],
+        "EnableRateLimiting": true,
+        "Period": "15s",
+        "PeriodTimespan": 1,
+        "Limit": 100
+      },
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": null,
+        "AllowedScopes": []
+      }
+    }
+  ]
+}

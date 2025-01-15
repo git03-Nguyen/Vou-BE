@@ -38,6 +38,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Features\Queries\PlayerQueries\GetCounterParts\" />
       <Folder Include="Options\" />
       <Folder Include="Services\" />
     </ItemGroup>

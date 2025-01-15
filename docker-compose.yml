@@ -59,11 +59,11 @@ services:
       context: .
       dockerfile: src/GameService/Dockerfile
       
-  paymentservice:
-    image: ${DOCKER_REGISTRY-}paymentservice
+  backgroundservicejobs:
+    image: ${DOCKER_REGISTRY-}backgroundservicejobs
     build:
       context: .
-      dockerfile: src/PaymentService/Dockerfile
+      dockerfile: src/backgroundservicejobs/Dockerfile
 
   #############################
   ######### SIDECARS ##########

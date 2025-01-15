@@ -31,10 +31,10 @@
       ]
     },
     {
-      "Key": "paymentservice",
+      "Key": "backgroundservicejobs",
       "Config": [
         {
-          "Name": "PaymentService API",
+          "Name": "BackgroundServiceJobs API",
           "Version": "v1",
           "Url": "http://localhost:5400/swagger/v1/swagger.json"
         }

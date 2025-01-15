@@ -141,8 +141,8 @@ services:
       - ~/.aspnet/https:/https:ro
       - /components:/components/docker # Dapr components
   
-  paymentservice:
-    container_name: paymentservice
+  backgroundservicejobs:
+    container_name: backgroundservicejobs
     environment:
       - ASPNETCORE_ENVIRONMENT=docker
       - ASPNETCORE_URLS=http://+:5400
@@ -151,6 +151,7 @@ services:
       - Authentication__Secret=my_very_very_very_very_long_long_secret
       - Logging__Elk__Enabled=false
       - Logging__Elk__Uri=http://elasticsearch:9200
+      - Hangfire__ConnectionString=Host=voudb;Port=5432;Database=voudb;Username=admin;Password=admin1234;
     depends_on:
       - voudb
       - placement

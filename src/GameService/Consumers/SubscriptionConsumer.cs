@@ -21,29 +21,9 @@ public class SubscriptionConsumer : ControllerBase
         _logger = logger;
         _unitOfWork = unitOfWork;
     }
-    
-    [HttpGet("/dapr/subscribe")]
-    public IActionResult GetSubscriptions()
-    {
-        return Ok(new[] 
-        {
-            new 
-            { 
-                pubsubname = Constants.PubSubName,
-                topic = nameof(UserUpdatedEvent),
-                route = $"{nameof(UserUpdatedEvent)}_Route"
-            },
-            new 
-            { 
-                pubsubname = Constants.PubSubName,
-                topic = nameof(EventUpdatedEvent),
-                route = $"{nameof(EventUpdatedEvent)}_Route"
-            }
-        });
-    }
 
     [HttpPost($"{nameof(UserUpdatedEvent)}_Route")]
-    [Topic(Constants.PubSubName, nameof(UserUpdatedEvent), "UserUpdatedEvent_DeadLetter", false)]
+    [Topic(Constants.PubSubName, nameof(UserUpdatedEvent), $"{nameof(UserUpdatedEvent)}_DeadLetter", false)]
     [BulkSubscribe(nameof(UserUpdatedEvent), 500, 2000)]
     public async Task<IActionResult> HandleUserUpdatedAsync
     (
