@@ -113,7 +113,8 @@ public class BuyVoucherHandler : IRequestHandler<BuyVoucherCommand, BaseResponse
                 EventId = @event.Id,
                 PlayerId = userId,
                 Description = existedVoucher.Title,
-                VoucherId = existedVoucher.Id
+                VoucherId = existedVoucher.Id,
+                ExpiredDate = DateTime.Now.AddDays(30)
             };
             
             // Deduct diamonds
