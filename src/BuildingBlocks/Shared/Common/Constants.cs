@@ -21,5 +21,5 @@ public static class Constants
     public const string PubSubName = "pubsub";
     
     public const string WaitingPlayers = "WaitingPlayers";
-    public const string CurrentQuestion = "WaitingPlayers";
+    public const string CurrentQuestion = "CurrentQuestion";
 }
