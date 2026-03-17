@@ -31,11 +31,13 @@ public class CreateVoucherHandler: IRequestHandler<CreateVoucherCommand, BaseRes
 
         try
         {
+            var normalizedTitle = request.Title.Trim();
+
             var isVoucherExisted = await _unitOfWork.Vouchers
                 .Where(x => 
                     !x.IsDeleted
                     && x.CounterPartId == userId
-                    && x.Title == request.Title)
+                    && x.Title == normalizedTitle)
                 .AsNoTracking()
                 .AnyAsync(cancellationToken);
 
@@ -48,7 +50,7 @@ public class CreateVoucherHandler: IRequestHandler<CreateVoucherCommand, BaseRes
             
             var newVoucher = new Voucher
             {
-                Title = request.Title.Trim(),
+                Title = normalizedTitle,
                 CounterPartId = userId,
                 ImageUrl = request.ImageUrl?.Trim(),
                 Value = request.Value,

@@ -29,6 +29,8 @@ public class EditVoucherHandler : IRequestHandler<EditVoucherCommand, BaseRespon
 
         try
         {
+            var normalizedTitle = request.Title?.Trim();
+
             var voucher = await _unitOfWork.Vouchers
                 .Where(v => !v.IsDeleted && v.Id == request.Id)
                 .FirstOrDefaultAsync(cancellationToken);
@@ -45,8 +47,25 @@ public class EditVoucherHandler : IRequestHandler<EditVoucherCommand, BaseRespon
                 return response;
             }
 
+            if (normalizedTitle is not null)
+            {
+                var isDuplicateTitle = await _unitOfWork.Vouchers
+                    .Where(v => !v.IsDeleted
+                                && v.CounterPartId == userId
+                                && v.Id != voucher.Id
+                                && v.Title == normalizedTitle)
+                    .AsNoTracking()
+                    .AnyAsync(cancellationToken);
+
+                if (isDuplicateTitle)
+                {
+                    response.ToBadRequestResponse("Voucher title already exists");
+                    return response;
+                }
+            }
+
             voucher.ImageUrl = request.ImageUrl?.Trim() ?? voucher.ImageUrl;
-            voucher.Title = request.Title?.Trim() ?? voucher.Title;
+            voucher.Title = normalizedTitle ?? voucher.Title;
             voucher.Value = request.Value ?? voucher.Value;
             voucher.TotalQuantity = request.TotalQuantity ?? voucher.TotalQuantity;
             voucher.ExpiredDate = request.ExpiredDate?.ToUniversalTime() ?? voucher.ExpiredDate;
