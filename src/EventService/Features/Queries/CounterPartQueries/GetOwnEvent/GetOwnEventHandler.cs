@@ -60,6 +60,9 @@ public class GetOwnEventHandler : IRequestHandler<GetOwnEventQuery, BaseResponse
                             Title = eventVoucher.Title,
                             ImageUrl = eventVoucher.ImageUrl,
                             Value = eventVoucher.Value,
+                            TotalQuantity = eventVoucher.TotalQuantity,
+                            ExpiredDate = eventVoucher.ExpiredDate,
+                            RedemptionInstructions = eventVoucher.RedemptionInstructions,
                         }
                     } : null,
                     CounterPart = new CounterPartDto
@@ -99,6 +102,9 @@ public class GetOwnEventHandler : IRequestHandler<GetOwnEventQuery, BaseResponse
                         Title = voucher.Title,
                         ImageUrl = voucher.ImageUrl,
                         Value = voucher.Value,
+                        TotalQuantity = voucher.TotalQuantity,
+                        ExpiredDate = voucher.ExpiredDate,
+                        RedemptionInstructions = voucher.RedemptionInstructions,
                     },
                     QuizSet = new QuizSetDto
                     {

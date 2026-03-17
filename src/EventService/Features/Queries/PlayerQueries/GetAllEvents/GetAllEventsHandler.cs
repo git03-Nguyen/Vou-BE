@@ -70,7 +70,10 @@ public class GetFavoriteEventsHandler : IRequestHandler<GetAllEventsQuery, BaseR
                             Id = v.Id,
                             Title = v.Title,
                             ImageUrl = v.ImageUrl,
-                            Value = v.Value
+                            Value = v.Value,
+                            TotalQuantity = v.TotalQuantity,
+                            ExpiredDate = v.ExpiredDate,
+                            RedemptionInstructions = v.RedemptionInstructions
                         }
                     } : null,
                     QuizSessions = null
@@ -103,7 +106,10 @@ public class GetFavoriteEventsHandler : IRequestHandler<GetAllEventsQuery, BaseR
                             Id = v.Id,
                             Title = v.Title,
                             ImageUrl = v.ImageUrl,
-                            Value = v.Value
+                            Value = v.Value,
+                            TotalQuantity = v.TotalQuantity,
+                            ExpiredDate = v.ExpiredDate,
+                            RedemptionInstructions = v.RedemptionInstructions
                         },
                         QuizSet = null
                     }

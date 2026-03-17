@@ -1,6 +1,4 @@
-using EventService.Data.Models;
 using EventService.DTOs;
-using EventService.Features.Queries.CounterPartQueries.GetOwnEvent;
 using EventService.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -25,37 +23,56 @@ public class GetOwnEventStatisticsHandler : IRequestHandler<GetOwnEventStatistic
     public async Task<BaseResponse<CounterPartStatisticsEventsResponseDto>> Handle(GetOwnEventStatisticsQuery request, CancellationToken cancellationToken)
     {
         var userId = _contextAccessor.GetCurrentUserId();
-        var methodName = $"{nameof(GetOwnEventHandler)}.{nameof(Handle)} UserId: {userId}, EventId: {request.EventId} =>";
+        var methodName = $"{nameof(GetOwnEventStatisticsHandler)}.{nameof(Handle)} UserId: {userId}, EventId: {request.EventId} =>";
         _logger.LogInformation(methodName);
         var response = new BaseResponse<CounterPartStatisticsEventsResponseDto>();
 
         try
-        { 
-            var eventStatistics = await (
-                    from @event in _unitOfWork.Events.GetAll()
-                    join counterpart in _unitOfWork.CounterParts.GetAll()
-                        on @event.CounterPartId equals counterpart.Id
-                    where !@event.IsDeleted &&
-                          @event.CounterPartId == userId &&
-                          (@event.Status == EventStatus.InProgress || @event.Status == EventStatus.Approved)
-                    join voucher in _unitOfWork.Vouchers.GetAll()
-                        on @event.ShakeVoucherId equals voucher.Id into eventVouchers
-                    from eventVoucher in eventVouchers.DefaultIfEmpty()
-                    join quizSession in _unitOfWork.QuizSessions.GetAll()
-                        on @event.Id equals quizSession.EventId into eventQuizSessions
-                    from quizSession in eventQuizSessions.DefaultIfEmpty()
-                    group new { @event, eventVoucher, quizSession } by @event.CounterPartId into counterpartGroup
-                    select new CounterPartStatisticsEventsResponseDto
-                    {
-                        TotalEvents = counterpartGroup.Count(),
-                        TotalVouchers = counterpartGroup.Count(g => g.eventVoucher != null),
-                        TotalVouchersValue = counterpartGroup.Sum(g => g.eventVoucher != null ? g.eventVoucher.Value : 0),
-                        TotalQuizSessions = counterpartGroup.Count(g => g.quizSession != null),
-                        TotalShakeGame = counterpartGroup.Count(g => g.@event.ShakeVoucherId != null),
-                    }
-                )
-                .AsNoTracking()
-                .FirstOrDefaultAsync(cancellationToken);
+        {
+            var eventsQuery = _unitOfWork.Events.GetAll()
+                .Where(x => !x.IsDeleted
+                            && x.CounterPartId == userId
+                            && (x.Status == EventStatus.InProgress || x.Status == EventStatus.Approved));
+
+            var eventIds = await eventsQuery.Select(x => x.Id).ToListAsync(cancellationToken);
+            var voucherIds = await _unitOfWork.Vouchers.GetAll()
+                .Where(x => !x.IsDeleted && x.CounterPartId == userId)
+                .Select(x => x.Id)
+                .ToListAsync(cancellationToken);
+
+            var totalEvents = eventIds.Count;
+            var totalVouchers = voucherIds.Count;
+            var totalVouchersValue = await _unitOfWork.Vouchers.GetAll()
+                .Where(x => !x.IsDeleted && x.CounterPartId == userId)
+                .SumAsync(x => x.Value, cancellationToken);
+            var totalQuizSessions = await _unitOfWork.QuizSessions.GetAll()
+                .CountAsync(x => !x.IsDeleted && eventIds.Contains(x.EventId), cancellationToken);
+            var totalShakeGame = await eventsQuery.CountAsync(x => x.ShakeVoucherId != null, cancellationToken);
+            var totalIssuedVouchers = await _unitOfWork.VoucherToPlayers.GetAll()
+                .CountAsync(x => !x.IsDeleted && voucherIds.Contains(x.VoucherId), cancellationToken);
+            var totalRedeemedVouchers = await _unitOfWork.VoucherToPlayers.GetAll()
+                .CountAsync(x => !x.IsDeleted && voucherIds.Contains(x.VoucherId) && x.UsedDate != null, cancellationToken);
+            var totalAvailableVoucherStock = await _unitOfWork.Vouchers.GetAll()
+                .Where(x => !x.IsDeleted && x.CounterPartId == userId && x.TotalQuantity.HasValue)
+                .Select(x => new
+                {
+                    x.TotalQuantity,
+                    Issued = _unitOfWork.VoucherToPlayers.GetAll().Count(vp => !vp.IsDeleted && vp.VoucherId == x.Id)
+                })
+                .Select(x => Math.Max(x.TotalQuantity!.Value - x.Issued, 0))
+                .SumAsync(cancellationToken);
+
+            var eventStatistics = new CounterPartStatisticsEventsResponseDto
+            {
+                TotalEvents = totalEvents,
+                TotalVouchers = totalVouchers,
+                TotalVouchersValue = totalVouchersValue,
+                TotalQuizSessions = totalQuizSessions,
+                TotalShakeGame = totalShakeGame,
+                TotalIssuedVouchers = totalIssuedVouchers,
+                TotalRedeemedVouchers = totalRedeemedVouchers,
+                TotalAvailableVoucherStock = totalAvailableVoucherStock
+            };
 
             response.ToSuccessResponse(eventStatistics);
         }

@@ -5,8 +5,6 @@ using EventService.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shared.Contracts;
-using Shared.Contracts.ServiceInvocations;
-using Shared.Enums;
 using Shared.Response;
 using Shared.Services.HttpContextAccessor;
 using Shared.Services.ServiceInvocation;
@@ -36,58 +34,64 @@ public class BuyVoucherHandler : IRequestHandler<BuyVoucherCommand, BaseResponse
 
         try
         {
+            await using var transaction = await _unitOfWork.OpenTransactionAsync(cancellationToken);
+
             var @event = await
                 (
                     from e in _unitOfWork.Events.GetAll()
                     join v in _unitOfWork.Vouchers.GetAll()
                         on e.ShakeVoucherId equals v.Id
-                    where
-                        e.Id == request.EventId
-                        && e.Status == EventStatus.InProgress
-                        && e.ShakeVoucherId != null
+                    where e.Id == request.EventId
+                          && !e.IsDeleted
+                          && !v.IsDeleted
+                          && e.ShakeVoucherId != null
                     select new
                     {
-                        e.Id,
-                        e.ShakePrice,
-                        e.ShakeVoucherId
+                        Event = e,
+                        Voucher = v
                     }
 
                 )
-                .AsNoTracking()
                 .FirstOrDefaultAsync(cancellationToken);
-                
 
             if (@event is null)
             {
-                response.ToBadRequestResponse("Event not found or not in progress or has no shake game");
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                response.ToBadRequestResponse("Event not found or has no shake voucher configured");
                 return response;
             }
 
-            // Fetch voucher entity
-            var existedVoucher = await _unitOfWork.Vouchers
-                .Where(v => v.Id == @event.ShakeVoucherId)
-                .Select(x => new
-                {
-                    x.Id,
-                    x.Title,
-                    x.ImageUrl,
-                    x.Value
-                })
-                .AsNoTracking()
-                .FirstOrDefaultAsync(cancellationToken);
-
-            if (existedVoucher is null)
+            var now = DateTime.UtcNow;
+            if (@event.Event.StartDate > now || @event.Event.EndDate < now)
             {
-                response.ToBadRequestResponse("Voucher not found");
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                response.ToBadRequestResponse("Event is not active");
+                return response;
+            }
+
+            if (@event.Voucher.ExpiredDate.HasValue && @event.Voucher.ExpiredDate.Value <= now)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                response.ToBadRequestResponse("Voucher has expired");
+                return response;
+            }
+
+            var issuedQuantity = await _unitOfWork.VoucherToPlayers
+                .Where(x => !x.IsDeleted && x.VoucherId == @event.Voucher.Id)
+                .CountAsync(cancellationToken);
+
+            if (@event.Voucher.TotalQuantity.HasValue && issuedQuantity >= @event.Voucher.TotalQuantity.Value)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                response.ToBadRequestResponse("Voucher is out of stock");
                 return response;
             }
             
-            // Go to GameService to get own ticket
             const string appId = "gameservice";
             var diamondRequest = new PlayerTicketDiamondRequest
             {
                 PlayerId = userId,
-                EventId = @event.Id
+                EventId = @event.Event.Id
             };
             const string diamondRequestMethod = "Internal/Player/GetPlayerTicketDiamond";
             var diamondResponse = await 
@@ -96,32 +100,42 @@ public class BuyVoucherHandler : IRequestHandler<BuyVoucherCommand, BaseResponse
 
             if (diamondResponse is null || !diamondResponse.IsSuccess)
             {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                 response.ToInternalErrorResponse("Failed to get ticket data");
                 return response;
             }
 
             var totalDiamonds = diamondResponse.Diamonds;
-            if (totalDiamonds < @event.ShakePrice)
+            if (!@event.Event.ShakePrice.HasValue)
             {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                response.ToBadRequestResponse("Event shake price is not configured");
+                return response;
+            }
+
+            if (totalDiamonds < @event.Event.ShakePrice)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                 response.ToBadRequestResponse("Insufficient diamonds");
                 return response;
             }
 
-            totalDiamonds -= @event.ShakePrice.Value;
+            totalDiamonds -= @event.Event.ShakePrice.Value;
             var toPlayer = new VoucherToPlayer
             {
-                EventId = @event.Id,
+                EventId = @event.Event.Id,
                 PlayerId = userId,
-                Description = existedVoucher.Title,
-                VoucherId = existedVoucher.Id,
-                ExpiredDate = DateTime.Now.AddDays(30)
+                Description = @event.Voucher.Title,
+                VoucherId = @event.Voucher.Id,
+                ExpiredDate = @event.Voucher.ExpiredDate ?? @event.Event.EndDate,
+                CreatedBy = userId,
+                CreatedDate = now,
+                ModifiedDate = now
             };
             
-            // Deduct diamonds
             await _unitOfWork.VoucherToPlayers.AddAsync(toPlayer, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             
-            // Update player diamonds on GameService
             var updateDiamondRequest = new UpdatePlayerDiamondRequest
             {
                 PlayerId = userId,
@@ -133,16 +147,36 @@ public class BuyVoucherHandler : IRequestHandler<BuyVoucherCommand, BaseResponse
                 _serviceInvocationService.InvokeServiceAsync<UpdatePlayerDiamondRequest, BaseResponse>
                 (HttpMethod.Post, appId, updateDiamondRequestMethod, updateDiamondRequest, cancellationToken);
 
+            if (updateDiamondResponse is null || updateDiamondResponse.Status != 200)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                response.ToInternalErrorResponse("Failed to update player diamonds");
+                return response;
+            }
+
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            var updatedIssuedQuantity = issuedQuantity + 1;
             response.ToSuccessResponse(new BuyVoucherDto
             {
                 VoucherToPlayerId = toPlayer.Id,
                 Diamonds = totalDiamonds,
                 Voucher = new VoucherDto
                 {
-                    Id = existedVoucher.Id,
-                    Title = existedVoucher.Title,
-                    ImageUrl = existedVoucher.ImageUrl,
-                    Value = existedVoucher.Value
+                    Id = @event.Voucher.Id,
+                    Title = @event.Voucher.Title,
+                    ImageUrl = @event.Voucher.ImageUrl,
+                    Value = @event.Voucher.Value,
+                    TotalQuantity = @event.Voucher.TotalQuantity,
+                    ExpiredDate = @event.Voucher.ExpiredDate,
+                    RedemptionInstructions = @event.Voucher.RedemptionInstructions,
+                    IssuedQuantity = updatedIssuedQuantity,
+                    UsedQuantity = await _unitOfWork.VoucherToPlayers
+                        .Where(x => !x.IsDeleted && x.VoucherId == @event.Voucher.Id && x.UsedDate != null)
+                        .CountAsync(cancellationToken),
+                    RemainingQuantity = @event.Voucher.TotalQuantity.HasValue
+                        ? Math.Max(@event.Voucher.TotalQuantity.Value - updatedIssuedQuantity, 0)
+                        : int.MaxValue
                 }
                
             });
@@ -151,7 +185,8 @@ public class BuyVoucherHandler : IRequestHandler<BuyVoucherCommand, BaseResponse
         }
         catch (Exception ex)
         {
-            _logger.LogError($"{methodName} Has error {ex.Message}");
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            _logger.LogError(ex, $"{methodName} Has error {ex.Message}");
             response.ToInternalErrorResponse();
             return response;
         }

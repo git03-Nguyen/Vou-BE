@@ -90,6 +90,9 @@ public class EventDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(vp => vp.PlayerId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(vp => new { vp.VoucherId, vp.PlayerId });
+            entity.HasIndex(vp => new { vp.VoucherId, vp.UsedDate });
         });
         
         modelBuilder.Entity<QuizSession>(entity =>

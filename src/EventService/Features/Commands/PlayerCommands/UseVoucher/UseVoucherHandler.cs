@@ -32,7 +32,7 @@ public class UseVoucherHandler : IRequestHandler<UseVoucherCommand, BaseResponse
                 .Where(v => 
                     v.Id == request.VoucherToPlayerId 
                     && v.PlayerId == userId 
-                    && !v.IsDeleted 
+                    && !v.IsDeleted
                     && v.UsedDate == null)
                 .FirstOrDefaultAsync(cancellationToken);
 
@@ -41,18 +41,28 @@ public class UseVoucherHandler : IRequestHandler<UseVoucherCommand, BaseResponse
                 response.ToBadRequestResponse("Voucher not found or already used");
                 return response;
             }
+
+            if (voucherToPlayer.ExpiredDate < DateTime.UtcNow)
+            {
+                response.ToBadRequestResponse("Voucher has expired");
+                return response;
+            }
             
             voucherToPlayer.UsedDate = DateTime.UtcNow;
             voucherToPlayer.UsedBy = userId;
+            voucherToPlayer.ModifiedDate = DateTime.UtcNow;
             _unitOfWork.VoucherToPlayers.Update(voucherToPlayer);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             
             var responseDto = new UseVoucherDto
             {
                 Id = voucherToPlayer.Id,
+                VoucherId = voucherToPlayer.VoucherId,
+                PlayerId = voucherToPlayer.PlayerId,
+                UsedBy = voucherToPlayer.UsedBy,
                 UsedDate = voucherToPlayer.UsedDate.Value
             };
-            response.ToSuccessResponse();
+            response.ToSuccessResponse(responseDto);
         }
         catch (Exception ex)
         {

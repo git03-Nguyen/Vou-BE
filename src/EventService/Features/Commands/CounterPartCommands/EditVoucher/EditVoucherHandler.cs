@@ -48,15 +48,44 @@ public class EditVoucherHandler : IRequestHandler<EditVoucherCommand, BaseRespon
             voucher.ImageUrl = request.ImageUrl?.Trim() ?? voucher.ImageUrl;
             voucher.Title = request.Title?.Trim() ?? voucher.Title;
             voucher.Value = request.Value ?? voucher.Value;
+            voucher.TotalQuantity = request.TotalQuantity ?? voucher.TotalQuantity;
+            voucher.ExpiredDate = request.ExpiredDate?.ToUniversalTime() ?? voucher.ExpiredDate;
+            voucher.RedemptionInstructions = request.RedemptionInstructions?.Trim() ?? voucher.RedemptionInstructions;
+            voucher.ModifiedDate = DateTime.UtcNow;
+
+            var issuedQuantity = await _unitOfWork.VoucherToPlayers
+                .Where(x => !x.IsDeleted && x.VoucherId == voucher.Id)
+                .CountAsync(cancellationToken);
+
+            if (voucher.TotalQuantity.HasValue && voucher.TotalQuantity.Value < issuedQuantity)
+            {
+                response.ToBadRequestResponse("TotalQuantity cannot be less than already issued vouchers");
+                return response;
+            }
 
             _unitOfWork.Vouchers.Update(voucher);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var usedQuantity = await _unitOfWork.VoucherToPlayers
+                .Where(x => !x.IsDeleted && x.VoucherId == voucher.Id && x.UsedDate != null)
+                .CountAsync(cancellationToken);
+
+            var remainingQuantity = voucher.TotalQuantity.HasValue
+                ? Math.Max(voucher.TotalQuantity.Value - issuedQuantity, 0)
+                : int.MaxValue;
+
             var responseData = new VoucherDto
             {
                 Id = voucher.Id,
                 ImageUrl = voucher.ImageUrl,
                 Title = voucher.Title,
                 Value = voucher.Value,
+                TotalQuantity = voucher.TotalQuantity,
+                ExpiredDate = voucher.ExpiredDate,
+                RedemptionInstructions = voucher.RedemptionInstructions,
+                IssuedQuantity = issuedQuantity,
+                UsedQuantity = usedQuantity,
+                RemainingQuantity = remainingQuantity,
             };
             response.ToSuccessResponse(responseData);
         }

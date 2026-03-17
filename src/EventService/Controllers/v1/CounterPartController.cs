@@ -5,6 +5,7 @@ using EventService.Features.Commands.CounterPartCommands.CreateQuizSet;
 using EventService.Features.Commands.CounterPartCommands.CreateVoucher;
 using EventService.Features.Commands.CounterPartCommands.DeleteQuizSet;
 using EventService.Features.Commands.CounterPartCommands.EditVoucher;
+using EventService.Features.Commands.CounterPartCommands.RedeemVoucher;
 using EventService.Features.Queries.CounterPartQueries.GetOwnEvent;
 using EventService.Features.Queries.CounterPartQueries.GetOwnEvents;
 using EventService.Features.Queries.CounterPartQueries.GetOwnEventStatistics;
@@ -79,8 +80,17 @@ public class CounterPartController : ControllerBase
     }
     
     [HttpPatch("EditVoucher/{voucherId}")]
-    public async Task<IActionResult> CreateVoucher([FromBody] EditVoucherCommand request, CancellationToken cancellationToken)
+    public async Task<IActionResult> EditVoucher([FromRoute] string voucherId, [FromBody] EditVoucherCommand request, CancellationToken cancellationToken)
     {
+        request.Id = voucherId;
+        var response = await _mediator.Send(request, cancellationToken);
+        return response.ToObjectResult();
+    }
+
+    [HttpPost("RedeemVoucher/{voucherToPlayerId}")]
+    public async Task<IActionResult> RedeemVoucher([FromRoute] string voucherToPlayerId, CancellationToken cancellationToken)
+    {
+        var request = new RedeemVoucherCommand { VoucherToPlayerId = voucherToPlayerId };
         var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
     }

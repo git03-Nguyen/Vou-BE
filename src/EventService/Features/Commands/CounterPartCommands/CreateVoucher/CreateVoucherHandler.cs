@@ -48,10 +48,13 @@ public class CreateVoucherHandler: IRequestHandler<CreateVoucherCommand, BaseRes
             
             var newVoucher = new Voucher
             {
-                Title = request.Title,
+                Title = request.Title.Trim(),
                 CounterPartId = userId,
-                ImageUrl = request.ImageUrl,
-                Value = request.Value
+                ImageUrl = request.ImageUrl?.Trim(),
+                Value = request.Value,
+                TotalQuantity = request.TotalQuantity,
+                ExpiredDate = request.ExpiredDate?.ToUniversalTime(),
+                RedemptionInstructions = request.RedemptionInstructions?.Trim()
             };
             
             await _unitOfWork.Vouchers.AddAsync(newVoucher, cancellationToken);
@@ -63,12 +66,18 @@ public class CreateVoucherHandler: IRequestHandler<CreateVoucherCommand, BaseRes
                 Title = newVoucher.Title,
                 ImageUrl = newVoucher.ImageUrl,
                 Value = newVoucher.Value,
+                TotalQuantity = newVoucher.TotalQuantity,
+                ExpiredDate = newVoucher.ExpiredDate,
+                RedemptionInstructions = newVoucher.RedemptionInstructions,
+                IssuedQuantity = 0,
+                UsedQuantity = 0,
+                RemainingQuantity = newVoucher.TotalQuantity ?? int.MaxValue,
             };
             response.ToSuccessResponse(responseData);
         }
         catch (Exception e)
         {
-            _logger.LogError($"{methodName} {e.Message}");
+            _logger.LogError(e, $"{methodName} {e.Message}");
             response.ToInternalErrorResponse();
         }
 

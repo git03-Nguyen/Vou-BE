@@ -1,10 +1,7 @@
 using EventService.DTOs;
 using EventService.Repositories;
 using MediatR;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Shared.Common;
-using Shared.Enums;
 using Shared.Response;
 
 namespace EventService.Features.Queries.StatisticsQueries.EventStatistics;
@@ -27,32 +24,29 @@ public class EventStatisticsHandler : IRequestHandler<EventStatisticsQuery, Base
 
         try
         {
-            var events =await (
-                from @event in _unitOfWork.Events.GetAll()
-                where !@event.IsDeleted 
-                    select @event
-            )
-                .ToListAsync(cancellationToken);
-            
-            
-            var players=await (
-                from player in _unitOfWork.Players.GetAll()
-                    select player
-            )
-                .ToListAsync(cancellationToken);
-            
-            var vouchers=await (
-                from voucher in _unitOfWork.Vouchers.GetAll()
-                    select voucher
-            )
-                .AsNoTracking()
-                .ToListAsync(cancellationToken);
+            var totalEvents = await _unitOfWork.Events.GetAll().CountAsync(x => !x.IsDeleted, cancellationToken);
+            var totalPlayers = await _unitOfWork.Players.GetAll().CountAsync(cancellationToken);
+            var totalVouchers = await _unitOfWork.Vouchers.GetAll().CountAsync(x => !x.IsDeleted, cancellationToken);
+            var totalIssuedVouchers = await _unitOfWork.VoucherToPlayers.GetAll().CountAsync(x => !x.IsDeleted, cancellationToken);
+            var totalRedeemedVouchers = await _unitOfWork.VoucherToPlayers.GetAll().CountAsync(x => !x.IsDeleted && x.UsedDate != null, cancellationToken);
+            var totalAvailableVoucherStock = await _unitOfWork.Vouchers.GetAll()
+                .Where(x => !x.IsDeleted && x.TotalQuantity.HasValue)
+                .Select(x => new
+                {
+                    x.TotalQuantity,
+                    Issued = _unitOfWork.VoucherToPlayers.GetAll().Count(vp => !vp.IsDeleted && vp.VoucherId == x.Id)
+                })
+                .Select(x => Math.Max(x.TotalQuantity!.Value - x.Issued, 0))
+                .SumAsync(cancellationToken);
             
             var eventStatistics = new EventStatisticsResponseDto
             {
-                TotalPlayers = players.Count,
-                TotalActiveEvents = events.Count,
-                TotalVouchers = vouchers.Count
+                TotalPlayers = totalPlayers,
+                TotalActiveEvents = totalEvents,
+                TotalVouchers = totalVouchers,
+                TotalIssuedVouchers = totalIssuedVouchers,
+                TotalRedeemedVouchers = totalRedeemedVouchers,
+                TotalAvailableVoucherStock = totalAvailableVoucherStock
             };
 
             response.ToSuccessResponse(eventStatistics);

@@ -32,12 +32,22 @@ public class GetOwnVouchersHandler : IRequestHandler<GetOwnVouchersQuery, BaseRe
                 (
                     from voucher in _unitOfWork.Vouchers.GetAll()
                     where !voucher.IsDeleted && voucher.CounterPartId == userId
+                    let issuedQuantity = _unitOfWork.VoucherToPlayers.GetAll().Count(vp => !vp.IsDeleted && vp.VoucherId == voucher.Id)
+                    let usedQuantity = _unitOfWork.VoucherToPlayers.GetAll().Count(vp => !vp.IsDeleted && vp.VoucherId == voucher.Id && vp.UsedDate != null)
                     select new VoucherDto
                     {
                         Id = voucher.Id,
                         Title = voucher.Title,
                         ImageUrl = voucher.ImageUrl,
-                        Value = voucher.Value
+                        Value = voucher.Value,
+                        TotalQuantity = voucher.TotalQuantity,
+                        ExpiredDate = voucher.ExpiredDate,
+                        RedemptionInstructions = voucher.RedemptionInstructions,
+                        IssuedQuantity = issuedQuantity,
+                        UsedQuantity = usedQuantity,
+                        RemainingQuantity = voucher.TotalQuantity.HasValue
+                            ? Math.Max(voucher.TotalQuantity.Value - issuedQuantity, 0)
+                            : int.MaxValue
                     }
                 )
                 .AsNoTracking()
