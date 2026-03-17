@@ -17,5 +17,6 @@ public class OwnVoucherItemDto
     public DateTime? AcquiredDate { get; set; }
     public DateTime ExpiredDate { get; set; }
     public DateTime? UsedDate { get; set; }
+    public string? UsedBy { get; set; }
     public string Status { get; set; }
 }

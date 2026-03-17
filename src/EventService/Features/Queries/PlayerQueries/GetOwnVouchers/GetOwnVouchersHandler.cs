@@ -51,7 +51,9 @@ public class GetOwnVouchersHandler : IRequestHandler<GetOwnVouchersQuery, BaseRe
                     voucherToPlayer.Id,
                     voucherToPlayer.CreatedDate,
                     voucherToPlayer.ExpiredDate,
-                    voucherToPlayer.UsedDate
+                    voucherToPlayer.UsedDate,
+                    voucherToPlayer.UsedBy,
+                    voucherToPlayer.PlayerId
                 }
             )
             .AsNoTracking()
@@ -99,8 +101,11 @@ public class GetOwnVouchersHandler : IRequestHandler<GetOwnVouchersQuery, BaseRe
                             AcquiredDate = x.CreatedDate,
                             ExpiredDate = x.ExpiredDate,
                             UsedDate = x.UsedDate,
+                            UsedBy = x.UsedBy,
                             Status = x.UsedDate is not null
-                                ? "used"
+                                ? x.UsedBy == x.PlayerId
+                                    ? "used"
+                                    : "redeemed"
                                 : x.ExpiredDate < now
                                     ? "expired"
                                     : "available"
