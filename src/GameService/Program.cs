@@ -1,3 +1,4 @@
+using GameService.Data.Contexts;
 using GameService.StartupRegistrations;
 using Shared.StartupRegistrations;
 
@@ -36,6 +37,7 @@ public class Program
 
         // Configure the HTTP request pipeline.
         var app = builder.Build();
+        app.Services.ApplyPendingMigrations<GameDbContext>();
         app.UseSwaggerService(app.Environment)
             .UseHttpsRedirection()
             .UseRouting()

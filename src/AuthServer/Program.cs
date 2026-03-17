@@ -1,3 +1,4 @@
+using AuthServer.Data.Contexts;
 using AuthServer.StartupRegistrations;
 using Shared.StartupRegistrations;
 
@@ -37,6 +38,7 @@ public class Program
 
         // Configure the HTTP request pipeline.
         var app = builder.Build();
+        app.Services.ApplyPendingMigrations<AuthDbContext>();
         app.UseSwaggerService(app.Environment)
             .UseHttpsRedirection()
             .UseRouting()
