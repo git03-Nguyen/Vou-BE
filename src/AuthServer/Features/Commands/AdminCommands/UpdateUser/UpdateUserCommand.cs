@@ -16,7 +16,7 @@ public class UpdateUserCommand : IRequest<BaseResponse<UserFullProfileDto>>
     public string? FullName { get; set; }
     
     //for player
-    public DateTime? BirthDate { get; }
+    public DateTime? BirthDate { get; set; }
     
     public Gender? Gender { get; set; }
     

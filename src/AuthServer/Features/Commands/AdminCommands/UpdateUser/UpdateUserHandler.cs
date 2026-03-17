@@ -1,4 +1,3 @@
-using System.Text.Json;
 using AuthServer.Common;
 using AuthServer.Data.Models;
 using AuthServer.DTOs;
@@ -38,8 +37,14 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, BaseResponse
         try
         {
             var adminId = _httpContextAccessor.GetCurrentUserId();
-            methodName = $"{nameof(UpdateUserHandler)}.{nameof(Handle)} Admin = {adminId}, Request = {JsonSerializer.Serialize(request)} =>";
-            _logger.LogInformation(methodName);
+            methodName = $"{nameof(UpdateUserHandler)}.{nameof(Handle)} AdminId = {adminId}, TargetUserId = {request.Id} =>";
+            _logger.LogInformation(
+                "{Handler} updating user profile. AdminId={AdminId}, TargetUserId={TargetUserId}, HasPlayerFields={HasPlayerFields}, HasCounterPartFields={HasCounterPartFields}",
+                nameof(UpdateUserHandler),
+                adminId,
+                request.Id,
+                request.BirthDate.HasValue || request.Gender.HasValue || !string.IsNullOrWhiteSpace(request.FacebookUrl),
+                !string.IsNullOrWhiteSpace(request.Field) || !string.IsNullOrWhiteSpace(request.Addresses));
             
             // 1. Check user exists
             var user = await _userManager.FindByIdAsync(request.Id);
@@ -48,13 +53,13 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, BaseResponse
                 response.ToNotFoundResponse();
                 return response;
             }
-            _logger.LogInformation($"Request..........{JsonSerializer.Serialize(request)}");
+
             //2. Update user
             Player? player = null;
-            CounterPart? counterpart=null;
-             var userRole=_userManager.GetRolesAsync(user).Result;
-             if (userRole.Contains(Constants.PLAYER))
-             {
+            CounterPart? counterpart = null;
+            var userRole = await _userManager.GetRolesAsync(user);
+            if (userRole.Contains(Constants.PLAYER))
+            {
                 player = await _unitOfWork.Players
                     .Where(p => p.Id == user.Id&& !p.IsDeleted) 
                 .FirstOrDefaultAsync(cancellationToken);
@@ -73,7 +78,6 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, BaseResponse
                     if (request.Gender.HasValue)
                     {
                         player.Gender = request.Gender.Value;
-                        _logger.LogInformation(player.Gender.ToString());
                     }
 
                     if (request.FacebookUrl != null)
@@ -128,6 +132,12 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, BaseResponse
                _unitOfWork.CounterParts.Update(counterpart);
              }
              await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation(
+                "{Handler} updated user profile successfully. TargetUserId={TargetUserId}, Role={Role}",
+                nameof(UpdateUserHandler),
+                user.Id,
+                user.Role);
 
             var responseData=new UserFullProfileDto
             {

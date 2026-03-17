@@ -33,7 +33,7 @@ public class UpdateUserValidator : AbstractValidator<UpdateUserCommand>
             
             RuleFor(x => x.BirthDate)
                 .Cascade(CascadeMode.Stop)
-                .Must(x => x <= DateTime.Now)
+                .Must(x => x is null || x <= DateTime.Now)
                 .WithMessage("BirthDate is invalid");
 
             RuleFor(x => x.Gender)
