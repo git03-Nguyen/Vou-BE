@@ -26,9 +26,9 @@ public class EditVoucherValidator : AbstractValidator<EditVoucherCommand>
             .NotEmpty()
             .When(x => x.Title is not null)
             .WithMessage("Title cannot be empty")
-            .MaximumLength(100)
+            .MaximumLength(Constants.VoucherTitleMaxLength)
             .When(x => x.Title is not null)
-            .WithMessage("Title cannot exceed 100 characters");
+            .WithMessage($"Title cannot exceed {Constants.VoucherTitleMaxLength} characters");
 
         RuleFor(x => x.Value)
             .GreaterThanOrEqualTo(0)

@@ -17,6 +17,8 @@ public static class Constants
     public const string GOOGLE_AUTH = "https://accounts.google.com";
     public const string DefaultAvatar = "https://storageaccwct.blob.core.windows.net/wct-blobstorage/UserDefaultAvatar.png";
     public const string DefaultGameImageUrl = "https://storageaccwct.blob.core.windows.net/wct-blobstorage/UserDefaultAvatar.png";
+
+    public const int VoucherTitleMaxLength = 50;
     
     public const string PubSubName = "pubsub";
     

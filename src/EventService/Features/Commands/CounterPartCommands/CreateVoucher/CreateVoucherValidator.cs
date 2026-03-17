@@ -11,8 +11,8 @@ public class CreateVoucherValidator : AbstractValidator<CreateVoucherCommand>
             .Cascade(CascadeMode.Stop)
             .NotNull()
             .NotEmpty()
-            .MaximumLength(50)
-            .WithMessage("Title is required and must not exceed 50 characters");
+            .MaximumLength(Constants.VoucherTitleMaxLength)
+            .WithMessage($"Title is required and must not exceed {Constants.VoucherTitleMaxLength} characters");
         
         RuleFor(x => x.ImageUrl)
             .Cascade(CascadeMode.Stop)
