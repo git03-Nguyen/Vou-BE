@@ -7,5 +7,5 @@ public class NotificationDto
     public string Title { get; set; }
     public string Content { get; set; }
     public bool IsRead { get; set; } = false;
-    public DateTime CreatedDate { get; set; } = DateTime.Now;
+    public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 }
