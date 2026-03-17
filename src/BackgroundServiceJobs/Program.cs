@@ -8,11 +8,11 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        builder.WebHost.ConfigureKestrel(serverOptions => 
-        { {
+        builder.WebHost.ConfigureKestrel(serverOptions =>
+        {
             serverOptions.Limits.RequestHeadersTimeout = TimeSpan.FromMinutes(5);
             serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(5);
-        } });
+        });
         builder.Host.UseLogging();
         builder.Configuration
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)

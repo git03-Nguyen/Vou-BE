@@ -10,7 +10,7 @@ ASPNETCORE_ENVIRONMENT=localhost
 
 Logging__ConsoleEnabled=true
 Logging__Elk__Enabled=false
-Logging__Elk__ElasticSearchUrl=http://localhost:9200
+Logging__Elk__Uri=http://localhost:9200
 Logging__MinimumLevel__Default="Information"
 Logging__MinimumLevel__Override__Microsoft="Warning"
 Logging__MinimumLevel__Override__System="Warning"

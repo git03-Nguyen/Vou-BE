@@ -48,7 +48,7 @@ services:
         protocol: http
 
   - name: backgroundservicejobs
-    project: ./src/backgroundservicejobs/BackgroundServiceJobs.csproj
+    project: ./src/BackgroundServiceJobs/BackgroundServiceJobs.csproj
     env_file:
       - ./tye-env
     bindings:

@@ -71,7 +71,7 @@ services:
     image: ${DOCKER_REGISTRY-}backgroundservicejobs
     build:
       context: .
-      dockerfile: src/backgroundservicejobs/Dockerfile
+      dockerfile: src/BackgroundServiceJobs/Dockerfile
 
   #############################
   ######### SIDECARS ##########
