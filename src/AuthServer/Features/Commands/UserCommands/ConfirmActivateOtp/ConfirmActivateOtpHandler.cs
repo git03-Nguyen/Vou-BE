@@ -1,7 +1,7 @@
-using System.Text.Json;
 using AuthServer.Data.Models;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Shared.Extensions;
 using Shared.Response;
 
 namespace AuthServer.Features.Commands.UserCommands.ConfirmActivateOtp;
@@ -19,12 +19,12 @@ public class ConfirmActivateOtpHandler : IRequestHandler<ConfirmActivateOtpComma
     public async Task<BaseResponse<object>> Handle(ConfirmActivateOtpCommand request, CancellationToken cancellationToken)
     {
         var response = new BaseResponse<object>();
-        var methodName = $"{nameof(ConfirmActivateOtpHandler)}.{nameof(Handle)}, Request = {JsonSerializer.Serialize(request)} =>";
+        var methodName = $"{nameof(ConfirmActivateOtpHandler)}.{nameof(Handle)} UserNameOrEmail = {request.UserNameOrEmail} =>";
         _logger.LogInformation(methodName);
 
         try
         {
-            var isEmail= request.UserNameOrEmail.Contains("@");
+            var isEmail = request.UserNameOrEmail.Contains("@");
             var user = isEmail
                 ? await _userManager.FindByEmailAsync(request.UserNameOrEmail)
                 : await _userManager.FindByNameAsync(request.UserNameOrEmail);
@@ -33,11 +33,20 @@ public class ConfirmActivateOtpHandler : IRequestHandler<ConfirmActivateOtpComma
                 response.ToBadRequestResponse("User not found");
                 return response;
             }
+
+            var usedLocalBypassOtp = request.Otp == "000000" && EnvironmentExtensions.IsLocalEnvironment();
+            if (usedLocalBypassOtp)
+            {
+                _logger.LogWarning("{MethodName} Local OTP bypass was used for {UserNameOrEmail}", methodName, request.UserNameOrEmail);
+            }
+
             //Check OTP
-            if (request.Otp == "000000")
+            if (usedLocalBypassOtp)
             {
                 //Activate user
                 user.EmailConfirmed = true;
+                user.OtpActivateCode = null;
+                user.OtpActivateExpiredTime = null;
                     
                 //Update user
                 await _userManager.UpdateAsync(user);
@@ -54,6 +63,8 @@ public class ConfirmActivateOtpHandler : IRequestHandler<ConfirmActivateOtpComma
                 {
                     //Activate user
                     user.EmailConfirmed = true;
+                    user.OtpActivateCode = null;
+                    user.OtpActivateExpiredTime = null;
                     
                     //Update user
                     await _userManager.UpdateAsync(user);

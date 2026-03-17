@@ -16,6 +16,9 @@ public static class AuthRegistrations
 {
     public static IServiceCollection ConfigureIdentityServer(this IServiceCollection services, IConfiguration configuration)
     {
+        var authServerOptions = configuration.GetSection(AuthenticationOptions.OptionName).Get<AuthenticationOptions>()
+            ?? new AuthenticationOptions();
+
         services.AddIdentity<User, IdentityRole>(options =>
         {
             options.Password.RequireDigit = false;
@@ -29,7 +32,7 @@ public static class AuthRegistrations
         .AddDefaultTokenProviders();
         
         services.AddIdentityServer()
-            .AddInMemoryClients(AuthConfig.Clients)
+            .AddInMemoryClients(AuthConfig.GetClients(authServerOptions))
             .AddInMemoryIdentityResources(AuthConfig.IdentityResources)
             .AddInMemoryApiScopes(AuthConfig.ApiScopes)
             .AddInMemoryApiResources(AuthConfig.ApiResources)
@@ -42,10 +45,11 @@ public static class AuthRegistrations
 
     public static IServiceCollection ConfigureAuthenticate(this IServiceCollection services, IConfiguration configuration)
     {
-        var authServerOptions = configuration.GetSection(AuthenticationOptions.OptionName).Get<AuthenticationOptions>();
-        var authorityUrl = authServerOptions?.Authority;
-        var authSecret = authServerOptions?.Secret;
-        var key = Encoding.ASCII.GetBytes(authSecret!);
+        var authServerOptions = configuration.GetSection(AuthenticationOptions.OptionName).Get<AuthenticationOptions>()
+            ?? new AuthenticationOptions();
+        var authorityUrl = authServerOptions.Authority;
+        var authSecret = authServerOptions.Secret;
+        var key = Encoding.ASCII.GetBytes(authSecret);
         services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

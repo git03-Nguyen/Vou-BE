@@ -34,7 +34,7 @@ public class UserLoginHandler : IRequestHandler<UserLoginCommand, BaseResponse<U
     public async Task<BaseResponse<UserLoginResponseDto>> Handle(UserLoginCommand request, CancellationToken cancellationToken)
     {
         var response = new BaseResponse<UserLoginResponseDto>();
-        var methodName = $"{nameof(UserLoginHandler)}.{nameof(Handle)} Request = {JsonSerializer.Serialize(request)} =>";
+        var methodName = $"{nameof(UserLoginHandler)}.{nameof(Handle)} EmailOrUserName = {request.EmailOrUserName}, Role = {request.Role} =>";
         _logger.LogInformation(methodName);
 
         try
@@ -44,9 +44,9 @@ public class UserLoginHandler : IRequestHandler<UserLoginCommand, BaseResponse<U
             var user = isEmailOrUserName
                 ? await _userManager.FindByEmailAsync(request.EmailOrUserName)
                 : await _userManager.FindByNameAsync(request.EmailOrUserName);
-            if (user is null || user.IsDeleted && user.IsBlocked)
+            if (user is null || user.IsDeleted || user.IsBlocked)
             {
-                response.ToUnauthorizedResponse("Incorrect email, username or user is blocked");
+                response.ToUnauthorizedResponse("Incorrect email, username or user is inactive");
                 return response;
             }
                 
@@ -88,10 +88,10 @@ public class UserLoginHandler : IRequestHandler<UserLoginCommand, BaseResponse<U
             
             // 6. Generate token
             // NOTE: this implements the Resource Owner Password Grant flow of OAuth 2.0
-            var client = AuthConfig.Clients.First(c => c.AllowedGrantTypes.Contains(GrantType.ResourceOwnerPassword));
+            var client = AuthConfig.GetClients(_authenticationOptions).First(c => c.ClientId == _authenticationOptions.ClientId);
             var grantType = GrantType.ResourceOwnerPassword;
             var clientId = client.ClientId;
-            var clientSecret = "my_very_very_very_very_long_long_secret";
+            var clientSecret = _authenticationOptions.ClientSecret;
             var scope = string.Join(" ", client.AllowedScopes.Concat([IdentityServerConstants.StandardScopes.OfflineAccess]));
             var identityServerUrl = _authenticationOptions.Authority;
             var identityServerTokenEndpoint = _authenticationOptions.Authority + "/connect/token";

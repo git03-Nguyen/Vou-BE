@@ -39,7 +39,7 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, BaseResponse
         try
         {
             var adminId = _httpContextAccessor.GetCurrentUserId();
-            methodName = $"{nameof(CreateUserHandler)}.{nameof(Handle)} Admin: {adminId}, Request = {JsonSerializer.Serialize(request)} =>";
+            methodName = $"{nameof(CreateUserHandler)}.{nameof(Handle)} Admin = {adminId}, UserName = {request.UserName}, Email = {request.Email}, PhoneNumber = {request.PhoneNumber}, Role = {request.Role} =>";
             _logger.LogInformation(methodName);
             
             // 1. Check if exists

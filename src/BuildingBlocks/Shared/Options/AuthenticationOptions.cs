@@ -7,4 +7,6 @@ public class AuthenticationOptions
     public int TokenLifeTime { get; init; } = 30000;
     public string Secret { get; init; } = "my_auth_server_secret";
     public string ProviderKey { get; init; } = "IdentityApiKey";
+    public string ClientId { get; init; } = "pwd.client";
+    public string ClientSecret { get; init; } = "my_very_very_very_very_long_long_secret";
 }

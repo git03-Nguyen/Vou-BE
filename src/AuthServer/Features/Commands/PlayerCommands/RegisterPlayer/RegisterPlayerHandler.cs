@@ -34,7 +34,7 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
     {
         var response = new BaseResponse<UserFullProfileDto>();
         User? backupUser = null;
-        var methodName = $"{nameof(RegisterPlayerHandler)}.{nameof(Handle)} Request = {JsonSerializer.Serialize(request)} =>";
+        var methodName = $"{nameof(RegisterPlayerHandler)}.{nameof(Handle)} UserName = {request.UserName}, Email = {request.Email}, PhoneNumber = {request.PhoneNumber} =>";
         _logger.LogInformation(methodName);
 
         try

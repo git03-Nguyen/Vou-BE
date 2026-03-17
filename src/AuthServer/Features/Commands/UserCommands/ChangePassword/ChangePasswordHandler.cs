@@ -1,4 +1,3 @@
-using System.Text.Json;
 using AuthServer.Data.Models;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -23,7 +22,7 @@ public class ChangePasswordHandler : IRequestHandler<ChangePasswordCommand, Base
     {
         var response = new BaseResponse<object>();
         var userId = _contextAccessor.GetCurrentUserId();
-        var methodName = $"{nameof(ChangePasswordHandler)}.{nameof(Handle)} UserId = {userId}, Request = {JsonSerializer.Serialize(request)} =>";
+        var methodName = $"{nameof(ChangePasswordHandler)}.{nameof(Handle)} UserId = {userId} =>";
         _logger.LogInformation(methodName);
 
         try

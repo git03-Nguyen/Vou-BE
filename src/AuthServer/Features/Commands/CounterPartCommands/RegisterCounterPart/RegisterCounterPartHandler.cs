@@ -33,7 +33,7 @@ public class RegisterCounterPartHandler : IRequestHandler<RegisterCounterPartCom
     {
         var response = new BaseResponse<UserFullProfileDto>();
         User? backupUser = null;
-        var methodName = $"{nameof(RegisterCounterPartHandler)}.{nameof(Handle)} Request = {JsonSerializer.Serialize(request)} =>";
+        var methodName = $"{nameof(RegisterCounterPartHandler)}.{nameof(Handle)} UserName = {request.UserName}, Email = {request.Email}, PhoneNumber = {request.PhoneNumber}, Field = {request.Field} =>";
         _logger.LogInformation(methodName);
 
         try
