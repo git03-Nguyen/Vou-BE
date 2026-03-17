@@ -124,6 +124,9 @@ public class UpdateOwnUserProfileHandler : IRequestHandler<UpdateOwnUserProfileC
 
         userData.FullName = request.FullName ?? userData.FullName;
         userData.AvatarUrl = request.AvatarUrl ?? userData.AvatarUrl;
+        userData.ProfileLinked = request.ProfileLinked ?? userData.ProfileLinked;
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         // Save changes
         var result = await _userManager.UpdateAsync(userData);
@@ -136,18 +139,28 @@ public class UpdateOwnUserProfileHandler : IRequestHandler<UpdateOwnUserProfileC
         // Update currentUser manually
         currentUser.FullName = userData.FullName;
         currentUser.AvatarUrl = userData.AvatarUrl;
-        currentUser.Addresses = request.Addresses??currentUser.Addresses;
-        currentUser.BirthDate = request.BirthDate??currentUser.BirthDate;
-        currentUser.FacebookUrl = request.FacebookUrl??currentUser.FacebookUrl;
-        currentUser.Field = request.Field??currentUser.Field;
+        currentUser.ProfileLinked = userData.ProfileLinked;
+        currentUser.Addresses = request.Addresses ?? currentUser.Addresses;
+        currentUser.BirthDate = request.BirthDate ?? currentUser.BirthDate;
+        currentUser.FacebookUrl = request.FacebookUrl ?? currentUser.FacebookUrl;
+        currentUser.Field = request.Field ?? currentUser.Field;
         currentUser.Gender = request.Gender ?? currentUser.Gender;
         
         // 3. Prepare response data
         var responseData = new UserFullProfileDto
         {
-            Id = userId,
+            Id = currentUser.Id,
+            Email = currentUser.Email,
+            UserName = currentUser.UserName,
             FullName = currentUser.FullName,
+            PhoneNumber = currentUser.PhoneNumber,
             AvatarUrl = currentUser.AvatarUrl,
+            Role = currentUser.Role,
+            CreatedDate = currentUser.CreatedDate,
+            ModifiedDate = userData.ModifiedDate,
+            ProfileLinked = currentUser.ProfileLinked,
+            IsBlocked = currentUser.IsBlocked,
+            BlockedDate = currentUser.BlockedDate,
             BirthDate = userRole == Constants.PLAYER ? currentUser.BirthDate : null,
             Gender = userRole == Constants.PLAYER ? currentUser.Gender : null,
             FacebookUrl = userRole == Constants.PLAYER ? currentUser.FacebookUrl : null,

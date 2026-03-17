@@ -19,10 +19,10 @@ public class UpdateOwnUserProfileValidator : AbstractValidator<UpdateOwnUserProf
             .Matches(Regexes.VALID_URL)
             .WithMessage("AvatarUrl is invalid");
         
-        /*RuleFor(x => x.BirthDate)
+        RuleFor(x => x.BirthDate)
             .Cascade(CascadeMode.Stop)
-            .Must(x => x <= DateTime.Now)
-            .WithMessage("BirthDate is invalid");*/
+            .Must(x => !x.HasValue || x.Value <= DateTime.UtcNow)
+            .WithMessage("BirthDate is invalid");
 
         RuleFor(x => x.Gender)
             .Cascade(CascadeMode.Stop)
