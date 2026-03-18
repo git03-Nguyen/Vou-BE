@@ -52,14 +52,8 @@ public class SubscriptionConsumer : ControllerBase
                         UserName = message.UserName
                     };
 
-                    playersToInsert ??= new List<Player>();
+                    playersToInsert ??= [];
                     playersToInsert.Add(player);
-                }
-
-                if (playersToInsert is not null)
-                {
-                    await _unitOfWork.Players.AddRangeAsync(playersToInsert, cancellationToken);
-                    await _unitOfWork.SaveChangesAsync(cancellationToken);
                 }
             }
             catch (Exception e)
@@ -67,6 +61,20 @@ public class SubscriptionConsumer : ControllerBase
                 _logger.LogError($"{methodName} Has error: {e.Message}");
                 return BadRequest();
             }
+        }
+
+        try
+        {
+            if (playersToInsert is not null)
+            {
+                await _unitOfWork.Players.AddRangeAsync(playersToInsert, cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError($"{nameof(SubscriptionConsumer)}.{nameof(HandleUserUpdatedAsync)} Failed to persist user updates: {e.Message}");
+            return BadRequest();
         }
         
         return Ok();
