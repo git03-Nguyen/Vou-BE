@@ -44,7 +44,9 @@ public class SendTicketHandler : IRequestHandler<SendTicketCommand, BaseResponse
             }
             
             var friendShakeSession = await _unitOfWork.PlayerShakeSessions
-                .Where(x => x.PlayerId == friendId && !x.IsDeleted)
+                .Where(x => x.PlayerId == friendId
+                            && x.EventId == request.EventId
+                            && !x.IsDeleted)
                 .FirstOrDefaultAsync(cancellationToken);
 
             // If friend is new to the event, create a new shake session for him
