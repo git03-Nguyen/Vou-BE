@@ -2,7 +2,7 @@ using System.Net;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
 using Shared.Extensions;
-using Shared.Validation;
+using Shared.StartupRegistrations;
 
 namespace GameService.StartupRegistrations;
 
@@ -15,21 +15,8 @@ public static class ControllersRegistrations
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            })
-            .ConfigureApiBehaviorOptions(options =>
-            {
-                options.InvalidModelStateResponseFactory = context =>
-                {
-                    var errors = context.ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage);
-                    var response = new ValidationBaseResponse
-                    {
-                        Status = HttpStatusCode.BadRequest.ToInt(),
-                        Message = "One or more validation errors occurred",
-                        Data = errors.Select(x => new ValidationError { Message = x }).ToList()
-                    };
-                    return response.ToObjectResult();
-                };
             });
+        services.ConfigureDefaultValidationResponse();
         return services;
     }
     
