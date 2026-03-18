@@ -37,6 +37,8 @@ public class CreateEventHandler: IRequestHandler<CreateEventCommand, BaseRespons
 
         try
         {
+            await using var transaction = await _unitOfWork.OpenTransactionAsync(cancellationToken);
+
             var isEventExisted = await _unitOfWork.Events
                 .Where(x => 
                     !x.IsDeleted
@@ -48,6 +50,7 @@ public class CreateEventHandler: IRequestHandler<CreateEventCommand, BaseRespons
             if (isEventExisted)
             {
                 _logger.LogWarning($"{methodName} Event is existed");
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                 response.ToBadRequestResponse("Event is existed or start date is duplicated");
                 return response;
             }
@@ -68,7 +71,6 @@ public class CreateEventHandler: IRequestHandler<CreateEventCommand, BaseRespons
             };
 
             await _unitOfWork.Events.AddAsync(newEvent, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
             
             var quizSessions = request.QuizSessions?
                 .Select(x => new QuizSession
@@ -82,9 +84,9 @@ public class CreateEventHandler: IRequestHandler<CreateEventCommand, BaseRespons
             if (quizSessions is not null)
             {
                 await _unitOfWork.QuizSessions.AddRangeAsync(quizSessions, cancellationToken);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
-            
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
             
             FullEventDto? responseData;
