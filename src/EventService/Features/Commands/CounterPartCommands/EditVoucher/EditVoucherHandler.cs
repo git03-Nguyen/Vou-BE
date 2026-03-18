@@ -31,6 +31,16 @@ public class EditVoucherHandler : IRequestHandler<EditVoucherCommand, BaseRespon
         {
             var normalizedTitle = request.Title?.Trim();
             var normalizedTitleKey = normalizedTitle?.ToLower();
+            var normalizedImageUrl = request.ImageUrl is null
+                ? null
+                : string.IsNullOrWhiteSpace(request.ImageUrl)
+                    ? null
+                    : request.ImageUrl.Trim();
+            var normalizedRedemptionInstructions = request.RedemptionInstructions is null
+                ? null
+                : string.IsNullOrWhiteSpace(request.RedemptionInstructions)
+                    ? null
+                    : request.RedemptionInstructions.Trim();
 
             var voucher = await _unitOfWork.Vouchers
                 .Where(v => !v.IsDeleted && v.Id == request.Id)
@@ -65,12 +75,21 @@ public class EditVoucherHandler : IRequestHandler<EditVoucherCommand, BaseRespon
                 }
             }
 
-            voucher.ImageUrl = request.ImageUrl?.Trim() ?? voucher.ImageUrl;
+            if (request.ImageUrl is not null)
+            {
+                voucher.ImageUrl = normalizedImageUrl;
+            }
+
             voucher.Title = normalizedTitle ?? voucher.Title;
             voucher.Value = request.Value ?? voucher.Value;
             voucher.TotalQuantity = request.TotalQuantity ?? voucher.TotalQuantity;
             voucher.ExpiredDate = request.ExpiredDate?.ToUniversalTime() ?? voucher.ExpiredDate;
-            voucher.RedemptionInstructions = request.RedemptionInstructions?.Trim() ?? voucher.RedemptionInstructions;
+
+            if (request.RedemptionInstructions is not null)
+            {
+                voucher.RedemptionInstructions = normalizedRedemptionInstructions;
+            }
+
             voucher.ModifiedDate = DateTime.UtcNow;
 
             var issuedQuantity = await _unitOfWork.VoucherToPlayers

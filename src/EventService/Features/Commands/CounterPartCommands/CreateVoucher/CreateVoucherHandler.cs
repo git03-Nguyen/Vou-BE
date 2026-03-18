@@ -33,6 +33,12 @@ public class CreateVoucherHandler: IRequestHandler<CreateVoucherCommand, BaseRes
         {
             var normalizedTitle = request.Title.Trim();
             var normalizedTitleKey = normalizedTitle.ToLower();
+            var normalizedImageUrl = string.IsNullOrWhiteSpace(request.ImageUrl)
+                ? null
+                : request.ImageUrl.Trim();
+            var normalizedRedemptionInstructions = string.IsNullOrWhiteSpace(request.RedemptionInstructions)
+                ? null
+                : request.RedemptionInstructions.Trim();
 
             var isVoucherExisted = await _unitOfWork.Vouchers
                 .Where(x => 
@@ -53,11 +59,11 @@ public class CreateVoucherHandler: IRequestHandler<CreateVoucherCommand, BaseRes
             {
                 Title = normalizedTitle,
                 CounterPartId = userId,
-                ImageUrl = request.ImageUrl?.Trim(),
+                ImageUrl = normalizedImageUrl,
                 Value = request.Value,
                 TotalQuantity = request.TotalQuantity,
                 ExpiredDate = request.ExpiredDate?.ToUniversalTime(),
-                RedemptionInstructions = request.RedemptionInstructions?.Trim()
+                RedemptionInstructions = normalizedRedemptionInstructions
             };
             
             await _unitOfWork.Vouchers.AddAsync(newVoucher, cancellationToken);
