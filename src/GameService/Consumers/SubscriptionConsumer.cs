@@ -106,15 +106,26 @@ public class SubscriptionConsumer : ControllerBase
                 
                 eventsToInsert ??= [];
                 eventsToInsert.Add(@event);
-
-                await _unitOfWork.Events.AddRangeAsync(eventsToInsert, cancellationToken);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
             catch (Exception e)
             {
                 _logger.LogError($"{methodName} Has error: {e.Message}");
                 return BadRequest();
             }
+        }
+
+        try
+        {
+            if (eventsToInsert is not null)
+            {
+                await _unitOfWork.Events.AddRangeAsync(eventsToInsert, cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError($"{nameof(SubscriptionConsumer)}.{nameof(HandleEventUpdatedAsync)} Failed to persist event updates: {e.Message}");
+            return BadRequest();
         }
         
         return Ok();

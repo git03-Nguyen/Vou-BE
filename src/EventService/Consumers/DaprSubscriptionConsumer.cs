@@ -76,24 +76,35 @@ public class DaprSubscriptionConsumer : ControllerBase
                     playersToInsert ??= new List<Player>();
                     playersToInsert.Add(player);
                 }
-
-                if (playersToInsert is not null)
-                {
-                    await _unitOfWork.Players.AddRangeAsync(playersToInsert, cancellationToken);
-                }
-
-                if (counterPartsToInsert is not null)
-                {
-                    await _unitOfWork.CounterParts.AddRangeAsync(counterPartsToInsert, cancellationToken);
-                }
-
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
             catch (Exception e)
             {
                 _logger.LogError($"{methodName} Has error: {e.Message}");
                 return BadRequest();
             }
+        }
+
+        try
+        {
+            if (playersToInsert is not null)
+            {
+                await _unitOfWork.Players.AddRangeAsync(playersToInsert, cancellationToken);
+            }
+
+            if (counterPartsToInsert is not null)
+            {
+                await _unitOfWork.CounterParts.AddRangeAsync(counterPartsToInsert, cancellationToken);
+            }
+
+            if (playersToInsert is not null || counterPartsToInsert is not null)
+            {
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError($"{nameof(DaprSubscriptionConsumer)}.{nameof(HandleUserUpdatedAsync)} Failed to persist user updates: {e.Message}");
+            return BadRequest();
         }
         
         return Ok();
