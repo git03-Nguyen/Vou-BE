@@ -32,19 +32,20 @@ public class CreateVoucherHandler: IRequestHandler<CreateVoucherCommand, BaseRes
         try
         {
             var normalizedTitle = request.Title.Trim();
+            var normalizedTitleKey = normalizedTitle.ToLower();
 
             var isVoucherExisted = await _unitOfWork.Vouchers
                 .Where(x => 
                     !x.IsDeleted
                     && x.CounterPartId == userId
-                    && x.Title == normalizedTitle)
+                    && x.Title.Trim().ToLower() == normalizedTitleKey)
                 .AsNoTracking()
                 .AnyAsync(cancellationToken);
 
             if (isVoucherExisted)
             {
-                _logger.LogWarning($"{methodName} Voucher is existed");
-                response.ToBadRequestResponse("Voucher is existed");
+                _logger.LogWarning($"{methodName} Voucher title already exists");
+                response.ToBadRequestResponse("Voucher title already exists");
                 return response;
             }
             

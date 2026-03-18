@@ -30,6 +30,7 @@ public class EditVoucherHandler : IRequestHandler<EditVoucherCommand, BaseRespon
         try
         {
             var normalizedTitle = request.Title?.Trim();
+            var normalizedTitleKey = normalizedTitle?.ToLower();
 
             var voucher = await _unitOfWork.Vouchers
                 .Where(v => !v.IsDeleted && v.Id == request.Id)
@@ -47,13 +48,13 @@ public class EditVoucherHandler : IRequestHandler<EditVoucherCommand, BaseRespon
                 return response;
             }
 
-            if (normalizedTitle is not null)
+            if (normalizedTitleKey is not null)
             {
                 var isDuplicateTitle = await _unitOfWork.Vouchers
                     .Where(v => !v.IsDeleted
                                 && v.CounterPartId == userId
                                 && v.Id != voucher.Id
-                                && v.Title == normalizedTitle)
+                                && v.Title.Trim().ToLower() == normalizedTitleKey)
                     .AsNoTracking()
                     .AnyAsync(cancellationToken);
 
