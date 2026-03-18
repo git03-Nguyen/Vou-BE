@@ -38,6 +38,10 @@ public class GetOwnVouchersHandler : IRequestHandler<GetOwnVouchersQuery, BaseRe
                     && !voucherToPlayer.IsDeleted
                     && voucherToPlayer.PlayerId == userId
                 orderby voucherToPlayer.CreatedDate descending
+                let issuedQuantity = _unitOfWork.VoucherToPlayers.GetAll()
+                    .Count(vp => !vp.IsDeleted && vp.VoucherId == voucher.Id)
+                let usedQuantity = _unitOfWork.VoucherToPlayers.GetAll()
+                    .Count(vp => !vp.IsDeleted && vp.VoucherId == voucher.Id && vp.UsedDate != null)
                 select new
                 {
                     voucherToPlayer.EventId,
@@ -48,6 +52,8 @@ public class GetOwnVouchersHandler : IRequestHandler<GetOwnVouchersQuery, BaseRe
                     voucher.TotalQuantity,
                     VoucherExpiredDate = voucher.ExpiredDate,
                     voucher.RedemptionInstructions,
+                    IssuedQuantity = issuedQuantity,
+                    UsedQuantity = usedQuantity,
                     voucherToPlayer.Id,
                     voucherToPlayer.CreatedDate,
                     voucherToPlayer.ExpiredDate,
@@ -71,7 +77,9 @@ public class GetOwnVouchersHandler : IRequestHandler<GetOwnVouchersQuery, BaseRe
                         x.ImageUrl,
                         x.TotalQuantity,
                         x.VoucherExpiredDate,
-                        x.RedemptionInstructions
+                        x.RedemptionInstructions,
+                        x.IssuedQuantity,
+                        x.UsedQuantity
                     })
                     .Select(g => new OwnVoucherDto
                     {
@@ -89,10 +97,10 @@ public class GetOwnVouchersHandler : IRequestHandler<GetOwnVouchersQuery, BaseRe
                             TotalQuantity = g.Key.TotalQuantity,
                             ExpiredDate = g.Key.VoucherExpiredDate,
                             RedemptionInstructions = g.Key.RedemptionInstructions,
-                            IssuedQuantity = g.Count(),
-                            UsedQuantity = g.Count(x => x.UsedDate is not null),
+                            IssuedQuantity = g.Key.IssuedQuantity,
+                            UsedQuantity = g.Key.UsedQuantity,
                             RemainingQuantity = g.Key.TotalQuantity.HasValue
-                                ? Math.Max(g.Key.TotalQuantity.Value - g.Count(), 0)
+                                ? Math.Max(g.Key.TotalQuantity.Value - g.Key.IssuedQuantity, 0)
                                 : int.MaxValue
                         },
                         Items = g.Select(x => new OwnVoucherItemDto
