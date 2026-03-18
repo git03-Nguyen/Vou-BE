@@ -33,8 +33,8 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, BaseResponse
     public async Task<BaseResponse<UserFullProfileDto>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
     {
         var response = new BaseResponse<UserFullProfileDto>();
-        User? backupUser = null;
         var methodName = string.Empty;
+        var transactionCommitted = false;
 
         try
         {
@@ -59,6 +59,8 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, BaseResponse
                 response.ToBadRequestResponse("Email or UserName or PhoneNumber is already existed");
                 return response;
             }
+
+            await using var transaction = await _unitOfWork.OpenTransactionAsync(cancellationToken);
             
             // 2. Create user
             var user = new User
@@ -78,17 +80,17 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, BaseResponse
             if (!result.Succeeded)
             {
                 _logger.LogError($"{methodName} Failed to create user: {JsonSerializer.Serialize(result.Errors)}");
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                 response.ToBadRequestResponse("Failed to create user");
                 return response;
             }
 
-            backupUser = user;
             var resultRole = await _userManager.AddToRoleAsync(user, request.Role);
             if (!resultRole.Succeeded)
             {
                 _logger.LogError($"{methodName} Failed to add role to user: {JsonSerializer.Serialize(resultRole.Errors)}");
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                 response.ToBadRequestResponse("Failed to add role to user");
-                await RollbackUserCreation(backupUser);
                 return response;
             }
             
@@ -109,9 +111,10 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, BaseResponse
             }
             else
             {
-                await RollbackUserCreation(backupUser);
                 _logger.LogError($"{methodName} Cannot create user with role {user.Role}");
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                 response.ToBadRequestResponse($"Cannot create user with role {user.Role}");
+                return response;
             }
             
             var responseData = new UserFullProfileDto
@@ -136,6 +139,9 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, BaseResponse
                 Gender = player?.Gender,
                 FacebookUrl = player?.FacebookUrl
             };
+
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            transactionCommitted = true;
             
             // 5. Publish message
             await PublishMessageAsync(responseData, cancellationToken);
@@ -144,20 +150,16 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, BaseResponse
         }
         catch (Exception e)
         {
+            if (!transactionCommitted)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            }
+
             _logger.LogError(e, $"{methodName} Has error: {e.Message}");
             response.ToInternalErrorResponse();
-            await RollbackUserCreation(backupUser);
         }
 
         return response;
-    }
-    
-    private async Task RollbackUserCreation(User? user)
-    {
-        if (user is not null)
-        {
-            await _userManager.DeleteAsync(user);
-        }
     }
     
     private async Task<CounterPart> AddToCounterPart(CreateUserCommand request, User user, string adminId, CancellationToken cancellationToken)

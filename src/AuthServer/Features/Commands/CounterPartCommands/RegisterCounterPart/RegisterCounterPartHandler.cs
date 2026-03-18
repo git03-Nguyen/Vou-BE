@@ -32,8 +32,8 @@ public class RegisterCounterPartHandler : IRequestHandler<RegisterCounterPartCom
     public async Task<BaseResponse<UserFullProfileDto>> Handle(RegisterCounterPartCommand request, CancellationToken cancellationToken)
     {
         var response = new BaseResponse<UserFullProfileDto>();
-        User? backupUser = null;
         var methodName = $"{nameof(RegisterCounterPartHandler)}.{nameof(Handle)} UserName = {request.UserName}, Email = {request.Email}, PhoneNumber = {request.PhoneNumber}, Field = {request.Field} =>";
+        var transactionCommitted = false;
         _logger.LogInformation(methodName);
 
         try
@@ -55,6 +55,8 @@ public class RegisterCounterPartHandler : IRequestHandler<RegisterCounterPartCom
                 response.ToBadRequestResponse("User already exists");
                 return response;
             }
+
+            await using var transaction = await _unitOfWork.OpenTransactionAsync(cancellationToken);
             
             //Generate OTP activate code
             var random = new Random();
@@ -78,22 +80,31 @@ public class RegisterCounterPartHandler : IRequestHandler<RegisterCounterPartCom
             if (!result.Succeeded)
             {
                 _logger.LogError($"{methodName} Failed to create user: {JsonSerializer.Serialize(result.Errors)}");
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                 response.ToBadRequestResponse("Failed to create user");
                 return response;
             }
 
-            backupUser = user;
             var resultRole = await _userManager.AddToRoleAsync(user, user.Role);
             if (!resultRole.Succeeded)
             {
                 _logger.LogError($"{methodName} Failed to add role to user: {JsonSerializer.Serialize(resultRole.Errors)}");
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                 response.ToBadRequestResponse("Failed to add role to user");
-                await RollbackUserCreation(backupUser);
                 return response;
             }
             
             // 4. Add to CounterPart
             var counterPart = await AddToCounterPart(request, user, cancellationToken);
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                _logger.LogError($"{methodName} Failed to update user after counterpart creation: {JsonSerializer.Serialize(updateResult.Errors)}");
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                response.ToBadRequestResponse("Failed to finalize user registration");
+                return response;
+            }
+
             var responseData = new UserFullProfileDto
             {
                 Id = user.Id,
@@ -106,8 +117,9 @@ public class RegisterCounterPartHandler : IRequestHandler<RegisterCounterPartCom
                 Field = counterPart.Field,
                 Addresses = counterPart.Addresses
             };
-            //Save to database
-            await _userManager.UpdateAsync(user);
+
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            transactionCommitted = true;
             
             //5. Send OTP to activate account
             await SendActivateOtp(user);
@@ -120,20 +132,16 @@ public class RegisterCounterPartHandler : IRequestHandler<RegisterCounterPartCom
         }
         catch (Exception e)
         {
+            if (!transactionCommitted)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            }
+
             _logger.LogError(e, $"{methodName} Has error: {e.Message}");
             response.ToInternalErrorResponse();
-            await RollbackUserCreation(backupUser);
         }
 
         return response;
-    }
-    
-    private async Task RollbackUserCreation(User? user)
-    {
-        if (user is not null)
-        {
-            await _userManager.DeleteAsync(user);
-        }
     }
     
     private async Task<CounterPart> AddToCounterPart(RegisterCounterPartCommand request, User user, CancellationToken cancellationToken)

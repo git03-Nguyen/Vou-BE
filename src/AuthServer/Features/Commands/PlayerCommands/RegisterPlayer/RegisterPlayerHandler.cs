@@ -33,8 +33,8 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
     public async Task<BaseResponse<UserFullProfileDto>> Handle(RegisterPlayerCommand request, CancellationToken cancellationToken)
     {
         var response = new BaseResponse<UserFullProfileDto>();
-        User? backupUser = null;
         var methodName = $"{nameof(RegisterPlayerHandler)}.{nameof(Handle)} UserName = {request.UserName}, Email = {request.Email}, PhoneNumber = {request.PhoneNumber} =>";
+        var transactionCommitted = false;
         _logger.LogInformation(methodName);
 
         try
@@ -56,6 +56,9 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
                 response.ToBadRequestResponse("User with email, username or phone already exists");
                 return response;
             }
+
+            await using var transaction = await _unitOfWork.OpenTransactionAsync(cancellationToken);
+
             // Generate OTP activate code
             var random = new Random();
             var otp =  random.Next(100000, 999999).ToString();
@@ -79,22 +82,31 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
             if (!result.Succeeded)
             {
                 _logger.LogError($"{methodName} Failed to create user: {JsonSerializer.Serialize(result.Errors)}");
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                 response.ToBadRequestResponse("Failed to create user");
                 return response;
             }
 
-            backupUser = user;
             var resultRole = await _userManager.AddToRoleAsync(user, user.Role);
             if (!resultRole.Succeeded)
             {
                 _logger.LogError($"{methodName} Failed to add role to user: {JsonSerializer.Serialize(resultRole.Errors)}");
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                 response.ToBadRequestResponse("Failed to add role to user");
-                await RollbackUserCreation(backupUser);
                 return response;
             }
             
             // 4. Add to Player
             var player = await AddToPlayer(request, user, cancellationToken);
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                _logger.LogError($"{methodName} Failed to update user after player creation: {JsonSerializer.Serialize(updateResult.Errors)}");
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                response.ToBadRequestResponse("Failed to finalize user registration");
+                return response;
+            }
+
             var responseData = new UserFullProfileDto
             {
                 Id = user.Id,
@@ -108,7 +120,9 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
                 FacebookUrl = player.FacebookUrl,
                 BirthDate = player.BirthDate
             };
-            await _userManager.UpdateAsync(user);
+
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            transactionCommitted = true;
             
             // 5. Send email
             await SendActivateOtp(user);
@@ -120,20 +134,16 @@ public class RegisterPlayerHandler : IRequestHandler<RegisterPlayerCommand, Base
         }
         catch (Exception e)
         {
+            if (!transactionCommitted)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            }
+
             _logger.LogError(e, $"{methodName} Has error: {e.Message}");
             response.ToInternalErrorResponse();
-            await RollbackUserCreation(backupUser);
         }
 
         return response;
-    }
-    
-    private async Task RollbackUserCreation(User? user)
-    {
-        if (user is not null)
-        {
-            await _userManager.DeleteAsync(user);
-        }
     }
     
     private async Task<Player> AddToPlayer(RegisterPlayerCommand request, User user, CancellationToken cancellationToken)
