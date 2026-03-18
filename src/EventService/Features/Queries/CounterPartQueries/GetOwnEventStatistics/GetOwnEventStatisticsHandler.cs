@@ -23,7 +23,7 @@ public class GetOwnEventStatisticsHandler : IRequestHandler<GetOwnEventStatistic
     public async Task<BaseResponse<CounterPartStatisticsEventsResponseDto>> Handle(GetOwnEventStatisticsQuery request, CancellationToken cancellationToken)
     {
         var userId = _contextAccessor.GetCurrentUserId();
-        var methodName = $"{nameof(GetOwnEventStatisticsHandler)}.{nameof(Handle)} UserId: {userId}, EventId: {request.EventId} =>";
+        var methodName = $"{nameof(GetOwnEventStatisticsHandler)}.{nameof(Handle)} UserId: {userId} =>";
         _logger.LogInformation(methodName);
         var response = new BaseResponse<CounterPartStatisticsEventsResponseDto>();
 
