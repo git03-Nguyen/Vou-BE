@@ -14,9 +14,14 @@ public static class ApiBehaviorRegistrations
         {
             options.InvalidModelStateResponseFactory = context =>
             {
-                var errors = context.ModelState.Values
-                    .SelectMany(x => x.Errors)
-                    .Select(x => new ValidationError { Message = x.ErrorMessage })
+                var errors = context.ModelState
+                    .SelectMany(entry => entry.Value?.Errors.Select(error => new ValidationError
+                    {
+                        Field = entry.Key,
+                        Message = error.ErrorMessage
+                    }) ?? Enumerable.Empty<ValidationError>())
+                    .GroupBy(x => new { x.Field, x.Message })
+                    .Select(x => x.First())
                     .ToList();
 
                 var response = new ValidationBaseResponse
