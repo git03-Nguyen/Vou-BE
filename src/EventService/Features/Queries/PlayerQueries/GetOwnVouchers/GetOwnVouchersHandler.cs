@@ -103,20 +103,31 @@ public class GetOwnVouchersHandler : IRequestHandler<GetOwnVouchersQuery, BaseRe
                                 ? Math.Max(g.Key.TotalQuantity.Value - g.Key.IssuedQuantity, 0)
                                 : int.MaxValue
                         },
-                        Items = g.Select(x => new OwnVoucherItemDto
+                        Items = g.Select(x =>
                         {
-                            VoucherToPlayerId = x.Id,
-                            AcquiredDate = x.CreatedDate,
-                            ExpiredDate = x.ExpiredDate,
-                            UsedDate = x.UsedDate,
-                            UsedBy = x.UsedBy,
-                            Status = x.UsedDate is not null
-                                ? x.UsedBy == x.PlayerId
-                                    ? "used"
-                                    : "redeemed"
-                                : x.ExpiredDate < now
-                                    ? "expired"
-                                    : "available"
+                            var isUsed = x.UsedDate is not null;
+                            var isExpired = !isUsed && x.ExpiredDate < now;
+                            var isAvailable = !isUsed && !isExpired;
+                            var isRedeemedByCounterPart = isUsed && x.UsedBy != x.PlayerId;
+
+                            return new OwnVoucherItemDto
+                            {
+                                VoucherToPlayerId = x.Id,
+                                AcquiredDate = x.CreatedDate,
+                                ExpiredDate = x.ExpiredDate,
+                                UsedDate = x.UsedDate,
+                                UsedBy = x.UsedBy,
+                                IsAvailable = isAvailable,
+                                IsExpired = isExpired,
+                                IsRedeemedByCounterPart = isRedeemedByCounterPart,
+                                Status = isUsed
+                                    ? isRedeemedByCounterPart
+                                        ? "redeemed"
+                                        : "used"
+                                    : isExpired
+                                        ? "expired"
+                                        : "available"
+                            };
                         }).ToList()
                     })
                     .ToList()
