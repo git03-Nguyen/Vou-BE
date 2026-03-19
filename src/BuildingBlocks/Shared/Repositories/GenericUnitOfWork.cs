@@ -3,10 +3,11 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Shared.Repositories;
 
-public abstract class GenericUnitOfWork<TDbContext> : IGenericUnitOfWork, IAsyncDisposable where TDbContext: DbContext
+public abstract class GenericUnitOfWork<TDbContext> : IGenericUnitOfWork, IAsyncDisposable where TDbContext : DbContext
 {
     protected readonly TDbContext DbContext;
     protected IDbContextTransaction? Transaction;
+
     public GenericUnitOfWork(TDbContext dbContext)
     {
         DbContext = dbContext;
@@ -19,33 +20,60 @@ public abstract class GenericUnitOfWork<TDbContext> : IGenericUnitOfWork, IAsync
 
     public async Task<IDbContextTransaction> OpenTransactionAsync(CancellationToken cancellationToken = default)
     {
+        await DisposeTransactionAsync();
         Transaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
         return Transaction;
     }
 
     public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
     {
-        if (Transaction is not null)
+        if (Transaction is null)
+        {
+            return;
+        }
+
+        try
         {
             await Transaction.CommitAsync(cancellationToken);
+        }
+        finally
+        {
+            await DisposeTransactionAsync();
         }
     }
 
     public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
     {
-        if (Transaction is not null)
+        if (Transaction is null)
+        {
+            return;
+        }
+
+        try
         {
             await Transaction.RollbackAsync(cancellationToken);
+        }
+        finally
+        {
+            await DisposeTransactionAsync();
         }
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (Transaction is not null)
-        {
-            await Transaction.DisposeAsync();
-        }
+        await DisposeTransactionAsync();
         await DbContext.DisposeAsync();
         GC.SuppressFinalize(this);
+    }
+
+    protected async Task DisposeTransactionAsync()
+    {
+        if (Transaction is null)
+        {
+            return;
+        }
+
+        await Transaction.DisposeAsync();
+        Transaction = null;
     }
 }
