@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using GameService.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Shared.Contracts;
@@ -13,9 +14,11 @@ using Shared.Contracts;
 namespace GameService.Data.Contexts.Migrations
 {
     [DbContext(typeof(GameDbContext))]
-    partial class GameDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250319020000_AddUniquePlayerEventShakeSession")]
+    partial class AddUniquePlayerEventShakeSession
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -230,23 +233,27 @@ namespace GameService.Data.Contexts.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
-                    b.Property<string>("CounterPartId")
+                    b.Property<string>("Question")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Description")
+                    b.Property<string>("QuizA")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("ImageUrl")
+                    b.Property<string>("QuizAnswer")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<List<Quiz>>("Question")
+                    b.Property<string>("QuizB")
                         .IsRequired()
-                        .HasColumnType("jsonb");
+                        .HasColumnType("text");
 
-                    b.Property<string>("Title")
+                    b.Property<string>("QuizC")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("QuizD")
                         .IsRequired()
                         .HasColumnType("text");
 

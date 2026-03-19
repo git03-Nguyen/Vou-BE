@@ -86,6 +86,8 @@ public class GameDbContext : DbContext
         builder.Entity<PlayerShakeSession>(entity =>
         {
             entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.PlayerId, e.EventId })
+                .IsUnique();
             
             // PlayerShakeSession - Player: one - many
             entity.HasOne<Player>()
