@@ -50,7 +50,7 @@ public class UnblockUserHandler : IRequestHandler<UnblockUserCommand, BaseRespon
                 
             // 2. Unblock user
             user.IsBlocked = false;
-            user.BlockedDate = DateTime.Now;
+            user.BlockedDate = null;
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
             {
@@ -62,7 +62,7 @@ public class UnblockUserHandler : IRequestHandler<UnblockUserCommand, BaseRespon
             var responseData = new BlockUserResponseDto
             {
                 IsBlocked = user.IsBlocked,
-                BlockedDate = user.BlockedDate.Value
+                BlockedDate = user.BlockedDate
             };
             response.ToSuccessResponse(responseData);
         }
