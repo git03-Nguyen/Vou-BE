@@ -1,3 +1,4 @@
+using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -18,10 +19,15 @@ public abstract class GenericUnitOfWork<TDbContext> : IGenericUnitOfWork, IAsync
         await DbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<IDbContextTransaction> OpenTransactionAsync(CancellationToken cancellationToken = default)
+    public Task<IDbContextTransaction> OpenTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        return OpenTransactionAsync(IsolationLevel.ReadCommitted, cancellationToken);
+    }
+
+    public async Task<IDbContextTransaction> OpenTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default)
     {
         await DisposeTransactionAsync();
-        Transaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
+        Transaction = await DbContext.Database.BeginTransactionAsync(isolationLevel, cancellationToken);
         return Transaction;
     }
 

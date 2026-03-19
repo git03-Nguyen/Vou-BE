@@ -1,9 +1,11 @@
+using System.Data;
 using System.Text.Json;
 using EventService.Data.Models;
 using EventService.DTOs;
 using EventService.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Shared.Contracts;
 using Shared.Response;
 using Shared.Services.HttpContextAccessor;
@@ -17,7 +19,12 @@ public class BuyVoucherHandler : IRequestHandler<BuyVoucherCommand, BaseResponse
     private readonly IUnitOfWork _unitOfWork;
     private readonly ICustomHttpContextAccessor _contextAccessor;
     private readonly IServiceInvocationService _serviceInvocationService;
-    public BuyVoucherHandler(ILogger<BuyVoucherHandler> logger, IUnitOfWork unitOfWork, ICustomHttpContextAccessor contextAccessor, IServiceInvocationService serviceInvocationService)
+
+    public BuyVoucherHandler(
+        ILogger<BuyVoucherHandler> logger,
+        IUnitOfWork unitOfWork,
+        ICustomHttpContextAccessor contextAccessor,
+        IServiceInvocationService serviceInvocationService)
     {
         _logger = logger;
         _unitOfWork = unitOfWork;
@@ -34,7 +41,7 @@ public class BuyVoucherHandler : IRequestHandler<BuyVoucherCommand, BaseResponse
 
         try
         {
-            await using var transaction = await _unitOfWork.OpenTransactionAsync(cancellationToken);
+            await using var transaction = await _unitOfWork.OpenTransactionAsync(IsolationLevel.Serializable, cancellationToken);
 
             var @event = await
                 (
@@ -86,7 +93,7 @@ public class BuyVoucherHandler : IRequestHandler<BuyVoucherCommand, BaseResponse
                 response.ToBadRequestResponse("Voucher is out of stock");
                 return response;
             }
-            
+
             const string appId = "gameservice";
             var diamondRequest = new PlayerTicketDiamondRequest
             {
@@ -94,9 +101,13 @@ public class BuyVoucherHandler : IRequestHandler<BuyVoucherCommand, BaseResponse
                 EventId = @event.Event.Id
             };
             const string diamondRequestMethod = "Internal/Player/GetPlayerTicketDiamond";
-            var diamondResponse = await 
-                _serviceInvocationService.InvokeServiceAsync<PlayerTicketDiamondRequest, PlayerTicketDiamondResponse>
-                (HttpMethod.Post, appId, diamondRequestMethod, diamondRequest, cancellationToken);
+            var diamondResponse = await
+                _serviceInvocationService.InvokeServiceAsync<PlayerTicketDiamondRequest, PlayerTicketDiamondResponse>(
+                    HttpMethod.Post,
+                    appId,
+                    diamondRequestMethod,
+                    diamondRequest,
+                    cancellationToken);
 
             if (diamondResponse is null || !diamondResponse.IsSuccess)
             {
@@ -132,10 +143,10 @@ public class BuyVoucherHandler : IRequestHandler<BuyVoucherCommand, BaseResponse
                 CreatedDate = now,
                 ModifiedDate = now
             };
-            
+
             await _unitOfWork.VoucherToPlayers.AddAsync(toPlayer, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            
+
             var updateDiamondRequest = new UpdatePlayerDiamondRequest
             {
                 PlayerId = userId,
@@ -143,9 +154,13 @@ public class BuyVoucherHandler : IRequestHandler<BuyVoucherCommand, BaseResponse
                 Diamonds = totalDiamonds
             };
             const string updateDiamondRequestMethod = "Internal/Player/UpdatePlayerDiamond";
-            var updateDiamondResponse = await 
-                _serviceInvocationService.InvokeServiceAsync<UpdatePlayerDiamondRequest, BaseResponse>
-                (HttpMethod.Post, appId, updateDiamondRequestMethod, updateDiamondRequest, cancellationToken);
+            var updateDiamondResponse = await
+                _serviceInvocationService.InvokeServiceAsync<UpdatePlayerDiamondRequest, BaseResponse>(
+                    HttpMethod.Post,
+                    appId,
+                    updateDiamondRequestMethod,
+                    updateDiamondRequest,
+                    cancellationToken);
 
             if (updateDiamondResponse is null || updateDiamondResponse.Status != 200)
             {
@@ -178,9 +193,22 @@ public class BuyVoucherHandler : IRequestHandler<BuyVoucherCommand, BaseResponse
                         ? Math.Max(@event.Voucher.TotalQuantity.Value - updatedIssuedQuantity, 0)
                         : int.MaxValue
                 }
-               
             });
-            
+
+            return response;
+        }
+        catch (PostgresException ex) when (ex.SqlState == PostgresErrorCodes.SerializationFailure)
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            _logger.LogWarning(ex, $"{methodName} Buy voucher serialization conflict");
+            response.ToBadRequestResponse("Voucher stock changed, please retry");
+            return response;
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.SerializationFailure })
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            _logger.LogWarning(ex, $"{methodName} Buy voucher serialization conflict during save");
+            response.ToBadRequestResponse("Voucher stock changed, please retry");
             return response;
         }
         catch (Exception ex)
