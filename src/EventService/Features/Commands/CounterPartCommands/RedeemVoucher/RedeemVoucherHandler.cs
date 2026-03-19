@@ -29,6 +29,7 @@ public class RedeemVoucherHandler : IRequestHandler<RedeemVoucherCommand, BaseRe
 
         try
         {
+            var now = DateTime.UtcNow;
             var voucherToPlayer = await (
                     from ownedVoucher in _unitOfWork.VoucherToPlayers.GetAll()
                     join voucher in _unitOfWork.Vouchers.GetAll()
@@ -36,7 +37,15 @@ public class RedeemVoucherHandler : IRequestHandler<RedeemVoucherCommand, BaseRe
                     where ownedVoucher.Id == request.VoucherToPlayerId
                           && !ownedVoucher.IsDeleted
                           && !voucher.IsDeleted
-                    select new { OwnedVoucher = ownedVoucher, Voucher = voucher })
+                    select new
+                    {
+                        ownedVoucher.Id,
+                        ownedVoucher.VoucherId,
+                        ownedVoucher.PlayerId,
+                        ownedVoucher.ExpiredDate,
+                        ownedVoucher.UsedDate,
+                        VoucherCounterPartId = voucher.CounterPartId
+                    })
                 .FirstOrDefaultAsync(cancellationToken);
 
             if (voucherToPlayer is null)
@@ -45,37 +54,46 @@ public class RedeemVoucherHandler : IRequestHandler<RedeemVoucherCommand, BaseRe
                 return response;
             }
 
-            if (voucherToPlayer.Voucher.CounterPartId != userId)
+            if (voucherToPlayer.VoucherCounterPartId != userId)
             {
                 response.ToForbiddenResponse("You are not allowed to redeem this voucher");
                 return response;
             }
 
-            if (voucherToPlayer.OwnedVoucher.UsedDate is not null)
+            if (voucherToPlayer.UsedDate is not null)
             {
                 response.ToBadRequestResponse("Voucher has already been redeemed");
                 return response;
             }
 
-            if (voucherToPlayer.OwnedVoucher.ExpiredDate < DateTime.UtcNow)
+            if (voucherToPlayer.ExpiredDate < now)
             {
                 response.ToBadRequestResponse("Voucher has expired");
                 return response;
             }
 
-            voucherToPlayer.OwnedVoucher.UsedDate = DateTime.UtcNow;
-            voucherToPlayer.OwnedVoucher.UsedBy = userId;
-            voucherToPlayer.OwnedVoucher.ModifiedDate = DateTime.UtcNow;
-            _unitOfWork.VoucherToPlayers.Update(voucherToPlayer.OwnedVoucher);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            var affectedRows = await _unitOfWork.VoucherToPlayers
+                .Where(v => v.Id == request.VoucherToPlayerId
+                            && !v.IsDeleted
+                            && v.UsedDate == null)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(v => v.UsedDate, now)
+                    .SetProperty(v => v.UsedBy, userId)
+                    .SetProperty(v => v.ModifiedDate, now), cancellationToken);
+
+            if (affectedRows == 0)
+            {
+                response.ToBadRequestResponse("Voucher has already been redeemed");
+                return response;
+            }
 
             response.ToSuccessResponse(new UseVoucherDto
             {
-                Id = voucherToPlayer.OwnedVoucher.Id,
-                VoucherId = voucherToPlayer.OwnedVoucher.VoucherId,
-                PlayerId = voucherToPlayer.OwnedVoucher.PlayerId,
+                Id = voucherToPlayer.Id,
+                VoucherId = voucherToPlayer.VoucherId,
+                PlayerId = voucherToPlayer.PlayerId,
                 UsedBy = userId,
-                UsedDate = voucherToPlayer.OwnedVoucher.UsedDate.Value
+                UsedDate = now
             });
         }
         catch (Exception ex)

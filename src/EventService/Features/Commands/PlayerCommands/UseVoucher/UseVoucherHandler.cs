@@ -28,39 +28,57 @@ public class UseVoucherHandler : IRequestHandler<UseVoucherCommand, BaseResponse
         
         try 
         {
+            var now = DateTime.UtcNow;
             var voucherToPlayer = await _unitOfWork.VoucherToPlayers
                 .Where(v => 
                     v.Id == request.VoucherToPlayerId 
                     && v.PlayerId == userId 
-                    && !v.IsDeleted
-                    && v.UsedDate == null)
+                    && !v.IsDeleted)
+                .Select(v => new
+                {
+                    v.Id,
+                    v.VoucherId,
+                    v.PlayerId,
+                    v.ExpiredDate,
+                    v.UsedDate
+                })
                 .FirstOrDefaultAsync(cancellationToken);
 
-            if (voucherToPlayer == null)
+            if (voucherToPlayer == null || voucherToPlayer.UsedDate is not null)
             {
                 response.ToBadRequestResponse("Voucher not found or already used");
                 return response;
             }
 
-            if (voucherToPlayer.ExpiredDate < DateTime.UtcNow)
+            if (voucherToPlayer.ExpiredDate < now)
             {
                 response.ToBadRequestResponse("Voucher has expired");
                 return response;
             }
-            
-            voucherToPlayer.UsedDate = DateTime.UtcNow;
-            voucherToPlayer.UsedBy = userId;
-            voucherToPlayer.ModifiedDate = DateTime.UtcNow;
-            _unitOfWork.VoucherToPlayers.Update(voucherToPlayer);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var affectedRows = await _unitOfWork.VoucherToPlayers
+                .Where(v => v.Id == request.VoucherToPlayerId
+                            && v.PlayerId == userId
+                            && !v.IsDeleted
+                            && v.UsedDate == null)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(v => v.UsedDate, now)
+                    .SetProperty(v => v.UsedBy, userId)
+                    .SetProperty(v => v.ModifiedDate, now), cancellationToken);
+
+            if (affectedRows == 0)
+            {
+                response.ToBadRequestResponse("Voucher not found or already used");
+                return response;
+            }
             
             var responseDto = new UseVoucherDto
             {
                 Id = voucherToPlayer.Id,
                 VoucherId = voucherToPlayer.VoucherId,
                 PlayerId = voucherToPlayer.PlayerId,
-                UsedBy = voucherToPlayer.UsedBy,
-                UsedDate = voucherToPlayer.UsedDate.Value
+                UsedBy = userId,
+                UsedDate = now
             };
             response.ToSuccessResponse(responseDto);
         }
