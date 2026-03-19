@@ -2,7 +2,6 @@ using GameService.DTOs;
 using GameService.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Shared.Enums;
 using Shared.Response;
 using Shared.Services.HttpContextAccessor;
 
@@ -29,29 +28,10 @@ public class CompleteShakeHandler : IRequestHandler<CompleteShakeCommand, BaseRe
         try
         {
             var userId = _contextAccessor.GetCurrentUserId();
-            var shakeSession = await _unitOfWork.PlayerShakeSessions
-                .Where(x =>
-                    x.PlayerId == userId 
-                    && !x.IsDeleted
-                    && x.EventId == request.EventId)
-                .FirstOrDefaultAsync(cancellationToken);
-            
-            if (shakeSession is null)
-            {
-                response.ToBadRequestResponse("Shake session not found");
-                return response;
-            }
-
-            if (shakeSession.Tickets <= 0)
-            {
-                response.ToBadRequestResponse("No ticket left");
-                return response;
-            }
-            
             var @event = await _unitOfWork.Events
-                .Where(x => 
+                .Where(x =>
                     x.Id == request.EventId)
-                    // && x.Status == EventStatus.InProgress)
+                // && x.Status == EventStatus.InProgress)
                 .Select(x => new
                 {
                     x.ShakeAverageDiamond,
@@ -59,24 +39,61 @@ public class CompleteShakeHandler : IRequestHandler<CompleteShakeCommand, BaseRe
                 })
                 .AsNoTracking()
                 .FirstOrDefaultAsync(cancellationToken);
-            
+
             if (@event is null)
             {
                 response.ToNotFoundResponse("Event not found");
                 return response;
             }
-            
-            shakeSession.Tickets--;
+
             var diamondsReceived = GetRandomDiamondsReceived(@event.ShakeAverageDiamond ?? 0, @event.ShakeWinRate ?? 0);
-            shakeSession.Diamond += diamondsReceived;
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var affectedRows = await _unitOfWork.PlayerShakeSessions
+                .Where(x => x.PlayerId == userId
+                            && !x.IsDeleted
+                            && x.EventId == request.EventId
+                            && x.Tickets > 0)
+                .ExecuteUpdateAsync(setters => setters
+                    .SetProperty(x => x.Tickets, x => x.Tickets - 1)
+                    .SetProperty(x => x.Diamond, x => x.Diamond + diamondsReceived)
+                    .SetProperty(x => x.ModifiedDate, _ => DateTime.UtcNow), cancellationToken);
+
+            if (affectedRows == 0)
+            {
+                var sessionExists = await _unitOfWork.PlayerShakeSessions
+                    .Where(x => x.PlayerId == userId
+                                && !x.IsDeleted
+                                && x.EventId == request.EventId)
+                    .AnyAsync(cancellationToken);
+
+                if (!sessionExists)
+                {
+                    response.ToBadRequestResponse("Shake session not found");
+                    return response;
+                }
+
+                response.ToBadRequestResponse("No ticket left");
+                return response;
+            }
+
+            var updatedShakeSession = await _unitOfWork.PlayerShakeSessions
+                .Where(x => x.PlayerId == userId
+                            && !x.IsDeleted
+                            && x.EventId == request.EventId)
+                .Select(x => new
+                {
+                    x.Tickets,
+                    x.Diamond
+                })
+                .AsNoTracking()
+                .FirstAsync(cancellationToken);
 
             var shakeResult = new ShakeResultDto
             {
                 PlayerId = userId,
-                TotalTickets = shakeSession.Tickets,
+                TotalTickets = updatedShakeSession.Tickets,
                 ReceivedDiamonds = diamondsReceived,
-                TotalDiamonds = shakeSession.Diamond
+                TotalDiamonds = updatedShakeSession.Diamond
             };
             response.ToSuccessResponse(shakeResult);
             return response;
