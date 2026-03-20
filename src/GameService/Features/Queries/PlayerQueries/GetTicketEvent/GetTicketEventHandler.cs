@@ -44,16 +44,7 @@ public class GetTicketEventHandler : IRequestHandler<GetTicketEventQuery, BaseRe
             }
 
             var player = await GetOrCreatePlayerShakeSessionAsync(userId, request.EventId, cancellationToken);
-
-            // If player has already joined the event, check if the reset time has passed
-            if (player.NextResetTicketsTime < DateTime.Now)
-            {
-                var newPlayer = new PlayerShakeSession();
-                player.Tickets = newPlayer.Tickets;
-                player.NextResetTicketsTime = newPlayer.NextResetTicketsTime;
-                _unitOfWork.PlayerShakeSessions.Update(player);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-            }
+            player = await ResetTicketsIfNeededAsync(player, cancellationToken);
 
             var responseData = new PlayerShakeDto
             {
@@ -139,5 +130,39 @@ public class GetTicketEventHandler : IRequestHandler<GetTicketEventQuery, BaseRe
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             throw;
         }
+    }
+
+    private async Task<PlayerShakeSession> ResetTicketsIfNeededAsync(
+        PlayerShakeSession player,
+        CancellationToken cancellationToken)
+    {
+        var now = DateTime.UtcNow;
+        if (player.NextResetTicketsTime is null || player.NextResetTicketsTime >= now)
+        {
+            return player;
+        }
+
+        var nextResetTicketsTime = new PlayerShakeSession().NextResetTicketsTime;
+        var affectedRows = await _unitOfWork.PlayerShakeSessions
+            .Where(x => x.Id == player.Id
+                        && !x.IsDeleted
+                        && x.NextResetTicketsTime < now)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(x => x.Tickets, _ => 5)
+                .SetProperty(x => x.NextResetTicketsTime, _ => nextResetTicketsTime)
+                .SetProperty(x => x.ModifiedDate, _ => now), cancellationToken);
+
+        if (affectedRows == 0)
+        {
+            return await _unitOfWork.PlayerShakeSessions
+                .Where(x => x.Id == player.Id && !x.IsDeleted)
+                .AsNoTracking()
+                .FirstAsync(cancellationToken);
+        }
+
+        player.Tickets = 5;
+        player.NextResetTicketsTime = nextResetTicketsTime;
+        player.ModifiedDate = now;
+        return player;
     }
 }

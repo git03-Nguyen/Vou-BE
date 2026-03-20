@@ -47,6 +47,12 @@ public class SendTicketHandler : IRequestHandler<SendTicketCommand, BaseResponse
                 .Where(x => x.PlayerId == friendId
                             && x.EventId == request.EventId
                             && !x.IsDeleted)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.NextResetTicketsTime
+                })
+                .AsNoTracking()
                 .FirstOrDefaultAsync(cancellationToken);
 
             // If friend is new to the event, create a new shake session for him
@@ -60,22 +66,29 @@ public class SendTicketHandler : IRequestHandler<SendTicketCommand, BaseResponse
                 };
                 newShakeSession.Tickets++;
                 await _unitOfWork.PlayerShakeSessions.AddAsync(newShakeSession, cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
             else
             {
-                // Check if reset day is passed
-                if (friendShakeSession.NextResetTicketsTime < DateTime.Now)
-                {
-                    var newPlayerSession = new PlayerShakeSession();
-                    
-                    friendShakeSession.NextResetTicketsTime = newPlayerSession.NextResetTicketsTime;
-                    friendShakeSession.Tickets = newPlayerSession.Tickets;
-                }
-                friendShakeSession.Tickets++;
-                _unitOfWork.PlayerShakeSessions.Update(friendShakeSession);
+                var now = DateTime.UtcNow;
+                var nextResetTicketsTime = new PlayerShakeSession().NextResetTicketsTime;
+
+                await _unitOfWork.PlayerShakeSessions
+                    .Where(x => x.Id == friendShakeSession.Id
+                                && !x.IsDeleted
+                                && x.NextResetTicketsTime < now)
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(x => x.NextResetTicketsTime, _ => nextResetTicketsTime)
+                        .SetProperty(x => x.Tickets, _ => 5)
+                        .SetProperty(x => x.ModifiedDate, _ => now), cancellationToken);
+
+                await _unitOfWork.PlayerShakeSessions
+                    .Where(x => x.Id == friendShakeSession.Id
+                                && !x.IsDeleted)
+                    .ExecuteUpdateAsync(setters => setters
+                        .SetProperty(x => x.Tickets, x => x.Tickets + 1)
+                        .SetProperty(x => x.ModifiedDate, _ => now), cancellationToken);
             }
-            
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
             response.ToSuccessResponse();
         }
         catch (Exception ex)
