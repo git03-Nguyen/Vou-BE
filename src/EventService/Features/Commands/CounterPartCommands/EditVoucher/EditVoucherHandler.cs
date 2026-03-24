@@ -1,8 +1,10 @@
+using System.Data;
 using System.Text.Json;
 using EventService.DTOs;
 using EventService.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Shared.Response;
 using Shared.Services.HttpContextAccessor;
 
@@ -42,18 +44,22 @@ public class EditVoucherHandler : IRequestHandler<EditVoucherCommand, BaseRespon
                     ? null
                     : request.RedemptionInstructions.Trim();
 
+            await using var transaction = await _unitOfWork.OpenTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+
             var voucher = await _unitOfWork.Vouchers
                 .Where(v => !v.IsDeleted && v.Id == request.Id)
                 .FirstOrDefaultAsync(cancellationToken);
             
             if (voucher == null)
             {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                 response.ToNotFoundResponse("Voucher not found");
                 return response;
             }
 
             if (voucher.CounterPartId != userId)
             {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                 response.ToForbiddenResponse("You are not allowed to edit this voucher");
                 return response;
             }
@@ -70,6 +76,7 @@ public class EditVoucherHandler : IRequestHandler<EditVoucherCommand, BaseRespon
 
                 if (isDuplicateTitle)
                 {
+                    await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                     response.ToBadRequestResponse("Voucher title already exists");
                     return response;
                 }
@@ -98,12 +105,14 @@ public class EditVoucherHandler : IRequestHandler<EditVoucherCommand, BaseRespon
 
             if (voucher.TotalQuantity.HasValue && voucher.TotalQuantity.Value < issuedQuantity)
             {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                 response.ToBadRequestResponse("TotalQuantity cannot be less than already issued vouchers");
                 return response;
             }
 
             _unitOfWork.Vouchers.Update(voucher);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
             var usedQuantity = await _unitOfWork.VoucherToPlayers
                 .Where(x => !x.IsDeleted && x.VoucherId == voucher.Id && x.UsedDate != null)
@@ -128,8 +137,21 @@ public class EditVoucherHandler : IRequestHandler<EditVoucherCommand, BaseRespon
             };
             response.ToSuccessResponse(responseData);
         }
+        catch (PostgresException e) when (e.SqlState == PostgresErrorCodes.SerializationFailure)
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            _logger.LogWarning(e, $"{methodName} Voucher edit serialization conflict");
+            response.ToBadRequestResponse("Voucher title already exists");
+        }
+        catch (DbUpdateException e) when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.SerializationFailure })
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            _logger.LogWarning(e, $"{methodName} Voucher edit serialization conflict during save");
+            response.ToBadRequestResponse("Voucher title already exists");
+        }
         catch (Exception e)
         {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             _logger.LogError(e, $"{methodName} Has error: {e.Message}");
             response.ToInternalErrorResponse();
         }
