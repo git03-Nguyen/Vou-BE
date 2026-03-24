@@ -1,9 +1,11 @@
+using System.Data;
 using System.Text.Json;
 using EventService.Data.Models;
 using EventService.DTOs;
 using EventService.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Shared.Response;
 using Shared.Services.HttpContextAccessor;
 
@@ -40,6 +42,8 @@ public class CreateVoucherHandler: IRequestHandler<CreateVoucherCommand, BaseRes
                 ? null
                 : request.RedemptionInstructions.Trim();
 
+            await using var transaction = await _unitOfWork.OpenTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+
             var isVoucherExisted = await _unitOfWork.Vouchers
                 .Where(x => 
                     !x.IsDeleted
@@ -50,6 +54,7 @@ public class CreateVoucherHandler: IRequestHandler<CreateVoucherCommand, BaseRes
 
             if (isVoucherExisted)
             {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                 _logger.LogWarning($"{methodName} Voucher title already exists");
                 response.ToBadRequestResponse("Voucher title already exists");
                 return response;
@@ -68,6 +73,7 @@ public class CreateVoucherHandler: IRequestHandler<CreateVoucherCommand, BaseRes
             
             await _unitOfWork.Vouchers.AddAsync(newVoucher, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
             
             var responseData = new VoucherDto
             {
@@ -84,8 +90,21 @@ public class CreateVoucherHandler: IRequestHandler<CreateVoucherCommand, BaseRes
             };
             response.ToSuccessResponse(responseData);
         }
+        catch (PostgresException e) when (e.SqlState == PostgresErrorCodes.SerializationFailure)
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            _logger.LogWarning(e, $"{methodName} Voucher title creation serialization conflict");
+            response.ToBadRequestResponse("Voucher title already exists");
+        }
+        catch (DbUpdateException e) when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.SerializationFailure })
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            _logger.LogWarning(e, $"{methodName} Voucher title creation serialization conflict during save");
+            response.ToBadRequestResponse("Voucher title already exists");
+        }
         catch (Exception e)
         {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
             _logger.LogError(e, $"{methodName} {e.Message}");
             response.ToInternalErrorResponse();
         }
