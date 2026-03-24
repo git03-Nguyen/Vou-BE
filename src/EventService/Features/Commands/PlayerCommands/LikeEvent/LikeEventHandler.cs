@@ -35,29 +35,8 @@ public class LikeEventHandler : IRequestHandler<LikeEventCommand, BaseResponse<E
         {
             await using var transaction = await _unitOfWork.OpenTransactionAsync(IsolationLevel.Serializable, cancellationToken);
 
-            var existedInFavourite = await _unitOfWork.FavoriteEvents
-                .Where(x => x.EventId == request.EventId && x.PlayerId == userId)
-                .FirstOrDefaultAsync(cancellationToken);
-            if (existedInFavourite != null)
-            {
-                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-                response.ToBadRequestResponse("Event already liked");
-                return response;
-            }
-
-            //Add to favourite
-            var newFavourite = new FavoriteEvent
-            {
-                EventId = request.EventId,
-                PlayerId = userId,
-            };
-            await _unitOfWork.FavoriteEvents.AddAsync(newFavourite, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
-            
-            //Response data
             var eventData = await _unitOfWork.Events
-                .Where(x => x.Id == request.EventId)
+                .Where(x => x.Id == request.EventId && !x.IsDeleted)
                 .Select(x => new EventDto
                 {
                     Id = x.Id,
@@ -69,8 +48,46 @@ public class LikeEventHandler : IRequestHandler<LikeEventCommand, BaseResponse<E
                     Status = x.Status,
                     CreatedDate = x.CreatedDate,
                 })
-                .AsNoTracking()
                 .FirstOrDefaultAsync(cancellationToken);
+
+            if (eventData == null)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                response.ToNotFoundResponse("Event not found");
+                return response;
+            }
+
+            var existedInFavourite = await _unitOfWork.FavoriteEvents
+                .Where(x => x.EventId == request.EventId && x.PlayerId == userId)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (existedInFavourite != null && !existedInFavourite.IsDeleted)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                response.ToBadRequestResponse("Event already liked");
+                return response;
+            }
+
+            if (existedInFavourite != null)
+            {
+                existedInFavourite.IsDeleted = false;
+                existedInFavourite.DeletedDate = null;
+                existedInFavourite.ModifiedDate = DateTime.UtcNow;
+                _unitOfWork.FavoriteEvents.Update(existedInFavourite);
+            }
+            else
+            {
+                // Add to favourite
+                var newFavourite = new FavoriteEvent
+                {
+                    EventId = request.EventId,
+                    PlayerId = userId,
+                };
+                await _unitOfWork.FavoriteEvents.AddAsync(newFavourite, cancellationToken);
+            }
+
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
             
             response.ToSuccessResponse(eventData);
         }
