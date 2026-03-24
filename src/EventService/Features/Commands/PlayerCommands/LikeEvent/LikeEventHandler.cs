@@ -1,9 +1,11 @@
+using System.Data;
 using System.Text.Json;
 using EventService.Data.Models;
 using EventService.DTOs;
 using EventService.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Shared.Enums;
 using Shared.Response;
 using Shared.Services.HttpContextAccessor;
@@ -31,14 +33,18 @@ public class LikeEventHandler : IRequestHandler<LikeEventCommand, BaseResponse<E
         var response = new BaseResponse<EventDto>();
         try
         {
+            await using var transaction = await _unitOfWork.OpenTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+
             var existedInFavourite = await _unitOfWork.FavoriteEvents
                 .Where(x => x.EventId == request.EventId && x.PlayerId == userId)
                 .FirstOrDefaultAsync(cancellationToken);
             if (existedInFavourite != null)
             {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
                 response.ToBadRequestResponse("Event already liked");
                 return response;
             }
+
             //Add to favourite
             var newFavourite = new FavoriteEvent
             {
@@ -47,6 +53,7 @@ public class LikeEventHandler : IRequestHandler<LikeEventCommand, BaseResponse<E
             };
             await _unitOfWork.FavoriteEvents.AddAsync(newFavourite, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
             
             //Response data
             var eventData = await _unitOfWork.Events
@@ -67,9 +74,22 @@ public class LikeEventHandler : IRequestHandler<LikeEventCommand, BaseResponse<E
             
             response.ToSuccessResponse(eventData);
         }
+        catch (PostgresException e) when (e.SqlState == PostgresErrorCodes.SerializationFailure)
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            _logger.LogWarning(e, $"{methodName} Like event serialization conflict");
+            response.ToBadRequestResponse("Event already liked");
+        }
+        catch (DbUpdateException e) when (e.InnerException is PostgresException { SqlState: PostgresErrorCodes.SerializationFailure })
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            _logger.LogWarning(e, $"{methodName} Like event serialization conflict during save");
+            response.ToBadRequestResponse("Event already liked");
+        }
         catch (Exception e)
         {
-            _logger.LogError($"{methodName} {e.Message}");
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            _logger.LogError(e, methodName);
             response.ToInternalErrorResponse();
         }
 
