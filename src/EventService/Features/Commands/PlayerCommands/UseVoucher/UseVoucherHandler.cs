@@ -34,17 +34,23 @@ public class UseVoucherHandler : IRequestHandler<UseVoucherCommand, BaseResponse
                     v.Id == request.VoucherToPlayerId 
                     && v.PlayerId == userId 
                     && !v.IsDeleted)
-                .Select(v => new
+                .Select(v => new VoucherUsageState
                 {
-                    v.Id,
-                    v.VoucherId,
-                    v.PlayerId,
-                    v.ExpiredDate,
-                    v.UsedDate
+                    Id = v.Id,
+                    VoucherId = v.VoucherId,
+                    PlayerId = v.PlayerId,
+                    ExpiredDate = v.ExpiredDate,
+                    UsedDate = v.UsedDate
                 })
                 .FirstOrDefaultAsync(cancellationToken);
 
-            if (voucherToPlayer == null || voucherToPlayer.UsedDate is not null)
+            if (voucherToPlayer == null)
+            {
+                response.ToBadRequestResponse("Voucher not found or already used");
+                return response;
+            }
+
+            if (voucherToPlayer.UsedDate is not null)
             {
                 response.ToBadRequestResponse("Voucher not found or already used");
                 return response;
@@ -60,7 +66,8 @@ public class UseVoucherHandler : IRequestHandler<UseVoucherCommand, BaseResponse
                 .Where(v => v.Id == request.VoucherToPlayerId
                             && v.PlayerId == userId
                             && !v.IsDeleted
-                            && v.UsedDate == null)
+                            && v.UsedDate == null
+                            && v.ExpiredDate >= now)
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(v => v.UsedDate, now)
                     .SetProperty(v => v.UsedBy, userId)
@@ -68,6 +75,32 @@ public class UseVoucherHandler : IRequestHandler<UseVoucherCommand, BaseResponse
 
             if (affectedRows == 0)
             {
+                var latestVoucherState = await _unitOfWork.VoucherToPlayers
+                    .Where(v => v.Id == request.VoucherToPlayerId
+                                && v.PlayerId == userId
+                                && !v.IsDeleted)
+                    .Select(v => new VoucherUsageState
+                    {
+                        Id = v.Id,
+                        VoucherId = v.VoucherId,
+                        PlayerId = v.PlayerId,
+                        ExpiredDate = v.ExpiredDate,
+                        UsedDate = v.UsedDate
+                    })
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                if (latestVoucherState is null || latestVoucherState.UsedDate is not null)
+                {
+                    response.ToBadRequestResponse("Voucher not found or already used");
+                    return response;
+                }
+
+                if (latestVoucherState.ExpiredDate < now)
+                {
+                    response.ToBadRequestResponse("Voucher has expired");
+                    return response;
+                }
+
                 response.ToBadRequestResponse("Voucher not found or already used");
                 return response;
             }
@@ -89,5 +122,14 @@ public class UseVoucherHandler : IRequestHandler<UseVoucherCommand, BaseResponse
         }
         
         return response;
+    }
+
+    private sealed class VoucherUsageState
+    {
+        public string Id { get; init; }
+        public string VoucherId { get; init; }
+        public string PlayerId { get; init; }
+        public DateTime ExpiredDate { get; init; }
+        public DateTime? UsedDate { get; init; }
     }
 }

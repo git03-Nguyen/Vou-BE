@@ -30,23 +30,7 @@ public class RedeemVoucherHandler : IRequestHandler<RedeemVoucherCommand, BaseRe
         try
         {
             var now = DateTime.UtcNow;
-            var voucherToPlayer = await (
-                    from ownedVoucher in _unitOfWork.VoucherToPlayers.GetAll()
-                    join voucher in _unitOfWork.Vouchers.GetAll()
-                        on ownedVoucher.VoucherId equals voucher.Id
-                    where ownedVoucher.Id == request.VoucherToPlayerId
-                          && !ownedVoucher.IsDeleted
-                          && !voucher.IsDeleted
-                    select new
-                    {
-                        ownedVoucher.Id,
-                        ownedVoucher.VoucherId,
-                        ownedVoucher.PlayerId,
-                        ownedVoucher.ExpiredDate,
-                        ownedVoucher.UsedDate,
-                        VoucherCounterPartId = voucher.CounterPartId
-                    })
-                .FirstOrDefaultAsync(cancellationToken);
+            var voucherToPlayer = await GetVoucherUsageStateAsync(request.VoucherToPlayerId, cancellationToken);
 
             if (voucherToPlayer is null)
             {
@@ -75,7 +59,8 @@ public class RedeemVoucherHandler : IRequestHandler<RedeemVoucherCommand, BaseRe
             var affectedRows = await _unitOfWork.VoucherToPlayers
                 .Where(v => v.Id == request.VoucherToPlayerId
                             && !v.IsDeleted
-                            && v.UsedDate == null)
+                            && v.UsedDate == null
+                            && v.ExpiredDate >= now)
                 .ExecuteUpdateAsync(setters => setters
                     .SetProperty(v => v.UsedDate, now)
                     .SetProperty(v => v.UsedBy, userId)
@@ -83,6 +68,32 @@ public class RedeemVoucherHandler : IRequestHandler<RedeemVoucherCommand, BaseRe
 
             if (affectedRows == 0)
             {
+                var latestVoucherState = await GetVoucherUsageStateAsync(request.VoucherToPlayerId, cancellationToken);
+
+                if (latestVoucherState is null)
+                {
+                    response.ToNotFoundResponse("Voucher redemption record not found");
+                    return response;
+                }
+
+                if (latestVoucherState.VoucherCounterPartId != userId)
+                {
+                    response.ToForbiddenResponse("You are not allowed to redeem this voucher");
+                    return response;
+                }
+
+                if (latestVoucherState.UsedDate is not null)
+                {
+                    response.ToBadRequestResponse("Voucher has already been redeemed");
+                    return response;
+                }
+
+                if (latestVoucherState.ExpiredDate < now)
+                {
+                    response.ToBadRequestResponse("Voucher has expired");
+                    return response;
+                }
+
                 response.ToBadRequestResponse("Voucher has already been redeemed");
                 return response;
             }
@@ -103,5 +114,36 @@ public class RedeemVoucherHandler : IRequestHandler<RedeemVoucherCommand, BaseRe
         }
 
         return response;
+    }
+
+    private Task<VoucherRedemptionState?> GetVoucherUsageStateAsync(string voucherToPlayerId, CancellationToken cancellationToken)
+    {
+        return (
+                from ownedVoucher in _unitOfWork.VoucherToPlayers.GetAll()
+                join voucher in _unitOfWork.Vouchers.GetAll()
+                    on ownedVoucher.VoucherId equals voucher.Id
+                where ownedVoucher.Id == voucherToPlayerId
+                      && !ownedVoucher.IsDeleted
+                      && !voucher.IsDeleted
+                select new VoucherRedemptionState
+                {
+                    Id = ownedVoucher.Id,
+                    VoucherId = ownedVoucher.VoucherId,
+                    PlayerId = ownedVoucher.PlayerId,
+                    ExpiredDate = ownedVoucher.ExpiredDate,
+                    UsedDate = ownedVoucher.UsedDate,
+                    VoucherCounterPartId = voucher.CounterPartId
+                })
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    private sealed class VoucherRedemptionState
+    {
+        public string Id { get; init; }
+        public string VoucherId { get; init; }
+        public string PlayerId { get; init; }
+        public DateTime ExpiredDate { get; init; }
+        public DateTime? UsedDate { get; init; }
+        public string? VoucherCounterPartId { get; init; }
     }
 }
