@@ -2,11 +2,12 @@ using EventService.DTOs;
 using EventService.Repositories;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Shared.Enums;
 using Shared.Response;
 
 namespace EventService.Features.Queries.StatisticsQueries.EventStatistics;
 
-public class EventStatisticsHandler : IRequestHandler<EventStatisticsQuery, BaseResponse<EventStatisticsResponseDto>>
+public class EventStatisticsHandler : IRequestHandler<EventStatisticsQuery, BaseResponse<AdminEventStatisticsResponseDto>>
 {
     private readonly ILogger<EventStatisticsHandler> _logger;
     private readonly IUnitOfWork _unitOfWork;
@@ -16,21 +17,33 @@ public class EventStatisticsHandler : IRequestHandler<EventStatisticsQuery, Base
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<BaseResponse<EventStatisticsResponseDto>> Handle(EventStatisticsQuery request, CancellationToken cancellationToken)
+    public async Task<BaseResponse<AdminEventStatisticsResponseDto>> Handle(EventStatisticsQuery request, CancellationToken cancellationToken)
     {
-        var response = new BaseResponse<EventStatisticsResponseDto>();
+        var response = new BaseResponse<AdminEventStatisticsResponseDto>();
         const string methodName = $"{nameof(EventStatisticsHandler)}.{nameof(Handle)} =>";
         _logger.LogInformation(methodName);
 
         try
         {
-            var totalEvents = await _unitOfWork.Events.GetAll().CountAsync(x => !x.IsDeleted, cancellationToken);
+            var eventsQuery = _unitOfWork.Events.GetAll().Where(x => !x.IsDeleted);
+            var vouchersQuery = _unitOfWork.Vouchers.GetAll().Where(x => !x.IsDeleted);
+            var voucherToPlayersQuery = _unitOfWork.VoucherToPlayers.GetAll().Where(x => !x.IsDeleted);
+
+            var totalEvents = await eventsQuery.CountAsync(cancellationToken);
+            var totalPendingEvents = await eventsQuery.CountAsync(x => x.Status == EventStatus.Pending, cancellationToken);
+            var totalApprovedEvents = await eventsQuery.CountAsync(x => x.Status == EventStatus.Approved, cancellationToken);
+            var totalInProgressEvents = await eventsQuery.CountAsync(x => x.Status == EventStatus.InProgress, cancellationToken);
+            var totalFinishedEvents = await eventsQuery.CountAsync(x => x.Status == EventStatus.Finished, cancellationToken);
+            var totalCanceledEvents = await eventsQuery.CountAsync(x => x.Status == EventStatus.Canceled, cancellationToken);
+            var totalCounterParts = await _unitOfWork.CounterParts.GetAll().CountAsync(cancellationToken);
             var totalPlayers = await _unitOfWork.Players.GetAll().CountAsync(cancellationToken);
-            var totalVouchers = await _unitOfWork.Vouchers.GetAll().CountAsync(x => !x.IsDeleted, cancellationToken);
-            var totalIssuedVouchers = await _unitOfWork.VoucherToPlayers.GetAll().CountAsync(x => !x.IsDeleted, cancellationToken);
-            var totalRedeemedVouchers = await _unitOfWork.VoucherToPlayers.GetAll().CountAsync(x => !x.IsDeleted && x.UsedDate != null, cancellationToken);
-            var totalAvailableVoucherStock = await _unitOfWork.Vouchers.GetAll()
-                .Where(x => !x.IsDeleted && x.TotalQuantity.HasValue)
+            var totalVouchers = await vouchersQuery.CountAsync(cancellationToken);
+            var totalIssuedVouchers = await voucherToPlayersQuery.CountAsync(cancellationToken);
+            var totalRedeemedVouchers = await voucherToPlayersQuery.CountAsync(x => x.UsedDate != null, cancellationToken);
+            var totalEventsWithShakeGame = await eventsQuery.CountAsync(x => x.ShakeVoucherId != null, cancellationToken);
+            var totalQuizSessions = await _unitOfWork.QuizSessions.GetAll().CountAsync(x => !x.IsDeleted, cancellationToken);
+            var totalAvailableVoucherStock = await vouchersQuery
+                .Where(x => x.TotalQuantity.HasValue)
                 .Select(x => new
                 {
                     x.TotalQuantity,
@@ -38,21 +51,28 @@ public class EventStatisticsHandler : IRequestHandler<EventStatisticsQuery, Base
                 })
                 .Select(x => Math.Max(x.TotalQuantity!.Value - x.Issued, 0))
                 .SumAsync(cancellationToken);
-            
-            var eventStatistics = new EventStatisticsResponseDto
+
+            var eventStatistics = new AdminEventStatisticsResponseDto
             {
+                TotalEvents = totalEvents,
+                TotalPendingEvents = totalPendingEvents,
+                TotalApprovedEvents = totalApprovedEvents,
+                TotalInProgressEvents = totalInProgressEvents,
+                TotalFinishedEvents = totalFinishedEvents,
+                TotalCanceledEvents = totalCanceledEvents,
+                TotalCounterParts = totalCounterParts,
                 TotalPlayers = totalPlayers,
-                TotalActiveEvents = totalEvents,
                 TotalVouchers = totalVouchers,
                 TotalIssuedVouchers = totalIssuedVouchers,
                 TotalRedeemedVouchers = totalRedeemedVouchers,
-                TotalAvailableVoucherStock = totalAvailableVoucherStock
+                TotalAvailableVoucherStock = totalAvailableVoucherStock,
+                TotalEventsWithShakeGame = totalEventsWithShakeGame,
+                TotalQuizSessions = totalQuizSessions
             };
 
             response.ToSuccessResponse(eventStatistics);
             return response;
         }
-        
         catch (Exception e)
         {
             _logger.LogError(e, $"{methodName} Has error: {e.Message}");

@@ -2,11 +2,13 @@ using Asp.Versioning;
 using EventService.Features.Commands.AdminCommands.AcceptEvent;
 using EventService.Features.Commands.AdminCommands.RefuseEvent;
 using EventService.Features.Queries.AdminQueries.GetAllEvents;
+using EventService.Features.Queries.AdminQueries.GetVoucherRedemptions;
 using EventService.Features.Queries.StatisticsQueries.EventStatistics;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Common;
+using Shared.Enums;
 
 namespace EventService.Controllers.v1;
 
@@ -22,9 +24,20 @@ public class AdminController : ControllerBase
     }
     
     [HttpGet("GetEvents")]
-    public async Task<IActionResult> GetAllEvents(CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAllEvents(
+        [FromQuery] string? counterPartId,
+        [FromQuery] EventStatus? status,
+        [FromQuery] bool? hasVoucherInventory,
+        [FromQuery] string? search,
+        CancellationToken cancellationToken)
     {
-        var request = new GetAllEventsQuery();
+        var request = new GetAllEventsQuery
+        {
+            CounterPartId = counterPartId,
+            Status = status,
+            HasVoucherInventory = hasVoucherInventory,
+            Search = search
+        };
         var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
     }
@@ -49,6 +62,29 @@ public class AdminController : ControllerBase
     public async Task<IActionResult> GetEventStatistics(CancellationToken cancellationToken)
     {
         var request = new EventStatisticsQuery();
+        var response = await _mediator.Send(request, cancellationToken);
+        return response.ToObjectResult();
+    }
+
+    [HttpGet("VoucherRedemptions")]
+    public async Task<IActionResult> GetVoucherRedemptions(
+        [FromQuery] string? eventId,
+        [FromQuery] string? voucherId,
+        [FromQuery] string? counterPartId,
+        [FromQuery] string? playerId,
+        [FromQuery] string? search,
+        [FromQuery] string? status,
+        CancellationToken cancellationToken)
+    {
+        var request = new GetVoucherRedemptionsQuery
+        {
+            EventId = eventId,
+            VoucherId = voucherId,
+            CounterPartId = counterPartId,
+            PlayerId = playerId,
+            Search = search,
+            Status = status
+        };
         var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
     }
