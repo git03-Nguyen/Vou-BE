@@ -5,8 +5,11 @@ using EventService.Features.Commands.PlayerCommands.ReadNotifications;
 using EventService.Features.Commands.PlayerCommands.UseVoucher;
 using EventService.Features.Queries.CounterPartQueries.GetAllCounterParts;
 using EventService.Features.Queries.PlayerQueries.GetAllEvents;
+using EventService.Features.Queries.PlayerQueries.GetEventDetail;
+using EventService.Features.Queries.PlayerQueries.GetEventVoucherCatalog;
 using EventService.Features.Queries.PlayerQueries.GetFavoriteEvents;
 using EventService.Features.Queries.PlayerQueries.GetNotifications;
+using EventService.Features.Queries.PlayerQueries.GetOwnVoucherDetail;
 using EventService.Features.Queries.PlayerQueries.GetOwnVouchers;
 using EventService.Services.NotificationService;
 using MediatR;
@@ -47,6 +50,20 @@ public class PlayerController : ControllerBase
     public async Task<IActionResult> GetAllEvents(CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new GetAllEventsQuery(), cancellationToken);
+        return response.ToObjectResult();
+    }
+
+    [HttpGet("GetEvent/{eventId}")]
+    public async Task<IActionResult> GetEvent([FromRoute] string eventId, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetEventDetailQuery { EventId = eventId }, cancellationToken);
+        return response.ToObjectResult();
+    }
+
+    [HttpGet("GetEventVouchers/{eventId}")]
+    public async Task<IActionResult> GetEventVouchers([FromRoute] string eventId, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetEventVoucherCatalogQuery { EventId = eventId }, cancellationToken);
         return response.ToObjectResult();
     }
     
@@ -92,6 +109,13 @@ public class PlayerController : ControllerBase
     public async Task<IActionResult> GetOwnVouchers(CancellationToken cancellationToken)
     {
         var response = await _mediator.Send(new GetOwnVouchersQuery(), cancellationToken);
+        return response.ToObjectResult();
+    }
+
+    [HttpGet("GetOwnVoucher/{voucherToPlayerId}")]
+    public async Task<IActionResult> GetOwnVoucher([FromRoute] string voucherToPlayerId, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetOwnVoucherDetailQuery { VoucherToPlayerId = voucherToPlayerId }, cancellationToken);
         return response.ToObjectResult();
     }
     

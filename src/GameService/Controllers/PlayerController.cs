@@ -3,6 +3,7 @@ using GameService.Features.Commands.PlayerCommands;
 using GameService.Features.Commands.PlayerCommands.CompleteShake;
 using GameService.Features.Commands.PlayerCommands.SendTicketToFriend;
 using GameService.Features.Commands.PlayerCommands.ShareSocial;
+using GameService.Features.Queries.PlayerQueries.GetEventPlayerState;
 using GameService.Features.Queries.PlayerQueries.GetTicketEvent;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -37,6 +38,13 @@ public class PlayerController : ControllerBase
     {
         var request = new GetTicketEventQuery(eventId);
         var response = await _mediator.Send(request, cancellationToken);
+        return response.ToObjectResult();
+    }
+
+    [HttpGet("GetEventPlayerState/{eventId}")]
+    public async Task<IActionResult> GetEventPlayerState([FromRoute] string eventId, CancellationToken cancellationToken)
+    {
+        var response = await _mediator.Send(new GetEventPlayerStateQuery { EventId = eventId }, cancellationToken);
         return response.ToObjectResult();
     }
     
