@@ -6,7 +6,11 @@ namespace GameService.Features.Queries.PlayerQueries.GetTicketEvent;
 
 public class GetTicketEventQuery : IRequest<BaseResponse<PlayerShakeDto>>
 {
-    public string EventId;
+    public string EventId { get; set; } = string.Empty;
+
+    public GetTicketEventQuery()
+    {
+    }
 
     public GetTicketEventQuery(string eventId)
     {
