@@ -28,6 +28,8 @@ public class GetVoucherRedemptionsHandler : IRequestHandler<GetVoucherRedemption
             var now = DateTime.UtcNow;
             var statusFilter = request.Status?.Trim().ToLowerInvariant();
             var search = request.Search?.Trim().ToLowerInvariant();
+            var pageNumber = request.PageNumber ?? 1;
+            var pageSize = request.PageSize ?? 50;
 
             var voucherRedemptions = await
             (
@@ -69,7 +71,7 @@ public class GetVoucherRedemptionsHandler : IRequestHandler<GetVoucherRedemption
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
-            var mapped = voucherRedemptions
+            var filtered = voucherRedemptions
                 .Select(x =>
                 {
                     var isUsed = x.UsedDate is not null;
@@ -108,6 +110,12 @@ public class GetVoucherRedemptionsHandler : IRequestHandler<GetVoucherRedemption
                     };
                 })
                 .Where(x => string.IsNullOrWhiteSpace(statusFilter) || x.Status == statusFilter)
+                .Where(x => !request.AcquiredFrom.HasValue || (x.AcquiredDate.HasValue && x.AcquiredDate.Value >= request.AcquiredFrom.Value))
+                .Where(x => !request.AcquiredTo.HasValue || (x.AcquiredDate.HasValue && x.AcquiredDate.Value <= request.AcquiredTo.Value))
+                .Where(x => !request.UsedFrom.HasValue || (x.UsedDate.HasValue && x.UsedDate.Value >= request.UsedFrom.Value))
+                .Where(x => !request.UsedTo.HasValue || (x.UsedDate.HasValue && x.UsedDate.Value <= request.UsedTo.Value))
+                .Where(x => !request.ExpiredFrom.HasValue || x.ExpiredDate >= request.ExpiredFrom.Value)
+                .Where(x => !request.ExpiredTo.HasValue || x.ExpiredDate <= request.ExpiredTo.Value)
                 .Where(x => string.IsNullOrWhiteSpace(search)
                             || x.EventName.ToLower().Contains(search)
                             || x.VoucherTitle.ToLower().Contains(search)
@@ -117,14 +125,26 @@ public class GetVoucherRedemptionsHandler : IRequestHandler<GetVoucherRedemption
                             || x.VoucherToPlayerId.ToLower().Contains(search))
                 .ToList();
 
+            var totalCount = filtered.Count;
+            var totalPages = totalCount == 0 ? 0 : (int)Math.Ceiling(totalCount / (double)pageSize);
+            var pagedItems = filtered
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
             var responseData = new GetVoucherRedemptionsResponse
             {
-                TotalCount = mapped.Count,
-                AvailableCount = mapped.Count(x => x.Status == "available"),
-                UsedCount = mapped.Count(x => x.Status == "used"),
-                RedeemedCount = mapped.Count(x => x.Status == "redeemed"),
-                ExpiredCount = mapped.Count(x => x.Status == "expired"),
-                VoucherRedemptions = mapped
+                TotalCount = totalCount,
+                AvailableCount = filtered.Count(x => x.Status == "available"),
+                UsedCount = filtered.Count(x => x.Status == "used"),
+                RedeemedCount = filtered.Count(x => x.Status == "redeemed"),
+                ExpiredCount = filtered.Count(x => x.Status == "expired"),
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalPages = totalPages,
+                HasPreviousPage = pageNumber > 1 && totalCount > 0,
+                HasNextPage = totalPages > 0 && pageNumber < totalPages,
+                VoucherRedemptions = pagedItems
             };
 
             response.ToSuccessResponse(responseData);

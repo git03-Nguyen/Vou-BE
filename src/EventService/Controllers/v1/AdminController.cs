@@ -74,6 +74,14 @@ public class AdminController : ControllerBase
         [FromQuery] string? playerId,
         [FromQuery] string? search,
         [FromQuery] string? status,
+        [FromQuery] DateTime? acquiredFrom,
+        [FromQuery] DateTime? acquiredTo,
+        [FromQuery] DateTime? usedFrom,
+        [FromQuery] DateTime? usedTo,
+        [FromQuery] DateTime? expiredFrom,
+        [FromQuery] DateTime? expiredTo,
+        [FromQuery] int? pageNumber,
+        [FromQuery] int? pageSize,
         CancellationToken cancellationToken)
     {
         var request = new GetVoucherRedemptionsQuery
@@ -83,7 +91,15 @@ public class AdminController : ControllerBase
             CounterPartId = counterPartId,
             PlayerId = playerId,
             Search = search,
-            Status = status
+            Status = status,
+            AcquiredFrom = acquiredFrom,
+            AcquiredTo = acquiredTo,
+            UsedFrom = usedFrom,
+            UsedTo = usedTo,
+            ExpiredFrom = expiredFrom,
+            ExpiredTo = expiredTo,
+            PageNumber = pageNumber,
+            PageSize = pageSize
         };
         var response = await _mediator.Send(request, cancellationToken);
         return response.ToObjectResult();
